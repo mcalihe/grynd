@@ -15,7 +15,16 @@
     "addExercises": "Übungen hinzufügen"
   },
   "workout": {
-    "title": "Training"
+    "title": "Training",
+    "set": {
+      "kg": "KG",
+      "reps": "WDH",
+      "extra": "Extra",
+      "number": "Satz {{number}}",
+      "complete": "Satz abhaken",
+      "menu": "Satzmenü",
+      "record": "PR"
+    }
   },
   "history": {
     "title": "Verlauf",
@@ -31,6 +40,8 @@
   },
   "common": {
     "back": "Zurück",
-    "placeholder": "Kommt bald."
+    "placeholder": "Kommt bald.",
+    "decrease": "{{label}} verringern",
+    "increase": "{{label}} erhöhen"
   }
 }

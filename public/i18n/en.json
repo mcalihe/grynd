@@ -15,7 +15,16 @@
     "addExercises": "Add exercises"
   },
   "workout": {
-    "title": "Workout"
+    "title": "Workout",
+    "set": {
+      "kg": "KG",
+      "reps": "REPS",
+      "extra": "Extra",
+      "number": "Set {{number}}",
+      "complete": "Complete set",
+      "menu": "Set menu",
+      "record": "PR"
+    }
   },
   "history": {
     "title": "History",
@@ -31,6 +40,8 @@
   },
   "common": {
     "back": "Back",
-    "placeholder": "Coming soon."
+    "placeholder": "Coming soon.",
+    "decrease": "Decrease {{label}}",
+    "increase": "Increase {{label}}"
   }
 }

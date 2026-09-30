@@ -10,6 +10,7 @@ import { HlmSheetImports } from '@spartan-ng/helm/sheet';
 import { HlmSwitchImports } from '@spartan-ng/helm/switch';
 import { HlmToggleGroupImports } from '@spartan-ng/helm/toggle-group';
 import { ThemeMode, ThemeService } from '../../core/services/theme.service';
+import { SetRow, SetRowState } from '../../shared/components/set-row/set-row';
 
 /**
  * Dev-only catalogue of every UI building block in all states (route /dev/components, not in
@@ -28,6 +29,7 @@ import { ThemeMode, ThemeService } from '../../core/services/theme.service';
     HlmPopoverImports,
     HlmSheetImports,
     HlmAlertDialogImports,
+    SetRow,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './components-showcase.html',
@@ -42,6 +44,7 @@ export class ComponentsShowcase {
     'ghost',
     'destructive',
   ] as const;
+  protected readonly setStates: SetRowState[] = ['open', 'completed', 'record', 'menu-open'];
   protected readonly buttonSizes = ['sm', 'default', 'lg'] as const;
   protected readonly badgeVariants = [
     'default',

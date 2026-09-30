@@ -16,6 +16,14 @@
   </header>
 
   <section class="flex flex-col gap-3">
+    <h2 class="text-sm font-semibold text-muted-foreground">Set Row · Figma 96:3055</h2>
+    @for (state of setStates; track state) {
+      <app-set-row [number]="$index + 1" [weight]="82.5" [reps]="8" [state]="state" />
+    }
+    <app-set-row [number]="5" [weight]="80" [reps]="8" [extra]="true" />
+  </section>
+
+  <section class="flex flex-col gap-3">
     <h2 class="text-sm font-semibold text-muted-foreground">Button · Figma 9:206</h2>
     @for (variant of buttonVariants; track variant) {
       <div class="flex flex-wrap items-center gap-2">
