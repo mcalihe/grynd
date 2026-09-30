@@ -31,7 +31,7 @@ Vor dem Bau von UI hier nachsehen. Neue eigene Komponenten hier ergänzen.
 | Separator | `9:298` | horizontal/vertical | helm `separator` | shared/ui |
 | Toast | `9:326` | default/success/destructive | helm `sonner` | shared/ui |
 | Card | `9:266` | – | helm `card` | shared/ui |
-| Tabs | `9:271` | – | helm `tabs` (nur 2 Optionen; im Dark Mode kontrastlos, siehe Roadmap 0.5) | shared/ui |
+| Tabs | `9:271` | – | helm `tabs` (nur 2 Optionen, sonst Segmented Control) | shared/ui |
 | Sheet | `9:299` | – | helm `sheet` (Übersicht) | shared/ui |
 | Dialog | `9:303` | – | helm `alert-dialog` (Änderungen verwerfen) | shared/ui |
 | Icon | `9:25` | plus, minus, check, close, arrow, timer, dumbbell, calendar, chartline, skipforward, search, chevrondown, clipboardlist, settings | ng-icons Lucide (`lucidePlus`, … `lucideClipboardList`) | – |
@@ -74,4 +74,4 @@ Weekday-Chips (helm `toggle-group`), Filter-Chips, Popover-Menüs Satz/Übung (h
 | Verlauf-Detail | `/history/:sessionId` | `84:3364` | `84:4001` |
 | Einstellungen | `/settings` | `84:2796` | `84:3950` |
 
-Neue Karten in Screens nutzen `card` als Hintergrund, nicht `surface-elevated` (Kontrast im Dark Mode, siehe Roadmap 0.5).
+Hinweis: «Training · Timer-Dauer» lag über «Verlauf» und liegt jetzt bei y=19992.

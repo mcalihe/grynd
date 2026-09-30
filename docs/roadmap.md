@@ -24,7 +24,7 @@ Link-Schema für Node-IDs: `https://www.figma.com/design/iCoAOIvfyeCFYFU4Og7rVf/
 | 0.2b | ✅ `docs/plan.md` §8 Einstellungen: Hinweis «Deine Daten sind nur auf diesem Gerät gespeichert» streichen (MVP ist nur lokal) |
 | 0.3 | ✅ Abweichungen Plan ↔ Figma geklärt, siehe `docs/decisions/0001`–`0005` |
 | 0.4 | ✅ Fehlende Screens in Figma entworfen: Pläne leer, Training letzte Übung, Verlauf-Detail, Einstellungen; Navigation ohne Training-Tab ([0006](decisions/0006-navigation-without-training-tab.md)) |
-| 0.5 | Offen: Im Dark Mode sind `surface-elevated`, `muted` und `secondary` alle `neutral/800`. Tabs `9:271` und die Karte «Wochenübersicht» im Verlauf sind dadurch im Dark Mode kontrastlos. Token anpassen (z.B. `surface-elevated` Dark → `neutral/900`) oder auf `card` umstellen. |
+| 0.5 | ✅ `surface-elevated` im Dark Mode auf `neutral/900` gesetzt, damit `muted`/`secondary` (`neutral/800`) darauf Kontrast haben ([0004](decisions/0004-token-names.md)) |
 
 ## M1 – Setup
 
