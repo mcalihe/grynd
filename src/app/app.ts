@@ -4,14 +4,14 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { TranslocoService } from '@jsverse/transloco';
 import { filter, map } from 'rxjs';
-import { NavPlaceholder } from './shared/components/nav-placeholder/nav-placeholder';
+import { BottomNavigation } from './shared/components/bottom-navigation/bottom-navigation';
 
 /** Routes that show the bottom navigation (top-level tabs only). */
 const TAB_ROUTES = ['/plans', '/history', '/settings'];
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, NavPlaceholder],
+  imports: [RouterOutlet, BottomNavigation],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './app.html',
 })

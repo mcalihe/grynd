@@ -5,17 +5,38 @@
   "nav": {
     "plans": "Pläne",
     "history": "Verlauf",
-    "settings": "Einstellungen"
+    "settings": "Einstellungen",
+    "label": "Hauptnavigation"
   },
   "plans": {
     "title": "Pläne",
     "new": "Neuer Plan",
     "detail": "Plan",
     "edit": "Plan bearbeiten",
-    "addExercises": "Übungen hinzufügen"
+    "addExercises": "Übungen hinzufügen",
+    "exerciseCount": "{{count}} Übungen",
+    "exerciseCountOne": "1 Übung",
+    "today": "Heute",
+    "mine": "Meine Pläne"
   },
   "workout": {
-    "title": "Training"
+    "title": "Training",
+    "set": {
+      "kg": "KG",
+      "reps": "WDH",
+      "extra": "Extra",
+      "number": "Satz {{number}}",
+      "complete": "Satz abhaken",
+      "menu": "Satzmenü",
+      "record": "PR"
+    },
+    "timer": {
+      "duration": "Pausendauer wählen",
+      "start": "Timer starten",
+      "stop": "Timer stoppen",
+      "minus15": "15 Sekunden weniger",
+      "plus15": "15 Sekunden mehr"
+    }
   },
   "history": {
     "title": "Verlauf",
@@ -31,6 +52,8 @@
   },
   "common": {
     "back": "Zurück",
-    "placeholder": "Kommt bald."
+    "placeholder": "Kommt bald.",
+    "decrease": "{{label}} verringern",
+    "increase": "{{label}} erhöhen"
   }
 }

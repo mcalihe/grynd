@@ -1,27 +1,30 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideChartLine, lucideClipboardList, lucideSettings } from '@ng-icons/lucide';
+import { NgIcon } from '@ng-icons/core';
 
-/** Simple tab bar until BottomNavigationComponent (Figma 15:2111) is built in M3. */
+/** Tab bar Plans · History · Settings (Figma Grynd/Bottom Navigation 15:2111, decision 0006). */
 @Component({
-  selector: 'app-nav-placeholder',
+  selector: 'app-bottom-navigation',
   imports: [RouterLink, RouterLinkActive, TranslocoPipe, NgIcon],
-  providers: [provideIcons({ lucideClipboardList, lucideChartLine, lucideSettings })],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { class: 'block px-4' },
   template: `
-    <nav class="mx-4 mb-2 flex rounded-full border bg-card p-1">
+    <nav
+      class="flex h-16 items-center rounded-full border bg-card p-1 shadow-md"
+      [attr.aria-label]="'nav.label' | transloco"
+    >
       @for (tab of tabs; track tab.path) {
         <a
           [routerLink]="tab.path"
-          routerLinkActive="text-foreground font-semibold"
+          routerLinkActive
           #rla="routerLinkActive"
           [attr.aria-current]="rla.isActive ? 'page' : null"
-          class="flex min-h-11 flex-1 flex-col items-center justify-center gap-1 text-xs text-muted-foreground"
+          class="flex h-14 flex-1 flex-col items-center justify-center gap-1 rounded-lg text-xs"
+          [class]="rla.isActive ? 'font-semibold text-foreground' : 'text-muted-foreground'"
         >
           <span
-            class="flex h-8 w-14 items-center justify-center rounded-full"
+            class="flex h-8 w-14 items-center justify-center rounded-full text-foreground"
             [class.bg-accent]="rla.isActive"
           >
             <ng-icon [name]="tab.icon" size="22" />
@@ -32,7 +35,7 @@ import { lucideChartLine, lucideClipboardList, lucideSettings } from '@ng-icons/
     </nav>
   `,
 })
-export class NavPlaceholder {
+export class BottomNavigation {
   protected readonly tabs = [
     { path: '/plans', labelKey: 'nav.plans', icon: 'lucideClipboardList' },
     { path: '/history', labelKey: 'nav.history', icon: 'lucideChartLine' },

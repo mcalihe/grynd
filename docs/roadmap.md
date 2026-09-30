@@ -57,24 +57,26 @@ Umgesetzt, Details in [0008](decisions/0008-data-layer.md). Katalog: alle 876 Ü
 | 2.6 | ✅ Seed des Katalogs beim ersten Start |
 | 2.7 | ✅ Unit-Tests: Repositories gegen In-Memory-/jeep-DB, UUIDv7-Sortierung |
 
-## M3 – Basis-Komponenten
+## M3 – Basis-Komponenten ✅
+
+Umgesetzt, Zuordnung in [component-map.md](design/component-map.md), Satz-Zeile nach [0009](decisions/0009-set-row.md). Alle Bausteine unter `/dev/components` (Dev-Build).
 
 Jede Komponente mit Light/Dark gegen die Figma-Komponente prüfen. Dazu eine Storybook-freie Showcase-Route `/dev/components`, nur im Dev-Build.
 
 | # | Aufgabe | Figma |
 | --- | --- | --- |
-| 3.1 | helm-Komponenten holen: button, input, badge (+success/warning), switch, checkbox, separator, sonner, card, tabs, sheet, alert-dialog, dropdown-menu, popover, toggle-group | `9:206`, `9:219`, `9:265`, `9:284`, `9:295`, `9:298`, `9:326`, `9:266`, `9:271`, `9:299`, `9:303` |
-| 3.2 | Icons: ng-icons Lucide, Registry der 13 Icons | Icon `9:25` |
-| 3.3 | `NumberInputComponent` (Stepper, Schritt 2.5 kg / 1 Wdh., Tastatur-Eingabe) | Number Input `9:244` |
-| 3.4 | `SetRowComponent` (80 px; Nummer, Vorwert, 2× Stepper, Haken; 4 Zustände; Long-Press 500 ms + 3-Punkte-Icon) | Set Row `15:1822` |
-| 3.5 | `ProgressRingComponent` (SVG, `primary`, voll = Haken) | Progress Ring `66:2852` |
-| 3.6 | `TimerBarComponent` (ready/running/warning/duration; −15/+15, Stopp, Fortschrittslinie) | Timer Bar `72:2641` |
-| 3.7 | `BottomNavigationComponent` (Pläne, Verlauf, Einstellungen; RouterLinkActive) | Bottom Navigation `15:2111` |
-| 3.12 | `SegmentedControlComponent` (2–3 Optionen, auf helm toggle-group) | Segmented Control `84:2788` |
-| 3.8 | `PlanCardComponent` (Pfeil öffnet Plan; `primary` wenn heute, sonst `secondary`, 44 px) | Training Day Card `15:2023`, Beispiel in Pläne `37:27420` |
-| 3.9 | `PageHeaderComponent` (Seitentitel groß / Kopfzeile mit Zurück, Titel, Aktion) und `StickyActionComponent` (Primary unten, volle Breite, über Safe Area) | «Seitentitel» `37:27418`, «Kopfzeile» `37:27710`, «Sticky Aktion» `37:27886` |
-| 3.10 | `SegmentProgressComponent` (Segment pro Übung, anteilig, aktuelles hervorgehoben) | «Trainingsfortschritt» `56:48035` |
-| 3.11 | Weekday-Chips (toggle-group, 7 Chips) | Plan bearbeiten `37:28125` |
+| 3.1 | ✅ helm-Komponenten holen: button, input, badge (+success/warning), switch, checkbox, separator, sonner, card, tabs, sheet, alert-dialog, dropdown-menu, popover, toggle-group | `9:206`, `9:219`, `9:265`, `9:284`, `9:295`, `9:298`, `9:326`, `9:266`, `9:271`, `9:299`, `9:303` |
+| 3.2 | ✅ Icons: ng-icons Lucide, Registry der 13 Icons | Icon `9:25` |
+| 3.3 | ✅ `NumberInputComponent` (Stepper, Schritt 2.5 kg / 1 Wdh., Tastatur-Eingabe) | Number Input `9:244` |
+| 3.4 | ✅ `SetRow` (80 px; Nummer, 2× Stepper, Haken; 4 Zustände; Long-Press 500 ms + 3-Punkte-Icon) | Set Row `96:3055` |
+| 3.5 | ✅ `ProgressRingComponent` (SVG, `primary`, voll = Haken) | Progress Ring `66:2852` |
+| 3.6 | ✅ `TimerBarComponent` (ready/running/warning/duration; −15/+15, Stopp, Fortschrittslinie) | Timer Bar `72:2641` |
+| 3.7 | ✅ `BottomNavigationComponent` (Pläne, Verlauf, Einstellungen; RouterLinkActive) | Bottom Navigation `15:2111` |
+| 3.12 | ✅ `SegmentedControlComponent` (2–3 Optionen, auf helm toggle-group) | Segmented Control `84:2788` |
+| 3.8 | ✅ `PlanCardComponent` (Pfeil öffnet Plan; `primary` wenn heute, sonst `secondary`, 44 px) | Training Day Card `15:2023`, Beispiel in Pläne `37:27420` |
+| 3.9 | ✅ `PageHeaderComponent` (Seitentitel groß / Kopfzeile mit Zurück, Titel, Aktion) und `StickyActionComponent` (Primary unten, volle Breite, über Safe Area) | «Seitentitel» `37:27418`, «Kopfzeile» `37:27710`, «Sticky Aktion» `37:27886` |
+| 3.10 | ✅ `SegmentProgressComponent` (Segment pro Übung, anteilig, aktuelles hervorgehoben) | «Trainingsfortschritt» `56:48035` |
+| 3.11 | ✅ Weekday-Chips (toggle-group, 7 Chips) | Plan bearbeiten `37:28125` |
 
 ## M4 – Pläne
 

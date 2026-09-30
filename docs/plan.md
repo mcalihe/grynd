@@ -56,7 +56,7 @@ Ein **Plan ist genau ein Training**: eine feste Abfolge von Übungen mit Sätzen
 - Ordnerstruktur nach Features: `core/` (DB, Services), `features/plans`, `features/workout`, `features/history`, `features/settings`, `shared/ui` (Spartan-Helm), `shared/components` (eigene Komponenten).
 - IDs als UUIDv7, von der App erzeugt. Jeder Datensatz hat `createdAt`, `updatedAt`, `deletedAt` (Soft Delete), damit ein späterer Sync ohne Migration klappt.
 - Nie Farben, Abstände oder Radien hart im Code: nur Tokens bzw. Tailwind-Klassen, die auf Tokens zeigen.
-- Komponentennamen im Code entsprechen den Figma-Namen (z.B. Figma `Grynd/Set Row` mit `State=open|completed|record|menu-open` → `SetRowComponent` mit `state: 'open' | 'completed' | 'record' | 'menu-open'`). Zuordnung in `docs/design/component-map.md`.
+- Komponentennamen im Code entsprechen den Figma-Namen (z.B. Figma `Grynd/Set Row` mit `State=open|completed|record|menu-open` → `SetRow` (`app-set-row`) mit `state: 'open' | 'completed' | 'record' | 'menu-open'`). Zuordnung in `docs/design/component-map.md`.
 
 ## 5. Design-System
 

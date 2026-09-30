@@ -45,7 +45,7 @@ docs/
 ## Conventions
 
 - Code, comments and commits in English; Conventional Commits (`feat:`, `fix:`, …).
-- Component names mirror Figma (e.g. Figma `Grynd/Set Row` with `State=open|completed|record|menu-open` → `SetRowComponent` with `state: 'open' | 'completed' | 'record' | 'menu-open'`).
+- Component names mirror Figma (e.g. Figma `Grynd/Set Row` with `State=open|completed|record|menu-open` → `SetRow` (`app-set-row`) with `state: 'open' | 'completed' | 'record' | 'menu-open'`).
 - Write unit tests for business logic (session copy, prefill, PR detection, intervals, unsaved-changes detection).
 
 ## Workflow
@@ -67,6 +67,7 @@ Node 24 (`.nvmrc`), pnpm via `corepack enable` (version pinned in `package.json`
 - Sync native projects: `pnpm build && pnpm exec cap sync`
 - Rebuild the exercise catalog (free-exercise-db → `public/data/exercises.json`, thumbnails, `catalog-version.ts`): `pnpm catalog:import`
 - Add a Spartan helm component: `pnpm ng g @spartan-ng/cli:ui <name>` (goes to `src/app/shared/ui`, then align it with the Figma component)
+- Component showcase (dev only): http://localhost:4200/dev/components – every shared component in all states; add new ones there
 - CI (`.github/workflows/ci.yml`) runs format check, lint, test and build on every push and PR.
 
 ## Tools

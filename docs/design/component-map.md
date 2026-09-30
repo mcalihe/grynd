@@ -20,32 +20,45 @@ Vor dem Bau von UI hier nachsehen. Neue eigene Komponenten hier ergänzen.
 
 ## Komponenten
 
-| Figma-Komponente | Node | Varianten | Code | Ort |
-| --- | --- | --- | --- | --- |
-| Button | `9:206` | default/secondary/outline/ghost/destructive × sm/default/lg × default/pressed/disabled | helm `button` | shared/ui |
-| Input | `9:219` | default/focus/error | helm `input` | shared/ui |
-| Number Input | `9:244` | default/focus/error | `NumberInputComponent` (Stepper −/Wert/+) | shared/components |
-| Badge | `9:265` | default/secondary/success/warning/destructive | helm `badge` + Varianten success/warning | shared/ui |
-| Switch | `9:284` | checked × default/disabled | helm `switch` | shared/ui |
-| Checkbox | `9:295` | checked × default/disabled | helm `checkbox` | shared/ui |
-| Separator | `9:298` | horizontal/vertical | helm `separator` | shared/ui |
-| Toast | `9:326` | default/success/destructive | helm `sonner` | shared/ui |
-| Card | `9:266` | – | helm `card` | shared/ui |
-| Tabs | `9:271` | – | helm `tabs` (nur 2 Optionen, sonst Segmented Control) | shared/ui |
-| Sheet | `9:299` | – | helm `sheet` (Übersicht) | shared/ui |
-| Dialog | `9:303` | – | helm `alert-dialog` (Änderungen verwerfen) | shared/ui |
-| Icon | `9:25` | plus, minus, check, close, arrow, timer, dumbbell, calendar, chartline, skipforward, search, chevrondown, clipboardlist, settings | ng-icons Lucide (`lucidePlus`, … `lucideClipboardList`) | – |
-| Grynd/Set Row | `15:1822` | State=open/completed/record/menu-open | `SetRowComponent` `state: 'open' \| 'completed' \| 'record' \| 'menu-open'` | shared/components |
-| Grynd/Timer Bar | `72:2641` | State=ready/running/warning/duration | `TimerBarComponent` | shared/components |
-| Grynd/Progress Ring | `66:2852` | Value=0, 1/3, 1/2, 2/3, full | `ProgressRingComponent` `value: number (0–1)` | shared/components |
-| Grynd/Bottom Navigation | `15:2111` | Active=plans/history/settings | `BottomNavigationComponent` | shared/components |
-| Grynd/Segmented Control | `84:2788` | Options=2/3 × Active=1–3, Texte `Option 1–3` | `SegmentedControlComponent` (helm toggle-group) | shared/components |
-| Grynd/Training Day Card | `15:2023` | – | `PlanCardComponent` (Name, Anzahl, Wochentag-Chips, Pfeil → öffnet Plan) | shared/components |
-| Grynd/Exercise Card | `15:1823` | – | `ExerciseCardComponent` (Übungskopf im Training) – vor dem Bau prüfen | shared/components |
-| Grynd/Rest Timer | `15:2022` | running/warning | **Deprecated** – ersetzt durch Timer Bar, nicht umsetzen ([Entscheid](../decisions/0003-rest-timer-deprecated.md)) | – |
+Klassen folgen dem Angular-Styleguide 2025 (ohne `Component`-Suffix), Selektor-Präfix `app-`. Alle Bausteine in allen Zuständen: `/dev/components` (nur im Dev-Build).
 
-**Nur in Screens vorhanden, ohne eigene Figma-Komponente** (als eigene Komponenten aus den Screens ableiten):
-Weekday-Chips (helm `toggle-group`), Filter-Chips, Popover-Menüs Satz/Übung (helm `dropdown-menu`), Timer-Dauer-Popover (helm `popover`), Segment-Fortschritt (`SegmentProgressComponent`), Plan-Übungszeile mit Drag-Handle (`PlanExerciseRowComponent`), Übungs-Listeneintrag mit Auswahl und «Im Plan» (`ExerciseListItemComponent`), Kopfzeile/Seitentitel (`PageHeaderComponent`), Sticky-Aktion (`StickyActionComponent`), Wochen-Balkendiagramm (`WeekChartComponent`), Verlaufseintrag (`SessionRowComponent`).
+| Figma-Komponente | Node | Varianten | Code (Selektor) | Ort |
+| --- | --- | --- | --- | --- |
+| Button | `9:206` | default/secondary/outline/ghost/destructive × sm/default/lg × default/pressed/disabled | helm `hlmBtn`, Größen 44/48/56, Icon `icon`/`icon-lg` | shared/ui/button |
+| Input | `9:219` | default/focus/error | helm `hlmInput` (48 px, Radius 16) | shared/ui/input |
+| Number Input | `9:244` | default/focus/error | im Set-Row-Layout: `NumberStepper` (`app-number-stepper`, 121×44) | shared/components/number-stepper |
+| Badge | `9:265` | default/secondary/success/warning/destructive | helm `hlmBadge` (32 px Pill) | shared/ui/badge |
+| Switch | `9:284` | checked × default/disabled | helm `hlm-switch` (52×32) | shared/ui/switch |
+| Checkbox | `9:295` | checked × default/disabled | noch nicht generiert (bei Bedarf) | – |
+| Separator | `9:298` | horizontal/vertical | noch nicht generiert, Linien über `border-b` | – |
+| Toast | `9:326` | default/success/destructive | helm `hlm-toaster` (sonner) | shared/ui/sonner |
+| Card | `9:266` | – | kein helm card; Karten als `bg-card rounded-lg border` | – |
+| Tabs | `9:271` | – | nicht verwendet, stattdessen Segmented Control | – |
+| Sheet | `9:299` | – | helm `hlm-sheet` (`side="bottom"`, Radius 20) | shared/ui/sheet |
+| Dialog | `9:303` | – | helm `hlm-alert-dialog` | shared/ui/alert-dialog |
+| (Menüs in Screens) | `56:49827`, `56:48449` | – | helm `hlmDropdownMenu` (Einträge ≥ 44 px) | shared/ui/dropdown-menu |
+| (Timer-Dauer) | `79:2663` | – | helm `hlm-popover` in `TimerBar` | shared/ui/popover |
+| Icon | `9:25` | plus, minus, check, close, arrow, timer, dumbbell, calendar, chartline, skipforward, search, chevrondown, clipboardlist, settings | ng-icons Lucide, zentral in `core/icons.ts` (`APP_ICONS`) | core |
+| Grynd/Set Row | `96:3055` | State=open/completed/record/menu-open | `SetRow` (`app-set-row`), Entscheid [0009](../decisions/0009-set-row.md) | shared/components/set-row |
+| Grynd/Timer Bar | `72:2641` | State=ready/running/warning/duration | `TimerBar` (`app-timer-bar`) | shared/components/timer-bar |
+| Grynd/Progress Ring | `66:2852` | Value=0, 1/3, 1/2, 2/3, full | `ProgressRing` (`app-progress-ring`, `value` 0–1) | shared/components/progress-ring |
+| Grynd/Bottom Navigation | `15:2111` | Active=plans/history/settings | `BottomNavigation` (`app-bottom-navigation`) | shared/components/bottom-navigation |
+| Grynd/Segmented Control | `84:2788` | Options=2/3 × Active=1–3 | `SegmentedControl` (`app-segmented-control`) | shared/components/segmented-control |
+| Grynd/Training Day Card | `15:2023` | – | **Deprecated** (Rotationskonzept); Plan-Karte siehe unten | – |
+| Grynd/Exercise Card | `15:1823` | – | **Deprecated** (Rotationskonzept) | – |
+| Grynd/Rest Timer | `15:2022` | running/warning | **Deprecated** – ersetzt durch Timer Bar ([0003](../decisions/0003-rest-timer-deprecated.md)) | – |
+
+**Aus den Screens abgeleitet** (keine eigene Figma-Komponente):
+
+| Element im Screen | Node | Code (Selektor) |
+| --- | --- | --- |
+| Planzeile | `37:27450` | `PlanCard` (`app-plan-card`) |
+| Trainingsfortschritt | `56:48035` | `SegmentProgress` (`app-segment-progress`) |
+| Seitentitel / Kopfzeile | `37:27418` / `37:27710` | `PageHeader` (`app-page-header`, `variant` title/bar) |
+| Sticky Aktion | `37:27886`, `56:48144` | `StickyAction` (`app-sticky-action`, `divider` im Training) |
+| Wochentage | `37:28125` | `WeekdayChips` (`app-weekday-chips`) |
+| Satz-Stepper | `56:48064` | `NumberStepper` (`app-number-stepper`) |
+| Filter-Chips, Plan-Übungszeile mit Drag-Handle, Übungs-Listeneintrag, Wochen-Balkendiagramm, Verlaufseintrag | Screens M4/M6 | folgen mit den Screens |
 
 ## Screens
 
