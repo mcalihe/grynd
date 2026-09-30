@@ -316,7 +316,13 @@ export class ExercisePickerPage implements OnInit {
   });
 
   async ngOnInit(): Promise<void> {
-    await this.catalog.load();
+    // Also covers a reload or deep link straight into the picker: the draft must exist first.
+    const planId = this.route.parent?.snapshot.paramMap.get('id') ?? null;
+    const [found] = await Promise.all([this.store.init(planId), this.catalog.load()]);
+    if (!found) {
+      await this.router.navigate(['/plans'], { replaceUrl: true });
+      return;
+    }
     this.recentIds.set(await this.sessionExercises.findRecentExerciseIds(3));
   }
 

@@ -1,5 +1,5 @@
 {
-  "version": "f00c92c7dcf1",
+  "version": "f00c92c7dcf1-7c06ee9c",
   "source": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
   "exercises": [
     {
@@ -14528,7 +14528,7 @@
     {
       "id": "01a0f3b7-93ce-7264-91dd-dd770b49daa4",
       "key": "Smith_Machine_Decline_Press",
-      "nameDe": "Negativ-Bankdrücken an der Multipresse",
+      "nameDe": "Negativ-Schrägdrücken an der Multipresse",
       "nameEn": "Smith Machine Decline Press",
       "primaryMuscles": [
         "chest"
