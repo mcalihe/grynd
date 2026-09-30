@@ -23,7 +23,8 @@ Link-Schema für Node-IDs: `https://www.figma.com/design/iCoAOIvfyeCFYFU4Og7rVf/
 | 0.2 | ✅ `docs/roadmap.md` und `docs/design/component-map.md` anlegen |
 | 0.2b | ✅ `docs/plan.md` §8 Einstellungen: Hinweis «Deine Daten sind nur auf diesem Gerät gespeichert» streichen (MVP ist nur lokal) |
 | 0.3 | ✅ Abweichungen Plan ↔ Figma geklärt, siehe `docs/decisions/0001`–`0005` |
-| 0.4 | Fehlende Screens in Figma entwerfen (Claude), Freigabe durch Michael: Pläne leer (vor 4.2), Training letzte Übung (vor 5.3), Verlauf-Detail (vor 6.3), Einstellungen samt Einstieg (vor 7.2) |
+| 0.4 | ✅ Fehlende Screens in Figma entworfen: Pläne leer, Training letzte Übung, Verlauf-Detail, Einstellungen; Navigation ohne Training-Tab ([0006](decisions/0006-navigation-without-training-tab.md)) |
+| 0.5 | Offen: Im Dark Mode sind `surface-elevated`, `muted` und `secondary` alle `neutral/800`. Tabs `9:271` und die Karte «Wochenübersicht» im Verlauf sind dadurch im Dark Mode kontrastlos. Token anpassen (z.B. `surface-elevated` Dark → `neutral/900`) oder auf `card` umstellen. |
 
 ## M1 – Setup
 
@@ -64,7 +65,8 @@ Jede Komponente mit Light/Dark gegen die Figma-Komponente prüfen. Dazu eine Sto
 | 3.4 | `SetRowComponent` (80 px; Nummer, Vorwert, 2× Stepper, Haken; 4 Zustände; Long-Press 500 ms + 3-Punkte-Icon) | Set Row `15:1822` |
 | 3.5 | `ProgressRingComponent` (SVG, `primary`, voll = Haken) | Progress Ring `66:2852` |
 | 3.6 | `TimerBarComponent` (ready/running/warning/duration; −15/+15, Stopp, Fortschrittslinie) | Timer Bar `72:2641` |
-| 3.7 | `BottomNavigationComponent` (Pläne, Training, Verlauf; RouterLinkActive) | Bottom Navigation `15:2111` |
+| 3.7 | `BottomNavigationComponent` (Pläne, Verlauf, Einstellungen; RouterLinkActive) | Bottom Navigation `15:2111` |
+| 3.12 | `SegmentedControlComponent` (2–3 Optionen, auf helm toggle-group) | Segmented Control `84:2788` |
 | 3.8 | `PlanCardComponent` (Pfeil öffnet Plan; `primary` wenn heute, sonst `secondary`, 44 px) | Training Day Card `15:2023`, Beispiel in Pläne `37:27420` |
 | 3.9 | `PageHeaderComponent` (Seitentitel groß / Kopfzeile mit Zurück, Titel, Aktion) und `StickyActionComponent` (Primary unten, volle Breite, über Safe Area) | «Seitentitel» `37:27418`, «Kopfzeile» `37:27710`, «Sticky Aktion» `37:27886` |
 | 3.10 | `SegmentProgressComponent` (Segment pro Übung, anteilig, aktuelles hervorgehoben) | «Trainingsfortschritt» `56:48035` |
@@ -75,7 +77,7 @@ Jede Komponente mit Light/Dark gegen die Figma-Komponente prüfen. Dazu eine Sto
 | # | Aufgabe | Figma Light | Figma Dark |
 | --- | --- | --- | --- |
 | 4.1 | `PlansService` (Signals): Liste, «Heute» nach Wochentag, Anzahl Übungen | – | – |
-| 4.2 | **Pläne-Liste** `/plans`: Abschnitt «Heute» (nur wenn nötig), «Meine Pläne», «Neuer Plan» als Secondary, Bottom-Nav | Pläne `37:27416` | `37:27562` |
+| 4.2 | **Pläne-Liste** `/plans`: Abschnitt «Heute» (nur wenn nötig), «Meine Pläne», «Neuer Plan» als Secondary, Bottom-Nav | Pläne `37:27416`, Leer `84:3262` | `37:27562`, `84:3986` |
 | 4.3 | **Plan-Detail** `/plans/:id`: Übungsliste, Primary «Training starten» | Plan-Detail `37:27708` | `37:27902` |
 | 4.4 | **Plan bearbeiten** `/plans/:id/edit`: Name, Wochentage, Drag-and-Drop (CDK), Übungsmenü, «Plan speichern» | Plan bearbeiten `37:28096` | `37:28317` |
 | 4.5 | **Plan erstellen** `/plans/new`: Empty State; mit Übungen; Speichern deaktiviert ohne Name/Übungen | Leer `63:12060`, 2 Übungen `63:12408` | `63:12234`, `63:12616` |
@@ -89,7 +91,7 @@ Jede Komponente mit Light/Dark gegen die Figma-Komponente prüfen. Dazu eine Sto
 | --- | --- | --- | --- |
 | 5.1 | `WorkoutService`: Session aus Plan kopieren, max. 1 aktive, Fortsetzen nach Neustart (test-first) | – | – |
 | 5.2 | Vorbefüllung aus letzter abgeschlossener Session; Extra-Satz übernimmt letzten Satz (test-first) | – | – |
-| 5.3 | **Training-Grundscreen** `/workout`: Trainingskopf (Pill «2 / 6», Beenden als Ghost), Segment-Fortschritt, Satz-Zeilen, «+ Satz», Weiter-Button «Weiter zu …» / «Training abschliessen» | Training · Normal `56:48015` | `56:48160` |
+| 5.3 | **Training-Grundscreen** `/workout`: Trainingskopf (Pill «2 / 6», Beenden als Ghost), Segment-Fortschritt, Satz-Zeilen, «+ Satz», Weiter-Button «Weiter zu …» / «Training abschliessen» | Training · Normal `56:48015`, Letzte Übung `84:3791` | `56:48160`, `84:4068` |
 | 5.4 | **Pager** mit CSS Scroll-Snap, Kopf und Button bleiben fix; aktuelle Seite → Intervall öffnen/schliessen | Training · Swipe Übung `60:3568` | `60:3851` |
 | 5.5 | **Extra-Satz** mit Label «Extra» | Training · Extra-Satz `56:49343` | `56:49513` |
 | 5.6 | **Satz-Kontextmenü** (duplizieren, löschen), Haptik | Training · Satzmenü `56:49683` | `56:49835` |
@@ -107,14 +109,14 @@ Jede Komponente mit Light/Dark gegen die Figma-Komponente prüfen. Dazu eine Sto
 | --- | --- | --- | --- |
 | 6.1 | `HistoryService`: Sessions nach Woche gruppiert, Dauer aus Zeitstempeln, Gesamtvolumen (test-first) | – | – |
 | 6.2 | **Verlauf** `/history`: Wochen-Balkendiagramm (`chart-1`, leere Tage grau), Liste | Verlauf `37:29734` | `37:29861` |
-| 6.3 | **Verlauf-Detail** `/history/:sessionId` | Entwurf aus 0.4 | – |
+| 6.3 | **Verlauf-Detail** `/history/:sessionId`: Kennzahlen (Dauer, Volumen, Sätze), pro Übung Zeit und Satzliste mit Badges «Rekord»/«Extra» | Verlauf-Detail `84:3364` | `84:4001` |
 
 ## M7 – Einstellungen
 
 | # | Aufgabe | Figma |
 | --- | --- | --- |
 | 7.1 | `SettingsService` (Capacitor Preferences): Theme, Einheit, Sprache, Timer-Autostart | – |
-| 7.2 | **Einstellungen** `/settings`: Theme (Tabs), kg/lb, DE/EN, Autostart (Switch). Kein Hinweis «Daten nur auf diesem Gerät»: Im MVP gibt es nur lokale Speicherung, also nichts zu erklären. | Entwurf aus 0.4 (Tabs `9:271`, Switch `9:284`, Card `9:266`) |
+| 7.2 | **Einstellungen** `/settings` (Tab in der Bottom-Nav): Theme, kg/lb, DE/EN (Segmented Control), Autostart (Switch), Version. Kein Hinweis «Daten nur auf diesem Gerät»: Im MVP gibt es nur lokale Speicherung, also nichts zu erklären. | Einstellungen `84:2796` / Dark `84:3950` |
 | 7.3 | JSON-Export (Filesystem + Share) und Import mit Validierung und Bestätigungsdialog | Dialog `9:303`, Toast `9:326` |
 
 ## M8 – Native Feinschliff und Release

@@ -106,7 +106,7 @@ Alle Tabellen haben `id` (UUIDv7), `createdAt`, `updatedAt`, `deletedAt`.
 - Abschnitt «Heute» nur, wenn ein Plan für heute geplant ist. Heutige Plan-Karte sieht aus wie alle anderen.
 - Plan-Karte: Name, Anzahl Übungen, Wochentage als Chips, rechts Pfeil-Button (44 px). Karte und Pfeil öffnen den Plan; gestartet wird im Plan-Detail. Pfeil beim heutigen Plan in `primary`, sonst `secondary`.
 - Kein Primary-Button unten. «Neuer Plan» als Secondary-Button in der Liste.
-- Bottom-Navigation: Pläne, Training, Verlauf.
+- Bottom-Navigation: Pläne, Verlauf, Einstellungen. Ein laufendes Training ist ein Vollbild ohne Navigation und wird über den Plan gestartet (kein Training-Tab).
 
 ### Plan-Detail, Plan bearbeiten, Plan erstellen (`/plans/:id`, `/plans/:id/edit`, `/plans/new`)
 - Planname, «Wochentage (optional)» als 7 Chips, Übungsliste mit Drag-Handle, Name, «3 × 8–10», Menü.
@@ -138,6 +138,7 @@ Alle Tabellen haben `id` (UUIDv7), `createdAt`, `updatedAt`, `deletedAt`.
 - Liste vergangener Trainings, gruppiert nach Woche: Name, Datum, Dauer, Gesamtvolumen.
 
 ### Einstellungen (`/settings`)
+- Letzter Tab der Bottom-Navigation (Zahnrad).
 - Theme (Automatisch/Hell/Dunkel), Einheiten (kg/lb), Sprache (DE/EN), Timer-Autostart, JSON-Export/Import als Backup.
 
 ## 9. UI-Regeln
