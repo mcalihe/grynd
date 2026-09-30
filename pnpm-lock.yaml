@@ -162,6 +162,9 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  sql.js: 1.11.0
+
 importers:
 
   .:
@@ -282,8 +285,8 @@ importers:
         specifier: ^0.35.5
         version: 0.35.5(@types/node@26.6.3)
       sql.js:
-        specifier: 1.14.2
-        version: 1.14.2
+        specifier: 1.11.0
+        version: 1.11.0
       tailwindcss:
         specifier: ^4.1.12
         version: 4.3.3
@@ -4830,8 +4833,8 @@ packages:
     resolution: {integrity: sha512-UcjcJOWknrNkF6PLX83qcHM6KHgVKNkV62Y8a5uYDVv9ydGQVwAHMKqHdJje1VTWpljG0WYpCDhrCdAOYH4TWg==}
     engines: {node: '>= 10.x'}
 
-  sql.js@1.14.2:
-    resolution: {integrity: sha512-3ZGPovObMFrdw79zrUHbfdE/DLIsy8jdNdssmMSQuRAymedU6q84asPt0kgiqrdMYlPegDItiIMfmIXzZnYFcw==}
+  sql.js@1.11.0:
+    resolution: {integrity: sha512-GsLUDU3vhOo14Pd5ME0y2te49JQyby6HuoCuadevEV+CGgTUjmYRrm7B7lhRyzOgrmcWmspUfyjNb6sOAEqdsA==}
 
   std-env@4.3.0:
     resolution: {integrity: sha512-OtU/EgQ1kIm5KwqQpBC6ZEMXrZRui11w8zgfTWp8cdO9B8OaPsbA8bTHO2P+HNo1VlUTGMVBwPhydu6poeXiag==}
@@ -8879,7 +8882,7 @@ snapshots:
       browser-fs-access: 0.35.0
       jszip: 3.10.2
       localforage: 1.10.0
-      sql.js: 1.14.2
+      sql.js: 1.11.0
 
   jiti@2.7.0: {}
 
@@ -9980,7 +9983,7 @@ snapshots:
 
   split2@4.2.0: {}
 
-  sql.js@1.14.2: {}
+  sql.js@1.11.0: {}
 
   std-env@4.3.0: {}
 
