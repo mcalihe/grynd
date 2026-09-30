@@ -95,7 +95,14 @@
       "back": "Move back one",
       "end": "Move to the end"
     },
-    "overviewSets": "{{done}} of {{total}} sets"
+    "overviewSets": "{{done}} of {{total}} sets",
+    "endDialog": {
+      "title": "End workout?",
+      "text": "Save the completed sets to your history or discard the workout.",
+      "save": "End and save",
+      "discard": "Discard workout",
+      "continue": "Keep training"
+    }
   },
   "history": {
     "title": "History",

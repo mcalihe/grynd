@@ -10,7 +10,7 @@ import { ConfirmService } from '../../../core/services/confirm.service';
   imports: [HlmAlertDialogImports, HlmButton, TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <hlm-alert-dialog [state]="state()" (closed)="confirm.answer(false)">
+    <hlm-alert-dialog [state]="state()" (closed)="confirm.answer('cancel')">
       <hlm-alert-dialog-content *hlmAlertDialogPortal="let ctx">
         @if (confirm.current(); as request) {
           <hlm-alert-dialog-header>
@@ -24,11 +24,21 @@ import { ConfirmService } from '../../../core/services/confirm.service';
               hlmBtn
               size="lg"
               [variant]="request.destructive ? 'destructive' : 'default'"
-              (click)="confirm.answer(true)"
+              (click)="confirm.answer('confirm')"
             >
               {{ request.confirm | transloco }}
             </button>
-            <button hlmBtn size="lg" variant="secondary" (click)="confirm.answer(false)">
+            @if (request.alternative; as alternative) {
+              <button
+                hlmBtn
+                size="lg"
+                [variant]="request.alternativeDestructive ? 'destructive' : 'secondary'"
+                (click)="confirm.answer('alternative')"
+              >
+                {{ alternative | transloco }}
+              </button>
+            }
+            <button hlmBtn size="lg" variant="secondary" (click)="confirm.answer('cancel')">
               {{ request.cancel | transloco }}
             </button>
           </div>

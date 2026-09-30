@@ -95,7 +95,14 @@
       "back": "1 nach hinten verschieben",
       "end": "Ans Ende verschieben"
     },
-    "overviewSets": "{{done}} von {{total}} Sätzen"
+    "overviewSets": "{{done}} von {{total}} Sätzen",
+    "endDialog": {
+      "title": "Training beenden?",
+      "text": "Speichere die abgehakten Sätze im Verlauf oder verwirf das Training.",
+      "save": "Beenden und speichern",
+      "discard": "Training verwerfen",
+      "continue": "Weiter trainieren"
+    }
   },
   "history": {
     "title": "Verlauf",

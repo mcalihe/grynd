@@ -11,10 +11,13 @@ import {
   viewChild,
 } from '@angular/core';
 import { Router } from '@angular/router';
+import { KeepAwake } from '@capacitor-community/keep-awake';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { NgIcon } from '@ng-icons/core';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { SetLog } from '../../core/db/models';
+import { BackButtonService } from '../../core/services/back-button.service';
+import { ConfirmService } from '../../core/services/confirm.service';
 import { ExerciseCatalogService } from '../../core/exercises/exercise-catalog.service';
 import { RestTimerService } from '../../core/workout/rest-timer.service';
 import { WorkoutService } from '../../core/workout/workout.service';
@@ -128,6 +131,7 @@ export class WorkoutPage {
   protected readonly timer = inject(RestTimerService);
   protected readonly catalog = inject(ExerciseCatalogService);
   private readonly router = inject(Router);
+  private readonly confirm = inject(ConfirmService);
   private readonly pager = viewChild<ElementRef<HTMLElement>>('pager');
 
   protected readonly current = this.workout.current;
@@ -151,6 +155,15 @@ export class WorkoutPage {
   constructor() {
     void this.catalog.load();
     const destroyRef = inject(DestroyRef);
+
+    // Android back opens the end dialog instead of leaving the workout.
+    const backButton = inject(BackButtonService);
+    backButton.setHandler(() => void this.end());
+    destroyRef.onDestroy(() => backButton.setHandler(null));
+
+    // Keep the screen on while training (Wake Lock API in the browser, if supported).
+    void keepAwake(true);
+    destroyRef.onDestroy(() => void keepAwake(false));
 
     afterNextRender(() => {
       const pager = this.pager()?.nativeElement;
@@ -205,9 +218,23 @@ export class WorkoutPage {
     }
   }
 
-  /** «Beenden»: decided in step 5.8 (save, discard or continue). */
+  /** «Beenden»: save (→ history detail), discard (→ plans, not in the history) or continue. */
   protected async end(): Promise<void> {
-    await this.finish();
+    const choice = await this.confirm.choose({
+      title: 'workout.endDialog.title',
+      message: 'workout.endDialog.text',
+      confirm: 'workout.endDialog.save',
+      alternative: 'workout.endDialog.discard',
+      alternativeDestructive: true,
+      cancel: 'workout.endDialog.continue',
+    });
+    if (choice === 'confirm') {
+      await this.finish();
+    } else if (choice === 'alternative') {
+      this.timer.stop();
+      await this.workout.abort();
+      await this.router.navigate(['/plans'], { replaceUrl: true });
+    }
   }
 
   private scrollTo(index: number, behavior: ScrollBehavior): void {
@@ -218,5 +245,15 @@ export class WorkoutPage {
     if (page && pager && Math.abs(pager.scrollLeft - page.offsetLeft) > 2) {
       pager.scrollTo({ left: page.offsetLeft, behavior });
     }
+  }
+}
+
+async function keepAwake(on: boolean): Promise<void> {
+  try {
+    if ((await KeepAwake.isSupported()).isSupported) {
+      await (on ? KeepAwake.keepAwake() : KeepAwake.allowSleep());
+    }
+  } catch {
+    // Not critical: the screen may just turn off.
   }
 }
