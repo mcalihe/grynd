@@ -10,6 +10,7 @@ import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { provideTransloco } from '@jsverse/transloco';
 import { routes } from './app.routes';
 import { APP_LANGS, detectLanguage, FALLBACK_LANG } from './core/i18n/language';
+import { DatabaseService } from './core/db/database.service';
 import { TranslocoHttpLoader } from './core/i18n/transloco-loader';
 import { ThemeService } from './core/services/theme.service';
 
@@ -21,6 +22,7 @@ export const appConfig: ApplicationConfig = {
     provideAppInitializer(() => {
       inject(ThemeService);
     }),
+    provideAppInitializer(() => inject(DatabaseService).init()),
     provideTransloco({
       config: {
         availableLangs: [...APP_LANGS],
