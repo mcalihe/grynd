@@ -35,9 +35,9 @@ describe('App', () => {
     expect(fixture.nativeElement.querySelector('app-bottom-navigation')).not.toBeNull();
   });
 
-  it('hides the navigation during a workout', async () => {
+  it('hides the navigation outside the tab screens', async () => {
     const fixture = TestBed.createComponent(App);
-    await TestBed.inject(Router).navigateByUrl('/workout');
+    await TestBed.inject(Router).navigateByUrl('/history/some-session');
     await fixture.whenStable();
 
     expect(fixture.nativeElement.querySelector('app-bottom-navigation')).toBeNull();

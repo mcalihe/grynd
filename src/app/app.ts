@@ -3,7 +3,8 @@ import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/c
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { TranslocoService } from '@jsverse/transloco';
-import { filter, map } from 'rxjs';
+import { filter, map, take } from 'rxjs';
+import { WorkoutService } from './core/workout/workout.service';
 import { BottomNavigation } from './shared/components/bottom-navigation/bottom-navigation';
 import { ConfirmDialogHost } from './shared/components/confirm-dialog/confirm-dialog-host';
 
@@ -30,6 +31,20 @@ export class App {
   protected readonly showNav = computed(() => TAB_ROUTES.includes(this.url()));
 
   constructor() {
+    // An active session survives restarts: open it again on startup (plan.md §7 «Fortsetzen»).
+    const workout = inject(WorkoutService);
+    this.router.events
+      .pipe(
+        filter((event) => event instanceof NavigationEnd),
+        take(1),
+        takeUntilDestroyed(),
+      )
+      .subscribe((event) => {
+        if (workout.isActive() && !event.urlAfterRedirects.startsWith('/workout')) {
+          void this.router.navigateByUrl('/workout', { replaceUrl: true });
+        }
+      });
+
     const document = inject(DOCUMENT);
     inject(TranslocoService)
       .langChanges$.pipe(takeUntilDestroyed())

@@ -12,6 +12,7 @@ import { provideIcons } from '@ng-icons/core';
 import { routes } from './app.routes';
 import { APP_LANGS, detectLanguage, FALLBACK_LANG } from './core/i18n/language';
 import { CatalogSyncService } from './core/db/catalog-sync.service';
+import { WorkoutService } from './core/workout/workout.service';
 import { DatabaseService } from './core/db/database.service';
 import { TranslocoHttpLoader } from './core/i18n/transloco-loader';
 import { APP_ICONS } from './core/icons';
@@ -30,7 +31,11 @@ export const appConfig: ApplicationConfig = {
     provideAppInitializer(() => {
       const database = inject(DatabaseService);
       const catalog = inject(CatalogSyncService);
-      return database.init().then(() => catalog.sync());
+      const workout = inject(WorkoutService);
+      return database
+        .init()
+        .then(() => catalog.sync())
+        .then(() => workout.restore());
     }),
     provideAppInitializer(() => inject(BackButtonService).init()),
     provideTransloco({

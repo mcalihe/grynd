@@ -1,0 +1,103 @@
+import { computed, DestroyRef, inject, Injectable, signal } from '@angular/core';
+import { Clock } from '../utils/time';
+
+const STORAGE_KEY = 'grynd.restTimer';
+const TICK_MS = 250;
+
+interface TimerState {
+  /** Epoch ms when the rest is over. */
+  endAt: number;
+  totalMs: number;
+}
+
+/**
+ * Rest timer between sets (plan.md §8). Stores the end time, never a counter, so it survives a
+ * reload and background throttling; the remaining time is always derived from the clock.
+ */
+@Injectable({ providedIn: 'root' })
+export class RestTimerService {
+  private readonly clock = inject(Clock);
+  private readonly state = signal<TimerState | null>(this.read());
+  private readonly now = signal(this.clock.now().getTime());
+  private tick?: ReturnType<typeof setInterval>;
+
+  readonly running = computed(() => this.state() !== null);
+  readonly totalMs = computed(() => this.state()?.totalMs ?? 0);
+  readonly remainingMs = computed(() => {
+    const state = this.state();
+    return state ? Math.max(0, state.endAt - this.now()) : 0;
+  });
+
+  constructor() {
+    if (this.state()) {
+      this.startTicking();
+    }
+    inject(DestroyRef).onDestroy(() => this.stopTicking());
+  }
+
+  start(seconds: number): void {
+    const totalMs = Math.max(0, seconds) * 1000;
+    this.set({ endAt: this.clock.now().getTime() + totalMs, totalMs });
+    this.now.set(this.clock.now().getTime());
+    this.startTicking();
+  }
+
+  /** −15 / +15 seconds; the bar length follows the new total. */
+  adjust(seconds: number): void {
+    const state = this.state();
+    if (!state) {
+      return;
+    }
+    const delta = seconds * 1000;
+    this.set({ endAt: state.endAt + delta, totalMs: Math.max(0, state.totalMs + delta) });
+    this.update();
+  }
+
+  stop(): void {
+    this.set(null);
+    this.stopTicking();
+  }
+
+  /** Recomputes the remaining time; ends the rest when it reaches zero. */
+  update(): void {
+    this.now.set(this.clock.now().getTime());
+    if (this.state() && this.remainingMs() === 0) {
+      this.stop();
+      // Sound and local notification follow with the native plugins (M8).
+      globalThis.navigator?.vibrate?.([200, 100, 200]);
+    }
+  }
+
+  private startTicking(): void {
+    this.stopTicking();
+    this.tick = setInterval(() => this.update(), TICK_MS);
+  }
+
+  private stopTicking(): void {
+    clearInterval(this.tick);
+    this.tick = undefined;
+  }
+
+  private set(state: TimerState | null): void {
+    this.state.set(state);
+    try {
+      if (state) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } else {
+        localStorage.removeItem(STORAGE_KEY);
+      }
+    } catch {
+      // Without storage the timer still works, it just does not survive a reload.
+    }
+  }
+
+  private read(): TimerState | null {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      const parsed = raw ? (JSON.parse(raw) as TimerState) : null;
+      return parsed && typeof parsed.endAt === 'number' ? parsed : null;
+    } catch {
+      return null;
+    }
+  }
+}

@@ -93,23 +93,25 @@ Umgesetzt nach [0010](decisions/0010-plan-detail-and-editor.md): Detail als Ansi
 | 4.7 | ✅ **Übungen hinzufügen** `/plans/new/add-exercises`, `/plans/:id/edit/add-exercises`: Suche (umlaut- und case-tolerant), Filter-Chips (ODER in Gruppe, UND zwischen Gruppen), «Zuletzt verwendet», Mehrfachauswahl, «Im Plan» gedimmt, Primary «N Übungen hinzufügen», X mit Guard | Leer `63:12824`, 3 ausgewählt `63:13440`, Keine Treffer `63:14032` | `63:13132`, `63:13736`, `63:14299` |
 | 4.8 | ✅ Tests: Wochentag-Logik, Dirty-Erkennung, Suche/Filter, Standardwerte 3 × 8–12 / 90 s | – | – |
 
-## M5 – Training
+## M5 – Training ✅
+
+Umgesetzt in einem PR (`feat/m5-workout`), Entscheide in [0011](decisions/0011-workout-flow.md). Vibration, Ton und Benachrichtigung beim Timer-Ende sowie die Haptik beim Long-Press folgen in M8; der Autostart-Schalter in M7.
 
 | # | Aufgabe | Figma Light | Figma Dark |
 | --- | --- | --- | --- |
-| 5.1 | `WorkoutService`: Session aus Plan kopieren, max. 1 aktive, Fortsetzen nach Neustart (test-first) | – | – |
-| 5.2 | Vorbefüllung aus letzter abgeschlossener Session; Extra-Satz übernimmt letzten Satz (test-first) | – | – |
-| 5.3 | **Training-Grundscreen** `/workout`: Trainingskopf (Pill «2 / 6», Beenden als Ghost), Segment-Fortschritt, Satz-Zeilen, «+ Satz», Weiter-Button «Weiter zu …» / «Training abschliessen» | Training · Normal `56:48015`, Letzte Übung `84:3791` | `56:48160`, `84:4068` |
-| 5.4 | **Pager** mit CSS Scroll-Snap, Kopf und Button bleiben fix; aktuelle Seite → Intervall öffnen/schliessen | Training · Swipe Übung `60:3568` | `60:3851` |
-| 5.5 | **Extra-Satz** mit Label «Extra» | Training · Extra-Satz `56:49343` | `56:49513` |
-| 5.6 | **Satz-Kontextmenü** (duplizieren, löschen), Haptik | Training · Satzmenü `56:49683` | `56:49835` |
-| 5.7 | **Übungsmenü** («1 nach hinten», «Ans Ende») | Training · Übungsmenü `56:48305` | `56:48455` |
-| 5.8 | **Übersicht-Sheet**: Progress Rings, aktuelle markiert, CDK-Reorder, Tippen springt | Training · Übersicht `56:48605` | `56:48814` |
-| 5.9 | **Timer**: Endzeit speichern, Auto-Start nach Haken, −15/+15, Warnung letzte 10 s, lokale Notification bei Ablauf | Timer Bar Area in `56:48015` (`72:2642`) | `72:2650` |
-| 5.10 | **Timer-Dauer-Popover** (0:30 … 3:00) | Training · Timer-Dauer `79:2663` | `79:2832` |
-| 5.11 | Abschliessen/Beenden (finished/aborted), Keep-Awake während aktiver Session | – | – |
-| 5.12 | Zeitintervalle: < 3 s verwerfen, offene Intervalle beim Start mit letztem `completedAt` schliessen (test-first) | – | – |
-| 5.13 | PR-Erkennung per Epley → Set Row `record` (test-first) | Set Row `State=record` | – |
+| 5.1 | ✅ `WorkoutService`: Session aus Plan kopieren, max. 1 aktive, Fortsetzen nach Neustart (test-first) | – | – |
+| 5.2 | ✅ Vorbefüllung aus letzter abgeschlossener Session; Extra-Satz übernimmt letzten Satz (test-first) | – | – |
+| 5.3 | ✅ **Training-Grundscreen** `/workout`: Trainingskopf (Pill «2 / 6», Beenden als Ghost), Segment-Fortschritt, Satz-Zeilen, «+ Satz», Weiter-Button «Weiter zu …» / «Training abschliessen» | Training · Normal `56:48015`, Letzte Übung `84:3791` | `56:48160`, `84:4068` |
+| 5.4 | ✅ **Pager** mit CSS Scroll-Snap, Kopf und Button bleiben fix; aktuelle Seite → Intervall öffnen/schliessen | Training · Swipe Übung `60:3568` | `60:3851` |
+| 5.5 | ✅ **Extra-Satz** mit Label «Extra» | Training · Extra-Satz `56:49343` | `56:49513` |
+| 5.6 | ✅ **Satz-Kontextmenü** (duplizieren, löschen), Haptik | Training · Satzmenü `56:49683` | `56:49835` |
+| 5.7 | ✅ **Übungsmenü** («1 nach hinten», «Ans Ende») | Training · Übungsmenü `56:48305` | `56:48455` |
+| 5.8 | ✅ **Übersicht-Sheet**: Progress Rings, aktuelle markiert, CDK-Reorder, Tippen springt | Training · Übersicht `56:48605` | `56:48814` |
+| 5.9 | ✅ **Timer**: Endzeit speichern, Auto-Start nach Haken, −15/+15, Warnung letzte 10 s, lokale Notification bei Ablauf | Timer Bar Area in `56:48015` (`72:2642`) | `72:2650` |
+| 5.10 | ✅ **Timer-Dauer-Popover** (0:30 … 3:00) | Training · Timer-Dauer `79:2663` | `79:2832` |
+| 5.11 | ✅ Abschliessen/Beenden (finished/aborted), Keep-Awake während aktiver Session | – | – |
+| 5.12 | ✅ Zeitintervalle: < 3 s verwerfen, offene Intervalle beim Start mit letztem `completedAt` schliessen (test-first) | – | – |
+| 5.13 | ✅ PR-Erkennung per Epley → Set Row `record` (test-first) | Set Row `State=record` | – |
 
 ## M6 – Verlauf
 

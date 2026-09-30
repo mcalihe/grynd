@@ -56,6 +56,10 @@ Klassen folgen dem Angular-Styleguide 2025 (ohne `Component`-Suffix), Selektor-P
 | Trainingsfortschritt | `56:48035` | `SegmentProgress` (`app-segment-progress`) |
 | Seitentitel / Kopfzeile | `37:27418` / `37:27710` | `PageHeader` (`app-page-header`, `variant` title/bar) |
 | Sticky Aktion | `37:27886`, `56:48144` | `StickyAction` (`app-sticky-action`, `divider` im Training) |
+| Satzmenü-Popover | `56:49683` | `SetMenu` (`app-set-menu`, `features/workout`) |
+| Übungsmenü | `56:48305` | helm Dropdown-Menü in `ExercisePage` (`app-exercise-page`) |
+| Übersicht-Sheet | `56:48605` | `OverviewSheet` (`app-overview-sheet`, helm Sheet + CDK Drag) |
+| Beenden-Dialog | – | `ConfirmDialogHost` über `ConfirmService.choose()` (drei Aktionen) |
 | Wochentage | `37:28125` | `WeekdayChips` (`app-weekday-chips`) |
 | Satz-Stepper | `56:48064` | `NumberStepper` (`app-number-stepper`) |
 | Übungszeile im Plan (Detail/Editor, ≡-Handle, Chevron) | `37:27708`, `37:28096` | `PlanExerciseRow` (`app-plan-exercise-row`, features/plans) |

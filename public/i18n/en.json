@@ -73,6 +73,35 @@
       "stop": "Stop timer",
       "minus15": "15 seconds less",
       "plus15": "15 seconds more"
+    },
+    "overview": "Overview",
+    "end": "End",
+    "next": "Next: {{name}}",
+    "finish": "Finish workout",
+    "addSet": "Set",
+    "setProgress": "Set {{current}} of {{total}}",
+    "targetLine": "{{sets}} sets · target {{reps}} reps",
+    "resume": {
+      "title": "Workout in progress",
+      "text": "Another workout is still running. Continue it or end it first.",
+      "confirm": "Continue"
+    },
+    "setMenu": {
+      "duplicate": "Duplicate set",
+      "delete": "Delete set"
+    },
+    "exerciseMenu": {
+      "label": "Exercise menu",
+      "back": "Move back one",
+      "end": "Move to the end"
+    },
+    "overviewSets": "{{done}} of {{total}} sets",
+    "endDialog": {
+      "title": "End workout?",
+      "text": "Save the completed sets to your history or discard the workout.",
+      "save": "End and save",
+      "discard": "Discard workout",
+      "continue": "Keep training"
     }
   },
   "history": {

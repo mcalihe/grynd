@@ -73,6 +73,35 @@
       "stop": "Timer stoppen",
       "minus15": "15 Sekunden weniger",
       "plus15": "15 Sekunden mehr"
+    },
+    "overview": "Übersicht",
+    "end": "Beenden",
+    "next": "Weiter zu {{name}}",
+    "finish": "Training abschliessen",
+    "addSet": "Satz",
+    "setProgress": "Satz {{current}} von {{total}}",
+    "targetLine": "{{sets}} Sätze · Ziel {{reps}} Wdh.",
+    "resume": {
+      "title": "Training läuft bereits",
+      "text": "Es läuft noch ein anderes Training. Du kannst es fortsetzen oder zuerst beenden.",
+      "confirm": "Fortsetzen"
+    },
+    "setMenu": {
+      "duplicate": "Satz duplizieren",
+      "delete": "Satz löschen"
+    },
+    "exerciseMenu": {
+      "label": "Übungsmenü",
+      "back": "1 nach hinten verschieben",
+      "end": "Ans Ende verschieben"
+    },
+    "overviewSets": "{{done}} von {{total}} Sätzen",
+    "endDialog": {
+      "title": "Training beenden?",
+      "text": "Speichere die abgehakten Sätze im Verlauf oder verwirf das Training.",
+      "save": "Beenden und speichern",
+      "discard": "Training verwerfen",
+      "continue": "Weiter trainieren"
     }
   },
   "history": {
