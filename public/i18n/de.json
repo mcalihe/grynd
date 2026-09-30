@@ -17,7 +17,44 @@
     "exerciseCount": "{{count}} Übungen",
     "exerciseCountOne": "1 Übung",
     "today": "Heute",
-    "mine": "Meine Pläne"
+    "mine": "Meine Pläne",
+    "empty": {
+      "title": "Noch keine Pläne",
+      "text": "Lege deinen ersten Plan an, z.B. Oberkörper oder Beine."
+    },
+    "editAction": "Bearbeiten",
+    "weekdays": "Wochentage (optional)",
+    "fixedOrder": "Feste Reihenfolge · {{count}} Übungen",
+    "restSeconds": "Pause {{seconds}} s",
+    "startWorkout": "Training starten",
+    "reorder": "Ziehen zum Umsortieren",
+    "details": "Details",
+    "menu": "Planmenü",
+    "name": "Planname",
+    "namePlaceholder": "z.B. Oberkörper",
+    "order": "Reihenfolge",
+    "noExercises": "Noch keine Übungen",
+    "addExercise": "Übung hinzufügen",
+    "removeExercise": "Aus Plan entfernen",
+    "saveNew": "Plan speichern",
+    "targets": {
+      "sets": "SÄTZE",
+      "rest": "PAUSE (S)",
+      "repMin": "WDH. MIN",
+      "repMax": "WDH. MAX"
+    },
+    "delete": {
+      "action": "Plan löschen",
+      "title": "Plan löschen?",
+      "text": "Der Plan wird entfernt. Vergangene Trainings bleiben im Verlauf.",
+      "confirm": "Löschen"
+    },
+    "discard": {
+      "title": "Änderungen verwerfen?",
+      "text": "Deine Änderungen an diesem Plan gehen verloren.",
+      "confirm": "Verwerfen",
+      "cancel": "Weiter bearbeiten"
+    }
   },
   "workout": {
     "title": "Training",
@@ -54,6 +91,49 @@
     "back": "Zurück",
     "placeholder": "Kommt bald.",
     "decrease": "{{label}} verringern",
-    "increase": "{{label}} erhöhen"
+    "increase": "{{label}} erhöhen",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "close": "Schließen"
+  },
+  "picker": {
+    "search": "Übungen durchsuchen",
+    "muscleGroup": "Muskelgruppe",
+    "movement": "Bewegung",
+    "equipment": "Equipment",
+    "resetFilters": "Filter zurücksetzen",
+    "noResults": "Keine Übung gefunden",
+    "recent": "Zuletzt verwendet",
+    "results": "Ergebnisse",
+    "inPlan": "Im Plan",
+    "choose": "Übungen auswählen",
+    "addOne": "1 Übung hinzufügen",
+    "addMany": "{{count}} Übungen hinzufügen",
+    "discard": {
+      "title": "Auswahl verwerfen?",
+      "text": "Die ausgewählten Übungen werden nicht hinzugefügt.",
+      "confirm": "Verwerfen",
+      "cancel": "Weiter auswählen"
+    }
+  },
+  "muscles": {
+    "chest": "Brust",
+    "back": "Rücken",
+    "shoulders": "Schultern",
+    "legs": "Beine",
+    "glutes": "Po",
+    "arms": "Arme",
+    "core": "Core"
+  },
+  "forces": {
+    "push": "Push",
+    "pull": "Pull"
+  },
+  "equipment": {
+    "barbell": "Langhantel",
+    "dumbbell": "Kurzhantel",
+    "cable": "Kabel",
+    "machine": "Maschine",
+    "bodyweight": "Körpergewicht"
   }
 }

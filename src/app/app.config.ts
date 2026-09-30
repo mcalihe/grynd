@@ -11,9 +11,11 @@ import { provideTransloco } from '@jsverse/transloco';
 import { provideIcons } from '@ng-icons/core';
 import { routes } from './app.routes';
 import { APP_LANGS, detectLanguage, FALLBACK_LANG } from './core/i18n/language';
+import { CatalogSyncService } from './core/db/catalog-sync.service';
 import { DatabaseService } from './core/db/database.service';
 import { TranslocoHttpLoader } from './core/i18n/transloco-loader';
 import { APP_ICONS } from './core/icons';
+import { BackButtonService } from './core/services/back-button.service';
 import { ThemeService } from './core/services/theme.service';
 
 export const appConfig: ApplicationConfig = {
@@ -25,7 +27,12 @@ export const appConfig: ApplicationConfig = {
     provideAppInitializer(() => {
       inject(ThemeService);
     }),
-    provideAppInitializer(() => inject(DatabaseService).init()),
+    provideAppInitializer(() => {
+      const database = inject(DatabaseService);
+      const catalog = inject(CatalogSyncService);
+      return database.init().then(() => catalog.sync());
+    }),
+    provideAppInitializer(() => inject(BackButtonService).init()),
     provideTransloco({
       config: {
         availableLangs: [...APP_LANGS],

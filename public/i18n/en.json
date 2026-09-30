@@ -17,7 +17,44 @@
     "exerciseCount": "{{count}} exercises",
     "exerciseCountOne": "1 exercise",
     "today": "Today",
-    "mine": "My plans"
+    "mine": "My plans",
+    "empty": {
+      "title": "No plans yet",
+      "text": "Create your first plan, e.g. upper body or legs."
+    },
+    "editAction": "Edit",
+    "weekdays": "Weekdays (optional)",
+    "fixedOrder": "Fixed order · {{count}} exercises",
+    "restSeconds": "Rest {{seconds}} s",
+    "startWorkout": "Start workout",
+    "reorder": "Drag to reorder",
+    "details": "Details",
+    "menu": "Plan menu",
+    "name": "Plan name",
+    "namePlaceholder": "e.g. Upper body",
+    "order": "Order",
+    "noExercises": "No exercises yet",
+    "addExercise": "Add exercise",
+    "removeExercise": "Remove from plan",
+    "saveNew": "Save plan",
+    "targets": {
+      "sets": "SETS",
+      "rest": "REST (S)",
+      "repMin": "REPS MIN",
+      "repMax": "REPS MAX"
+    },
+    "delete": {
+      "action": "Delete plan",
+      "title": "Delete plan?",
+      "text": "The plan is removed. Past workouts stay in your history.",
+      "confirm": "Delete"
+    },
+    "discard": {
+      "title": "Discard changes?",
+      "text": "Your changes to this plan will be lost.",
+      "confirm": "Discard",
+      "cancel": "Keep editing"
+    }
   },
   "workout": {
     "title": "Workout",
@@ -54,6 +91,49 @@
     "back": "Back",
     "placeholder": "Coming soon.",
     "decrease": "Decrease {{label}}",
-    "increase": "Increase {{label}}"
+    "increase": "Increase {{label}}",
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close"
+  },
+  "picker": {
+    "search": "Search exercises",
+    "muscleGroup": "Muscle group",
+    "movement": "Movement",
+    "equipment": "Equipment",
+    "resetFilters": "Reset filters",
+    "noResults": "No exercise found",
+    "recent": "Recently used",
+    "results": "Results",
+    "inPlan": "In plan",
+    "choose": "Choose exercises",
+    "addOne": "Add 1 exercise",
+    "addMany": "Add {{count}} exercises",
+    "discard": {
+      "title": "Discard selection?",
+      "text": "The selected exercises will not be added.",
+      "confirm": "Discard",
+      "cancel": "Keep choosing"
+    }
+  },
+  "muscles": {
+    "chest": "Chest",
+    "back": "Back",
+    "shoulders": "Shoulders",
+    "legs": "Legs",
+    "glutes": "Glutes",
+    "arms": "Arms",
+    "core": "Core"
+  },
+  "forces": {
+    "push": "Push",
+    "pull": "Pull"
+  },
+  "equipment": {
+    "barbell": "Barbell",
+    "dumbbell": "Dumbbell",
+    "cable": "Cable",
+    "machine": "Machine",
+    "bodyweight": "Bodyweight"
   }
 }

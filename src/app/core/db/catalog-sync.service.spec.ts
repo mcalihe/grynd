@@ -3,7 +3,8 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 import { SqlJsDriver } from '../../../testing/sqljs-driver';
 import { CATALOG_VERSION } from './catalog-version';
-import { CatalogFile, DatabaseService } from './database.service';
+import { CatalogFile, CatalogSyncService } from './catalog-sync.service';
+import { DatabaseService } from './database.service';
 import { ExerciseRepository } from './repositories/exercise.repository';
 
 const catalog: CatalogFile = {
@@ -24,10 +25,9 @@ const catalog: CatalogFile = {
   })),
 };
 
-describe('DatabaseService', () => {
+describe('DatabaseService + CatalogSyncService', () => {
   let driver: SqlJsDriver;
   let http: HttpTestingController;
-  let service: DatabaseService;
 
   beforeEach(async () => {
     driver = await SqlJsDriver.create();
@@ -35,7 +35,6 @@ describe('DatabaseService', () => {
       providers: [provideHttpClient(), provideHttpClientTesting()],
     });
     http = TestBed.inject(HttpTestingController);
-    service = TestBed.inject(DatabaseService);
   });
 
   afterEach(() => {
@@ -44,7 +43,9 @@ describe('DatabaseService', () => {
   });
 
   async function init(respond: boolean): Promise<void> {
-    const done = service.initWith(driver);
+    const done = TestBed.inject(DatabaseService)
+      .initWith(driver)
+      .then(() => TestBed.inject(CatalogSyncService).sync());
     if (respond) {
       // The request is issued after the migrations ran.
       await vi.waitFor(() => http.expectOne('data/exercises.json').flush(catalog));

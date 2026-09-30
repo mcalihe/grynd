@@ -1,7 +1,9 @@
+import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router, withComponentInputBinding } from '@angular/router';
 import { TranslocoTestingModule } from '@jsverse/transloco';
 import { App } from './app';
+import { PlansService } from './core/plans/plans.service';
 import { routes } from './app.routes';
 
 describe('App', () => {
@@ -14,7 +16,13 @@ describe('App', () => {
           translocoConfig: { availableLangs: ['en'], defaultLang: 'en' },
         }),
       ],
-      providers: [provideRouter(routes, withComponentInputBinding())],
+      providers: [
+        provideRouter(routes, withComponentInputBinding()),
+        {
+          provide: PlansService,
+          useValue: { plans: signal([]), todayPlans: signal([]), load: async () => undefined },
+        },
+      ],
     }).compileComponents();
   });
 

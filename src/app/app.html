@@ -1,5 +1,5 @@
 <div class="flex min-h-dvh flex-col pt-safe px-safe">
-  <main class="flex-1">
+  <main class="flex flex-1 flex-col">
     <router-outlet />
   </main>
 
@@ -9,3 +9,8 @@
     </div>
   }
 </div>
+
+<!-- Loaded after startup: keeps the CDK overlay out of the initial bundle. -->
+@defer (on idle) {
+  <app-confirm-dialog-host />
+}

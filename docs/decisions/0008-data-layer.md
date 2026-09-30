@@ -17,4 +17,4 @@
 - **Deutsche Namen** hat Claude einmalig übersetzt (`scripts/data/exercise-names.de.json`). Korrekturen gehören in diese Datei, danach `pnpm catalog:import`.
 - **`muscleGroup`** wird aus dem ersten Primärmuskel abgeleitet (Brust, Rücken, Schultern, Beine, Po, Arme, Core).
 - **Bilder:** Pro Übung wird das erste Bild als 160-px-WebP gebündelt (4,2 MB, offline verfügbar). 3 Übungen haben kein Bild und bekommen in der UI einen Platzhalter.
-- **Laden:** `public/data/exercises.json` wird nur geholt, wenn sich `CATALOG_VERSION` (vom Import-Skript generiert) von der gespeicherten `meta.catalogVersion` unterscheidet. Das Einspielen ist ein Upsert nach ID. Übungen, die aus dem Katalog verschwinden, werden per Soft Delete ausgeblendet.
+- **Laden:** `public/data/exercises.json` wird nur geholt, wenn sich `CATALOG_VERSION` (vom Import-Skript generiert: Quell-Commit + Hash des Inhalts, damit auch korrigierte Namen ausgeliefert werden) von der gespeicherten `meta.catalogVersion` unterscheidet. Das Einspielen ist ein Upsert nach ID. Übungen, die aus dem Katalog verschwinden, werden per Soft Delete ausgeblendet.

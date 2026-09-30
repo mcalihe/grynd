@@ -58,7 +58,10 @@ Klassen folgen dem Angular-Styleguide 2025 (ohne `Component`-Suffix), Selektor-P
 | Sticky Aktion | `37:27886`, `56:48144` | `StickyAction` (`app-sticky-action`, `divider` im Training) |
 | Wochentage | `37:28125` | `WeekdayChips` (`app-weekday-chips`) |
 | Satz-Stepper | `56:48064` | `NumberStepper` (`app-number-stepper`) |
-| Filter-Chips, Plan-Übungszeile mit Drag-Handle, Übungs-Listeneintrag, Wochen-Balkendiagramm, Verlaufseintrag | Screens M4/M6 | folgen mit den Screens |
+| Übungszeile im Plan (Detail/Editor, ≡-Handle, Chevron) | `37:27708`, `37:28096` | `PlanExerciseRow` (`app-plan-exercise-row`, features/plans) |
+| Übungs-Listeneintrag + Filter-Chips im Picker | `63:13440` | im `ExercisePickerPage` (features/plans) |
+| «Änderungen verwerfen» / Bestätigungen | `66:1123` | `ConfirmService` + `ConfirmDialogHost` (App-Shell, `@defer`) |
+| Wochen-Balkendiagramm, Verlaufseintrag | Screens M6 | folgen mit M6 |
 
 ## Screens
 
@@ -72,9 +75,9 @@ Klassen folgen dem Angular-Styleguide 2025 (ohne `Component`-Suffix), Selektor-P
 | Plan erstellen · Leer | `/plans/new` | `63:12060` | `63:12234` |
 | Plan erstellen · 2 Übungen | `/plans/new` | `63:12408` | `63:12616` |
 | Plan erstellen · Dialog | `/plans/new` | `66:1078` | `66:1138` |
-| Übungen hinzufügen · Leer | `/plans/:id/add-exercises` | `63:12824` | `63:13132` |
-| Übungen hinzufügen · 3 ausgewählt | `/plans/:id/add-exercises` | `63:13440` | `63:13736` |
-| Übungen hinzufügen · Keine Treffer | `/plans/:id/add-exercises` | `63:14032` | `63:14299` |
+| Übungen hinzufügen · Leer | `/plans/new/add-exercises`, `/plans/:id/edit/add-exercises` | `63:12824` | `63:13132` |
+| Übungen hinzufügen · 3 ausgewählt | `/plans/new/add-exercises`, `/plans/:id/edit/add-exercises` | `63:13440` | `63:13736` |
+| Übungen hinzufügen · Keine Treffer | `/plans/new/add-exercises`, `/plans/:id/edit/add-exercises` | `63:14032` | `63:14299` |
 | Training · Normal | `/workout` | `56:48015` | `56:48160` |
 | Training · Swipe Übung | `/workout` | `60:3568` | `60:3851` |
 | Training · Extra-Satz | `/workout` | `56:49343` | `56:49513` |

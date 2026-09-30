@@ -16,7 +16,6 @@ import { HlmButton } from '@spartan-ng/helm/button';
   template: `
     @if (variant() === 'title') {
       <h1 class="text-2xl font-semibold">{{ title() }}</h1>
-      <ng-content select="[headerAction]" />
     } @else {
       <button
         hlmBtn
@@ -28,8 +27,9 @@ import { HlmButton } from '@spartan-ng/helm/button';
       >
         <ng-icon name="lucideArrowLeft" />
       </button>
-      <ng-content select="[headerAction]" />
     }
+    <!-- One slot outside the branches: content projects into the first matching ng-content only. -->
+    <ng-content select="[headerAction]" />
   `,
 })
 export class PageHeader {

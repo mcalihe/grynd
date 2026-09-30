@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, model } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, model } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { TranslocoService } from '@jsverse/transloco';
 import { sortWeekdays, WEEK_MONDAY_FIRST, weekdayShort } from '../../utils/weekdays';
@@ -15,7 +15,12 @@ export function toggleWeekday(days: readonly number[], day: number): number[] {
 @Component({
   selector: 'app-weekday-chips',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'flex flex-wrap gap-2', role: 'group' },
+  host: {
+    class: 'flex flex-wrap gap-2',
+    role: 'group',
+    '[class.pointer-events-none]': 'readonly()',
+    '[attr.aria-readonly]': 'readonly() || null',
+  },
   template: `
     @for (day of days(); track day.value) {
       <button
@@ -38,6 +43,8 @@ export function toggleWeekday(days: readonly number[], day: number): number[] {
 export class WeekdayChips {
   /** Selected days as Date#getDay numbers (0 = Sunday). */
   readonly value = model<readonly number[]>([]);
+  /** Display only (plan detail). */
+  readonly readonly = input(false);
 
   private readonly lang = toSignal(inject(TranslocoService).langChanges$, { initialValue: 'de' });
 
@@ -53,6 +60,9 @@ export class WeekdayChips {
   });
 
   protected toggle(day: number): void {
+    if (this.readonly()) {
+      return;
+    }
     this.value.set(toggleWeekday(this.value(), day));
   }
 }

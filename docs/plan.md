@@ -109,12 +109,14 @@ Alle Tabellen haben `id` (UUIDv7), `createdAt`, `updatedAt`, `deletedAt`. Dazu k
 - Bottom-Navigation: Pläne, Verlauf, Einstellungen. Ein laufendes Training ist ein Vollbild ohne Navigation und wird über den Plan gestartet (kein Training-Tab).
 
 ### Plan-Detail, Plan bearbeiten, Plan erstellen (`/plans/:id`, `/plans/:id/edit`, `/plans/new`)
+- **Plan-Detail ist eine Ansicht** ([0010](decisions/0010-plan-detail-and-editor.md)): Wochentage und Reihenfolge nur angezeigt, Chevron klappt die Ziele auf; «Bearbeiten» oben rechts, «Training starten» als Primary.
+- **Bearbeiten/Erstellen:** Ziele pro Übung (Sätze, Wdh. min/max, Pause) im aufgeklappten Eintrag; «Plan löschen» im Drei-Punkte-Menü mit Bestätigung (Soft Delete).
 - Planname, «Wochentage (optional)» als 7 Chips, Übungsliste mit Drag-Handle, Name, «3 × 8–10», Menü.
 - «Plan erstellen» = gleicher Screen wie Bearbeiten, Titel «Neuer Plan», Empty State; «Plan speichern» deaktiviert, solange Name oder Übungen fehlen.
 - Kein Abbrechen-Button, verlassen über den Zurück-Pfeil.
 - **Unsaved Changes Guard:** Bei ungespeicherten Änderungen Dialog «Änderungen verwerfen?» mit «Verwerfen» (destructive) und «Weiter bearbeiten». Umsetzung als `CanDeactivateFn`; greift auch beim Android-Zurück-Button (`App`-Listener `backButton`, Navigation über den Router). Rückgängig gemachte Änderungen zählen nicht als dirty.
 
-### Übungen hinzufügen (`/plans/:id/add-exercises`)
+### Übungen hinzufügen (`/plans/new/add-exercises`, `/plans/:id/edit/add-exercises`)
 - Vollbild mit X, Suchfeld (tolerant bei Umlauten und Gross-/Kleinschreibung), Filter-Chips: Muskelgruppe (Brust, Rücken, Schultern, Beine, Po, Arme, Core), Bewegung (Push, Pull), Equipment (Langhantel, Kurzhantel, Kabel, Maschine, Körpergewicht). Innerhalb einer Gruppe ODER, zwischen Gruppen UND.
 - «Zuletzt verwendet» (3 Übungen aus `session_exercise`), dann alphabetische Liste mit Vorschaubild, Muskelgruppe und Equipment.
 - Mehrfachauswahl, Primary-Button «3 Übungen hinzufügen». Übungen, die schon im Plan sind: gedimmt, «Im Plan», nicht auswählbar.

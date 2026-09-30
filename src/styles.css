@@ -5,6 +5,9 @@
 
 @theme {
   --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+  /* Figma text style Title/32 Semi Bold (plan and exercise titles). */
+  --text-display: 2rem;
+  --text-display--line-height: 2.5rem;
 }
 
 /* Safe areas (viewport-fit=cover): pad content away from notches and home indicators. */
