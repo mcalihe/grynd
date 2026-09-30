@@ -58,15 +58,17 @@ docs/
 
 ## Commands
 
-Fill in once the project is set up:
+Node 24 (`.nvmrc`), pnpm via `corepack enable` (version pinned in `package.json`).
 
-- Dev server: `pnpm start`
-- Tests: `pnpm test`
-- Lint: `pnpm lint`
-- Build: `pnpm build`
-- Sync native projects: `npx cap sync`
+- Dev server: `pnpm start` (http://localhost:4200)
+- Tests: `pnpm test` (Vitest via `@angular/build:unit-test`, runs once; `pnpm test:watch` to watch)
+- Lint: `pnpm lint` · Format: `pnpm format` / `pnpm format:check`
+- Build: `pnpm build` (output `dist/grynd/browser`)
+- Sync native projects: `pnpm build && pnpm exec cap sync`
+- Add a Spartan helm component: `pnpm ng g @spartan-ng/cli:ui <name>` (goes to `src/app/shared/ui`, then align it with the Figma component)
+- CI (`.github/workflows/ci.yml`) runs format check, lint, test and build on every push and PR.
 
 ## Tools
 
 - Use the Spartan MCP server (`@spartan-ng/mcp`) for current Spartan docs and the Angular CLI MCP server (`ng mcp`) for Angular best practices. Verify setup commands against current docs; versions change.
-- Use the Figma MCP server to read variables and frames. Node IDs per screen and component are in `docs/design/component-map.md`; `get_metadata` only lists the first page, use `use_figma` to browse the others. To refresh tokens: read the Semantic, Primitives and Layout variables from Figma and regenerate the token CSS (light in `:root`, dark in `.dark`).
+- Use the Figma MCP server to read variables and frames. Node IDs per screen and component are in `docs/design/component-map.md`; `get_metadata` only lists the first page, use `use_figma` to browse the others. To refresh tokens follow `scripts/figma-tokens.md` (regenerates `src/styles/tokens.css`).

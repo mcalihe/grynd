@@ -26,20 +26,22 @@ Link-Schema für Node-IDs: `https://www.figma.com/design/iCoAOIvfyeCFYFU4Og7rVf/
 | 0.4 | ✅ Fehlende Screens in Figma entworfen: Pläne leer, Training letzte Übung, Verlauf-Detail, Einstellungen; Navigation ohne Training-Tab ([0006](decisions/0006-navigation-without-training-tab.md)) |
 | 0.5 | ✅ `surface-elevated` im Dark Mode auf `neutral/900` gesetzt, damit `muted`/`secondary` (`neutral/800`) darauf Kontrast haben ([0004](decisions/0004-token-names.md)) |
 
-## M1 – Setup
+## M1 – Setup ✅
+
+Umgesetzt wie geplant, Details in [0007](decisions/0007-tooling.md).
 
 | # | Aufgabe | Figma |
 | --- | --- | --- |
-| 1.1 | Angular-Projekt (aktuell, standalone, ohne SSR, pnpm), Ordnerstruktur nach `CLAUDE.md` | – |
-| 1.2 | ESLint (angular-eslint), Prettier + `prettier-plugin-tailwindcss`, Vitest; Scripts `start/test/lint/build` | – |
-| 1.3 | Tailwind v4 CSS-first, `@custom-variant dark`, Inter lokal gebündelt, `tabular-nums` als Standard für Zahlen | – |
-| 1.4 | **Tokens:** `src/styles/tokens.css` aus den Variablen generieren: Primitives, Semantic Light in `:root`, Dark in `.dark`, Layout (spacing/radius), per `@theme inline` an Tailwind gebunden. Namen laut Figma-Code-Syntax, inkl. `--surface-elevated`, `--radius-lg`, `--radius-xl`, `--radius-full`. | Foundations `7:6` |
-| 1.5 | Spartan UI (brain + helm) initialisieren, vorerst nur `button` als Test | Button `9:206` |
-| 1.6 | Transloco (de, en), Sprache aus Gerät, Fallback en | – |
-| 1.7 | `ThemeService` (auto/hell/dunkel, `prefers-color-scheme` live, `.dark` an `html`, Status-Bar-Hook) | – |
-| 1.8 | Capacitor (`com.michaelisler.grynd`), Android-Projekt, iOS-Projekt; `viewport-fit=cover`, Safe-Area-Utilities | Obere/Untere Safe Area in jedem Screen (24/16 px) |
-| 1.9 | App-Shell: Routen `/plans`, `/plans/new`, `/plans/:id`, `/plans/:id/edit`, `/plans/:id/add-exercises`, `/workout`, `/history`, `/history/:sessionId`, `/settings` (Platzhalter) | – |
-| 1.10 | GitHub Actions: Lint, Test, Build | – |
+| 1.1 | ✅ Angular-Projekt (aktuell, standalone, ohne SSR, pnpm), Ordnerstruktur nach `CLAUDE.md` | – |
+| 1.2 | ✅ ESLint (angular-eslint), Prettier + `prettier-plugin-tailwindcss`, Vitest; Scripts `start/test/lint/build` | – |
+| 1.3 | ✅ Tailwind v4 CSS-first, `@custom-variant dark`, Inter lokal gebündelt, `tabular-nums` als Standard für Zahlen | – |
+| 1.4 | ✅ **Tokens:** `src/styles/tokens.css` aus den Variablen generieren: Primitives, Semantic Light in `:root`, Dark in `.dark`, Layout (spacing/radius), per `@theme inline` an Tailwind gebunden. Namen laut Figma-Code-Syntax, inkl. `--surface-elevated`, `--radius-lg`, `--radius-xl`, `--radius-full`. | Foundations `7:6` |
+| 1.5 | ✅ Spartan UI (brain + helm) initialisieren, vorerst nur `button` als Test | Button `9:206` |
+| 1.6 | ✅ Transloco (de, en), Sprache aus Gerät, Fallback en | – |
+| 1.7 | ✅ `ThemeService` (auto/hell/dunkel, `prefers-color-scheme` live, `.dark` an `html`, Status-Bar-Hook) | – |
+| 1.8 | ✅ Capacitor (`com.michaelisler.grynd`), Android-Projekt, iOS-Projekt; `viewport-fit=cover`, Safe-Area-Utilities | Obere/Untere Safe Area in jedem Screen (24/16 px) |
+| 1.9 | ✅ App-Shell: Routen `/plans`, `/plans/new`, `/plans/:id`, `/plans/:id/edit`, `/plans/:id/add-exercises`, `/workout`, `/history`, `/history/:sessionId`, `/settings` (Platzhalter) | – |
+| 1.10 | ✅ GitHub Actions: Lint, Test, Build | – |
 
 ## M2 – Datenschicht
 
