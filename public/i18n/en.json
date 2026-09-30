@@ -93,6 +93,47 @@
     "decrease": "Decrease {{label}}",
     "increase": "Increase {{label}}",
     "save": "Save",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "close": "Close"
+  },
+  "picker": {
+    "search": "Search exercises",
+    "muscleGroup": "Muscle group",
+    "movement": "Movement",
+    "equipment": "Equipment",
+    "resetFilters": "Reset filters",
+    "noResults": "No exercise found",
+    "recent": "Recently used",
+    "results": "Results",
+    "inPlan": "In plan",
+    "choose": "Choose exercises",
+    "addOne": "Add 1 exercise",
+    "addMany": "Add {{count}} exercises",
+    "discard": {
+      "title": "Discard selection?",
+      "text": "The selected exercises will not be added.",
+      "confirm": "Discard",
+      "cancel": "Keep choosing"
+    }
+  },
+  "muscles": {
+    "chest": "Chest",
+    "back": "Back",
+    "shoulders": "Shoulders",
+    "legs": "Legs",
+    "glutes": "Glutes",
+    "arms": "Arms",
+    "core": "Core"
+  },
+  "forces": {
+    "push": "Push",
+    "pull": "Pull"
+  },
+  "equipment": {
+    "barbell": "Barbell",
+    "dumbbell": "Dumbbell",
+    "cable": "Cable",
+    "machine": "Machine",
+    "bodyweight": "Bodyweight"
   }
 }

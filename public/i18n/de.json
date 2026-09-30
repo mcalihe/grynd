@@ -93,6 +93,47 @@
     "decrease": "{{label}} verringern",
     "increase": "{{label}} erhöhen",
     "save": "Speichern",
-    "cancel": "Abbrechen"
+    "cancel": "Abbrechen",
+    "close": "Schließen"
+  },
+  "picker": {
+    "search": "Übungen durchsuchen",
+    "muscleGroup": "Muskelgruppe",
+    "movement": "Bewegung",
+    "equipment": "Equipment",
+    "resetFilters": "Filter zurücksetzen",
+    "noResults": "Keine Übung gefunden",
+    "recent": "Zuletzt verwendet",
+    "results": "Ergebnisse",
+    "inPlan": "Im Plan",
+    "choose": "Übungen auswählen",
+    "addOne": "1 Übung hinzufügen",
+    "addMany": "{{count}} Übungen hinzufügen",
+    "discard": {
+      "title": "Auswahl verwerfen?",
+      "text": "Die ausgewählten Übungen werden nicht hinzugefügt.",
+      "confirm": "Verwerfen",
+      "cancel": "Weiter auswählen"
+    }
+  },
+  "muscles": {
+    "chest": "Brust",
+    "back": "Rücken",
+    "shoulders": "Schultern",
+    "legs": "Beine",
+    "glutes": "Po",
+    "arms": "Arme",
+    "core": "Core"
+  },
+  "forces": {
+    "push": "Push",
+    "pull": "Pull"
+  },
+  "equipment": {
+    "barbell": "Langhantel",
+    "dumbbell": "Kurzhantel",
+    "cable": "Kabel",
+    "machine": "Maschine",
+    "bodyweight": "Körpergewicht"
   }
 }

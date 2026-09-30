@@ -2,15 +2,13 @@ import { Routes } from '@angular/router';
 import { PlanEditorStore } from './plan-editor.store';
 import { unsavedChangesGuard } from './unsaved-changes.guard';
 
-const placeholder = () =>
-  import('../../shared/components/placeholder-page/placeholder-page').then(
-    (m) => m.PlaceholderPage,
-  );
-
 /** Editor children share one PlanEditorStore (the draft survives «Übungen hinzufügen»). */
 const editorChildren: Routes = [
   { path: '', loadComponent: () => import('./plan-editor-page').then((m) => m.PlanEditorPage) },
-  { path: 'add-exercises', loadComponent: placeholder, data: { titleKey: 'plans.addExercises' } },
+  {
+    path: 'add-exercises',
+    loadComponent: () => import('./exercise-picker-page').then((m) => m.ExercisePickerPage),
+  },
 ];
 
 /** Mounted under /plans (see app.routes.ts). */
