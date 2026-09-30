@@ -24,7 +24,7 @@ Designs und Tokens: [Figma-Datei grynd](https://www.figma.com/design/iCoAOIvfyeC
 
 Ein **Plan ist genau ein Training**: eine feste Abfolge von Übungen mit Sätzen und Wiederholungen pro Übung. Wer einen Split trainiert, legt mehrere Pläne an (z.B. «Oberkörper», «Beine», «Ganzkörper»).
 
-- **Starten:** Jeder Plan lässt sich jederzeit über den Play-Button in seiner Karte starten.
+- **Starten:** Die Plan-Karte öffnet den Plan; gestartet wird im Plan-Detail über «Training starten».
 - **Wochentage (optional):** Hat ein Plan feste Wochentage, erscheint er an diesen Tagen im Abschnitt «Heute».
 - **Reihenfolge:** im Plan per Drag-and-Drop änderbar, im laufenden Training jederzeit flexibel.
 - **Bewusst weggelassen:** Trainingstage innerhalb eines Plans, Rhythmus/Rotation, Split-Kategorien, Vorlagen.
@@ -56,14 +56,14 @@ Ein **Plan ist genau ein Training**: eine feste Abfolge von Übungen mit Sätzen
 - Ordnerstruktur nach Features: `core/` (DB, Services), `features/plans`, `features/workout`, `features/history`, `features/settings`, `shared/ui` (Spartan-Helm), `shared/components` (eigene Komponenten).
 - IDs als UUIDv7, von der App erzeugt. Jeder Datensatz hat `createdAt`, `updatedAt`, `deletedAt` (Soft Delete), damit ein späterer Sync ohne Migration klappt.
 - Nie Farben, Abstände oder Radien hart im Code: nur Tokens bzw. Tailwind-Klassen, die auf Tokens zeigen.
-- Komponentennamen im Code entsprechen den Figma-Namen (z.B. Figma `Grynd/Set Row` mit `State=open|done|record` → `SetRowComponent` mit `state: 'open' | 'done' | 'record'`). Zuordnung in `docs/design/component-map.md`.
+- Komponentennamen im Code entsprechen den Figma-Namen (z.B. Figma `Grynd/Set Row` mit `State=open|completed|record|menu-open` → `SetRowComponent` mit `state: 'open' | 'completed' | 'record' | 'menu-open'`). Zuordnung in `docs/design/component-map.md`.
 
 ## 5. Design-System
 
 Figma ist die Quelle für Tokens. Die Variablen tragen bereits ihren CSS-Namen als Code-Syntax (`var(--primary)` usw.) und können über den Figma-MCP-Server ausgelesen werden.
 
 - **Markenfarbe:** Volt Lime (Skala `brand/50–950`), dazu `neutral/50–950` sowie Statusfarben `green`, `amber`, `red`.
-- **Semantische Tokens** (Light und Dark, Namen wie shadcn/Spartan): `background`, `foreground`, `card`, `card-foreground`, `popover`, `popover-foreground`, `primary`, `primary-foreground`, `secondary`, `secondary-foreground`, `muted`, `muted-foreground`, `accent`, `accent-foreground`, `destructive`, `border`, `input`, `ring`, `chart-1` bis `chart-5` sowie eigene: `success`, `warning`, `highlight`, `surface-elevated`.
+- **Semantische Tokens** (Light und Dark, Namen wie shadcn/Spartan): `background`, `foreground`, `card`, `card-foreground`, `popover`, `popover-foreground`, `primary`, `primary-foreground`, `secondary`, `secondary-foreground`, `muted`, `muted-foreground`, `accent`, `accent-foreground`, `destructive`, `border`, `input`, `ring`, `chart-1` bis `chart-5` sowie eigene: `success`, `warning`, `highlight`, `surface-elevated`. Radien: `--radius` (12), `--radius-lg` (16), `--radius-xl` (20), `--radius-full` (Pill).
 - **Farbregeln:** Fortschritt immer in `primary`. `success` nur für Status-Meldungen (Badges, Toasts, Trends). Icons übernehmen die Vordergrundfarbe ihrer Fläche (auf `primary` → `primary-foreground`).
 - **Theme:** Automatisch (`prefers-color-scheme`, reagiert live), Hell oder Dunkel; Wahl lokal gespeichert. Ein `ThemeService` setzt `.dark` am `html`-Element (Tailwind v4: `@custom-variant dark`) und passt die Statusleiste an. Light und Dark zeigen nur auf verschiedene Stufen derselben Palette.
 - **Schrift:** Inter (Platzhalter, finale Wahl offen), lokal gebündelt, Tabellenziffern für alle Zahlen.
@@ -104,7 +104,7 @@ Alle Tabellen haben `id` (UUIDv7), `createdAt`, `updatedAt`, `deletedAt`.
 
 ### Pläne (`/plans`)
 - Abschnitt «Heute» nur, wenn ein Plan für heute geplant ist. Heutige Plan-Karte sieht aus wie alle anderen.
-- Plan-Karte: Name, Anzahl Übungen, Wochentage als Chips, rechts runder Play-Button (44 px). Tippen auf die Karte öffnet den Plan, Tippen auf Play startet das Training. Play beim heutigen Plan in `primary`, sonst `secondary`.
+- Plan-Karte: Name, Anzahl Übungen, Wochentage als Chips, rechts Pfeil-Button (44 px). Karte und Pfeil öffnen den Plan; gestartet wird im Plan-Detail. Pfeil beim heutigen Plan in `primary`, sonst `secondary`.
 - Kein Primary-Button unten. «Neuer Plan» als Secondary-Button in der Liste.
 - Bottom-Navigation: Pläne, Training, Verlauf.
 

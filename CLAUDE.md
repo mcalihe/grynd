@@ -45,7 +45,7 @@ docs/
 ## Conventions
 
 - Code, comments and commits in English; Conventional Commits (`feat:`, `fix:`, …).
-- Component names mirror Figma (e.g. Figma `Grynd/Set Row` with `State=open|done|record` → `SetRowComponent` with `state: 'open' | 'done' | 'record'`).
+- Component names mirror Figma (e.g. Figma `Grynd/Set Row` with `State=open|completed|record|menu-open` → `SetRowComponent` with `state: 'open' | 'completed' | 'record' | 'menu-open'`).
 - Write unit tests for business logic (session copy, prefill, PR detection, intervals, unsaved-changes detection).
 
 ## Workflow
