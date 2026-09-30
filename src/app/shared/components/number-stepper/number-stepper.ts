@@ -21,7 +21,11 @@ import { clamp, formatNumber, parseNumber, stepValue } from './number-stepper.lo
   selector: 'app-number-stepper',
   imports: [NgIcon, TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'bg-muted flex h-11 w-[121px] shrink-0 items-center rounded-md' },
+  host: {
+    class: 'bg-muted flex h-11 shrink-0 items-center rounded-md',
+    '[class.w-[121px]]': '!stretch()',
+    '[class.w-full]': 'stretch()',
+  },
   template: `
     <button
       type="button"
@@ -77,6 +81,8 @@ export class NumberStepper {
   readonly max = input(9999);
   readonly decimals = input(0);
   readonly disabled = input(false);
+  /** Fill the container instead of the fixed 121 px from the set row. */
+  readonly stretch = input(false);
 
   private readonly lang = toSignal(inject(TranslocoService).langChanges$, { initialValue: 'de' });
   private readonly field = viewChild<ElementRef<HTMLInputElement>>('field');

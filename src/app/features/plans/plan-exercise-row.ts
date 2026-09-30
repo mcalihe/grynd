@@ -25,7 +25,7 @@ export function targetSummary(sets: number, repMin: number, repMax: number): str
           class="-ml-1 flex size-11 shrink-0 cursor-grab touch-none items-center justify-center text-muted-foreground"
           [attr.aria-label]="'plans.reorder' | transloco"
         >
-          <ng-icon name="lucideGripVertical" size="20" />
+          <ng-icon name="lucideMenu" size="20" />
         </span>
       }
       <span class="flex min-w-0 flex-1 flex-col gap-1">

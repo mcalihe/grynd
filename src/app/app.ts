@@ -5,13 +5,14 @@ import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { TranslocoService } from '@jsverse/transloco';
 import { filter, map } from 'rxjs';
 import { BottomNavigation } from './shared/components/bottom-navigation/bottom-navigation';
+import { ConfirmDialogHost } from './shared/components/confirm-dialog/confirm-dialog-host';
 
 /** Routes that show the bottom navigation (top-level tabs only). */
 const TAB_ROUTES = ['/plans', '/history', '/settings'];
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, BottomNavigation],
+  imports: [RouterOutlet, BottomNavigation, ConfirmDialogHost],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './app.html',
 })
