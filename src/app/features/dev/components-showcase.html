@@ -59,6 +59,17 @@
   </section>
 
   <section class="flex flex-col gap-3">
+    <h2 class="text-sm font-semibold text-muted-foreground">Weekday chips · Segmented 84:2788</h2>
+    <app-weekday-chips [(value)]="weekdays" />
+    <app-segmented-control
+      [options]="themeOptions"
+      [value]="theme.mode()"
+      (valueChange)="theme.setMode($event)"
+    />
+    <app-segmented-control [options]="unitOptions" [(value)]="unit" />
+  </section>
+
+  <section class="flex flex-col gap-3">
     <h2 class="text-sm font-semibold text-muted-foreground">Button · Figma 9:206</h2>
     @for (variant of buttonVariants; track variant) {
       <div class="flex flex-wrap items-center gap-2">

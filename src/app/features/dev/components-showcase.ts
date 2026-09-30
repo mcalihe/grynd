@@ -14,9 +14,11 @@ import { PageHeader } from '../../shared/components/page-header/page-header';
 import { PlanCard } from '../../shared/components/plan-card/plan-card';
 import { ProgressRing } from '../../shared/components/progress-ring/progress-ring';
 import { SegmentProgress } from '../../shared/components/segment-progress/segment-progress';
+import { SegmentedControl } from '../../shared/components/segmented-control/segmented-control';
 import { SetRow, SetRowState } from '../../shared/components/set-row/set-row';
 import { StickyAction } from '../../shared/components/sticky-action/sticky-action';
 import { TimerBar } from '../../shared/components/timer-bar/timer-bar';
+import { WeekdayChips } from '../../shared/components/weekday-chips/weekday-chips';
 
 /**
  * Dev-only catalogue of every UI building block in all states (route /dev/components, not in
@@ -42,6 +44,8 @@ import { TimerBar } from '../../shared/components/timer-bar/timer-bar';
     PageHeader,
     PlanCard,
     StickyAction,
+    WeekdayChips,
+    SegmentedControl,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './components-showcase.html',
@@ -67,6 +71,17 @@ export class ComponentsShowcase {
     { done: 0, total: 3 },
   ];
   protected readonly restSeconds = signal(90);
+  protected readonly weekdays = signal<readonly number[]>([1, 4]);
+  protected readonly themeOptions = [
+    { value: 'system' as const, label: 'Automatisch' },
+    { value: 'light' as const, label: 'Hell' },
+    { value: 'dark' as const, label: 'Dunkel' },
+  ];
+  protected readonly unit = signal<'kg' | 'lb'>('kg');
+  protected readonly unitOptions = [
+    { value: 'kg' as const, label: 'kg' },
+    { value: 'lb' as const, label: 'lb' },
+  ];
   protected readonly buttonSizes = ['sm', 'default', 'lg'] as const;
   protected readonly badgeVariants = [
     'default',
