@@ -138,7 +138,7 @@ Alle Tabellen haben `id` (UUIDv7), `createdAt`, `updatedAt`, `deletedAt`.
 - Liste vergangener Trainings, gruppiert nach Woche: Name, Datum, Dauer, Gesamtvolumen.
 
 ### Einstellungen (`/settings`)
-- Theme (Automatisch/Hell/Dunkel), Einheiten (kg/lb), Sprache (DE/EN), Timer-Autostart, JSON-Export/Import als Backup mit Hinweis «Deine Daten sind nur auf diesem Gerät gespeichert».
+- Theme (Automatisch/Hell/Dunkel), Einheiten (kg/lb), Sprache (DE/EN), Timer-Autostart, JSON-Export/Import als Backup.
 
 ## 9. UI-Regeln
 
