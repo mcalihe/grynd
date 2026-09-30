@@ -21,7 +21,14 @@
     "empty": {
       "title": "Noch keine Pläne",
       "text": "Lege deinen ersten Plan an, z.B. Oberkörper oder Beine."
-    }
+    },
+    "editAction": "Bearbeiten",
+    "weekdays": "Wochentage (optional)",
+    "fixedOrder": "Feste Reihenfolge · {{count}} Übungen",
+    "restSeconds": "Pause {{seconds}} s",
+    "startWorkout": "Training starten",
+    "reorder": "Ziehen zum Umsortieren",
+    "details": "Details"
   },
   "workout": {
     "title": "Training",

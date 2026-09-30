@@ -9,6 +9,6 @@ const placeholder = () =>
 export const PLANS_ROUTES: Routes = [
   { path: '', loadComponent: () => import('./plans-page').then((m) => m.PlansPage) },
   { path: 'new', loadComponent: placeholder, data: { titleKey: 'plans.new' } },
-  { path: ':id', loadComponent: placeholder, data: { titleKey: 'plans.detail' } },
+  { path: ':id', loadComponent: () => import('./plan-detail-page').then((m) => m.PlanDetailPage) },
   { path: ':id/edit', loadComponent: placeholder, data: { titleKey: 'plans.edit' } },
 ];

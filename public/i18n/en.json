@@ -21,7 +21,14 @@
     "empty": {
       "title": "No plans yet",
       "text": "Create your first plan, e.g. upper body or legs."
-    }
+    },
+    "editAction": "Edit",
+    "weekdays": "Weekdays (optional)",
+    "fixedOrder": "Fixed order · {{count}} exercises",
+    "restSeconds": "Rest {{seconds}} s",
+    "startWorkout": "Start workout",
+    "reorder": "Drag to reorder",
+    "details": "Details"
   },
   "workout": {
     "title": "Workout",

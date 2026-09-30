@@ -1,0 +1,103 @@
+import { ChangeDetectionStrategy, Component, inject, input, OnInit, signal } from '@angular/core';
+import { Router } from '@angular/router';
+import { TranslocoPipe } from '@jsverse/transloco';
+import { NgIcon } from '@ng-icons/core';
+import { HlmButton } from '@spartan-ng/helm/button';
+import { ExerciseCatalogService } from '../../core/exercises/exercise-catalog.service';
+import { PlanDraft } from '../../core/plans/plan-draft';
+import { PlansService } from '../../core/plans/plans.service';
+import { PageHeader } from '../../shared/components/page-header/page-header';
+import { StickyAction } from '../../shared/components/sticky-action/sticky-action';
+import { WeekdayChips } from '../../shared/components/weekday-chips/weekday-chips';
+import { PlanExerciseRow, targetSummary } from './plan-exercise-row';
+
+/** Read-only plan view with «Bearbeiten» and «Training starten» (Figma 37:27708, decision 0010). */
+@Component({
+  selector: 'app-plan-detail-page',
+  imports: [
+    PageHeader,
+    StickyAction,
+    WeekdayChips,
+    PlanExerciseRow,
+    HlmButton,
+    NgIcon,
+    TranslocoPipe,
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { class: 'flex flex-1 flex-col' },
+  template: `
+    <app-page-header variant="bar" (back)="back()">
+      <button headerAction hlmBtn variant="ghost" size="sm" (click)="edit()">
+        {{ 'plans.editAction' | transloco }}
+      </button>
+    </app-page-header>
+
+    @if (plan(); as plan) {
+      <div class="flex flex-1 flex-col gap-4 px-4 pb-4">
+        <h1 class="text-display font-semibold break-words">{{ plan.name }}</h1>
+
+        <section class="flex flex-col gap-2">
+          <h2 class="text-sm font-medium text-muted-foreground">
+            {{ 'plans.weekdays' | transloco }}
+          </h2>
+          <app-weekday-chips [value]="plan.weekdays" [readonly]="true" />
+        </section>
+
+        <section class="flex flex-col gap-2">
+          <h2 class="text-sm font-medium text-muted-foreground">
+            {{ 'plans.fixedOrder' | transloco: { count: plan.exercises.length } }}
+          </h2>
+          @for (exercise of plan.exercises; track exercise.planExerciseId) {
+            <app-plan-exercise-row
+              [name]="catalog.nameById(exercise.exerciseId)"
+              [summary]="summary(exercise.targetSets, exercise.repMin, exercise.repMax)"
+            >
+              <p class="text-sm text-muted-foreground">
+                {{ 'plans.restSeconds' | transloco: { seconds: exercise.restSeconds } }}
+              </p>
+            </app-plan-exercise-row>
+          }
+        </section>
+      </div>
+
+      <app-sticky-action>
+        <button hlmBtn size="lg" (click)="start()">
+          <ng-icon name="lucideArrowRight" />{{ 'plans.startWorkout' | transloco }}
+        </button>
+      </app-sticky-action>
+    }
+  `,
+})
+export class PlanDetailPage implements OnInit {
+  /** Route parameter. */
+  readonly id = input.required<string>();
+
+  private readonly plans = inject(PlansService);
+  private readonly router = inject(Router);
+  protected readonly catalog = inject(ExerciseCatalogService);
+
+  protected readonly plan = signal<PlanDraft | undefined>(undefined);
+  protected readonly summary = targetSummary;
+
+  async ngOnInit(): Promise<void> {
+    const [plan] = await Promise.all([this.plans.getDraft(this.id()), this.catalog.load()]);
+    if (!plan) {
+      await this.router.navigate(['/plans']);
+      return;
+    }
+    this.plan.set(plan);
+  }
+
+  protected back(): void {
+    void this.router.navigate(['/plans']);
+  }
+
+  protected edit(): void {
+    void this.router.navigate(['/plans', this.id(), 'edit']);
+  }
+
+  protected start(): void {
+    // M5 creates the session here; until then the workout route is a placeholder.
+    void this.router.navigate(['/workout']);
+  }
+}
