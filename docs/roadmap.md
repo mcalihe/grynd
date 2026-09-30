@@ -40,7 +40,7 @@ Umgesetzt wie geplant, Details in [0007](decisions/0007-tooling.md).
 | 1.6 | ✅ Transloco (de, en), Sprache aus Gerät, Fallback en | – |
 | 1.7 | ✅ `ThemeService` (auto/hell/dunkel, `prefers-color-scheme` live, `.dark` an `html`, Status-Bar-Hook) | – |
 | 1.8 | ✅ Capacitor (`com.michaelisler.grynd`), Android-Projekt, iOS-Projekt; `viewport-fit=cover`, Safe-Area-Utilities | Obere/Untere Safe Area in jedem Screen (24/16 px) |
-| 1.9 | ✅ App-Shell: Routen `/plans`, `/plans/new`, `/plans/:id`, `/plans/:id/edit`, `/plans/:id/add-exercises`, `/workout`, `/history`, `/history/:sessionId`, `/settings` (Platzhalter) | – |
+| 1.9 | ✅ App-Shell: Routen `/plans`, `/plans/new`, `/plans/:id`, `/plans/:id/edit`, `/plans/:id/add-exercises` (seit M4: `/plans/new/add-exercises`, `/plans/:id/edit/add-exercises`), `/workout`, `/history`, `/history/:sessionId`, `/settings` (Platzhalter) | – |
 | 1.10 | ✅ GitHub Actions: Lint, Test, Build | – |
 
 ## M2 – Datenschicht ✅
@@ -78,18 +78,20 @@ Jede Komponente mit Light/Dark gegen die Figma-Komponente prüfen. Dazu eine Sto
 | 3.10 | ✅ `SegmentProgressComponent` (Segment pro Übung, anteilig, aktuelles hervorgehoben) | «Trainingsfortschritt» `56:48035` |
 | 3.11 | ✅ Weekday-Chips (toggle-group, 7 Chips) | Plan bearbeiten `37:28125` |
 
-## M4 – Pläne
+## M4 – Pläne ✅
+
+Umgesetzt nach [0010](decisions/0010-plan-detail-and-editor.md): Detail als Ansicht, Editor mit Guard, Löschen im Menü, Picker als Kind-Route des Editors.
 
 | # | Aufgabe | Figma Light | Figma Dark |
 | --- | --- | --- | --- |
-| 4.1 | `PlansService` (Signals): Liste, «Heute» nach Wochentag, Anzahl Übungen | – | – |
-| 4.2 | **Pläne-Liste** `/plans`: Abschnitt «Heute» (nur wenn nötig), «Meine Pläne», «Neuer Plan» als Secondary, Bottom-Nav | Pläne `37:27416`, Leer `84:3262` | `37:27562`, `84:3986` |
-| 4.3 | **Plan-Detail** `/plans/:id`: Übungsliste, Primary «Training starten» | Plan-Detail `37:27708` | `37:27902` |
-| 4.4 | **Plan bearbeiten** `/plans/:id/edit`: Name, Wochentage, Drag-and-Drop (CDK), Übungsmenü, «Plan speichern» | Plan bearbeiten `37:28096` | `37:28317` |
-| 4.5 | **Plan erstellen** `/plans/new`: Empty State; mit Übungen; Speichern deaktiviert ohne Name/Übungen | Leer `63:12060`, 2 Übungen `63:12408` | `63:12234`, `63:12616` |
-| 4.6 | **Unsaved Changes Guard**: Dirty-Erkennung per Snapshot-Vergleich (Rückgängig = nicht dirty), `CanDeactivateFn`, Android-`backButton` über den Router, Dialog «Änderungen verwerfen?» | Plan bearbeiten · Dialog `66:1196`, Plan erstellen · Dialog `66:1078` | `66:1271`, `66:1138` |
-| 4.7 | **Übungen hinzufügen** `/plans/:id/add-exercises`: Suche (umlaut- und case-tolerant), Filter-Chips (ODER in Gruppe, UND zwischen Gruppen), «Zuletzt verwendet», Mehrfachauswahl, «Im Plan» gedimmt, Primary «N Übungen hinzufügen», X mit Guard | Leer `63:12824`, 3 ausgewählt `63:13440`, Keine Treffer `63:14032` | `63:13132`, `63:13736`, `63:14299` |
-| 4.8 | Tests: Wochentag-Logik, Dirty-Erkennung, Suche/Filter, Standardwerte 3 × 8–12 / 90 s | – | – |
+| 4.1 | ✅ `PlansService` (Signals): Liste, «Heute» nach Wochentag, Anzahl Übungen | – | – |
+| 4.2 | ✅ **Pläne-Liste** `/plans`: Abschnitt «Heute» (nur wenn nötig), «Meine Pläne», «Neuer Plan» als Secondary, Bottom-Nav | Pläne `37:27416`, Leer `84:3262` | `37:27562`, `84:3986` |
+| 4.3 | ✅ **Plan-Detail** `/plans/:id`: Übungsliste, Primary «Training starten» | Plan-Detail `37:27708` | `37:27902` |
+| 4.4 | ✅ **Plan bearbeiten** `/plans/:id/edit`: Name, Wochentage, Drag-and-Drop (CDK), Übungsmenü, «Plan speichern» | Plan bearbeiten `37:28096` | `37:28317` |
+| 4.5 | ✅ **Plan erstellen** `/plans/new`: Empty State; mit Übungen; Speichern deaktiviert ohne Name/Übungen | Leer `63:12060`, 2 Übungen `63:12408` | `63:12234`, `63:12616` |
+| 4.6 | ✅ **Unsaved Changes Guard**: Dirty-Erkennung per Snapshot-Vergleich (Rückgängig = nicht dirty), `CanDeactivateFn`, Android-`backButton` über den Router, Dialog «Änderungen verwerfen?» | Plan bearbeiten · Dialog `66:1196`, Plan erstellen · Dialog `66:1078` | `66:1271`, `66:1138` |
+| 4.7 | ✅ **Übungen hinzufügen** `/plans/new/add-exercises`, `/plans/:id/edit/add-exercises`: Suche (umlaut- und case-tolerant), Filter-Chips (ODER in Gruppe, UND zwischen Gruppen), «Zuletzt verwendet», Mehrfachauswahl, «Im Plan» gedimmt, Primary «N Übungen hinzufügen», X mit Guard | Leer `63:12824`, 3 ausgewählt `63:13440`, Keine Treffer `63:14032` | `63:13132`, `63:13736`, `63:14299` |
+| 4.8 | ✅ Tests: Wochentag-Logik, Dirty-Erkennung, Suche/Filter, Standardwerte 3 × 8–12 / 90 s | – | – |
 
 ## M5 – Training
 
