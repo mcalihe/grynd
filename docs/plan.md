@@ -139,8 +139,11 @@ Alle Tabellen haben `id` (UUIDv7), `createdAt`, `updatedAt`, `deletedAt`. Dazu k
 - Bildschirm bleibt an, solange `/workout` offen ist (`@capacitor-community/keep-awake`).
 
 ### Verlauf (`/history`, `/history/:sessionId`)
-- Wochenübersicht als einfarbiges Balkendiagramm (`chart-1`), Tage ohne Training als niedrige graue Balken.
-- Liste vergangener Trainings, gruppiert nach Woche: Name, Datum, Dauer, Gesamtvolumen.
+- Wochenübersicht der laufenden Woche (Montag bis Sonntag) als einfarbiges Balkendiagramm (`chart-1`): Höhe = Trainingsdauer des Tages relativ zum längsten Tag, Tage ohne Training als niedrige graue Balken. Kopf mit Anzahl Trainings, Gesamtdauer und Differenz zur Vorwoche (positiv in `success`).
+- Liste vergangener Trainings, gruppiert nach Woche («Diese Woche», «Vorwoche», danach Datumsbereich): Planname, Tag, Dauer, Anzahl Übungen. Nur abgeschlossene, nicht gelöschte Trainings; verworfene erscheinen nie.
+- Leerer Verlauf: Diagramm mit «0 Trainings» und Empty State «Noch keine Trainings».
+- **Detail:** Planname, Tag und Startzeit; Kennzahlen Dauer, Volumen (Σ kg × Wdh. abgehakter Sätze, Körpergewicht zählt 0) und Sätze; pro Übung Zeit (Summe der Intervalle) und die abgehakten Sätze mit Badges «Rekord» (`success`) und «Extra». Rekorde zählen gegen früher begonnene Trainings.
+- **Löschen** über das Drei-Punkte-Menü im Detail mit Bestätigung (Soft Delete); gelöschte Trainings zählen nicht mehr für Vorbefüllung und Rekorde ([0012](decisions/0012-history.md)).
 
 ### Einstellungen (`/settings`)
 - Letzter Tab der Bottom-Navigation (Zahnrad).

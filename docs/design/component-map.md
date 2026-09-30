@@ -65,7 +65,9 @@ Klassen folgen dem Angular-Styleguide 2025 (ohne `Component`-Suffix), Selektor-P
 | Übungszeile im Plan (Detail/Editor, ≡-Handle, Chevron) | `37:27708`, `37:28096` | `PlanExerciseRow` (`app-plan-exercise-row`, features/plans) |
 | Übungs-Listeneintrag + Filter-Chips im Picker | `63:13440` | im `ExercisePickerPage` (features/plans) |
 | «Änderungen verwerfen» / Bestätigungen | `66:1123` | `ConfirmService` + `ConfirmDialogHost` (App-Shell, `@defer`) |
-| Wochen-Balkendiagramm, Verlaufseintrag | Screens M6 | folgen mit M6 |
+| Wochenübersicht (Balkendiagramm) | `37:29739` | `WeekChart` (`app-week-chart`) |
+| Trainingseintrag im Verlauf | `37:29769` | `HistoryRow` (`app-history-row`) |
+| Kennzahlen, Übungskarte im Verlauf-Detail | `84:3425`, `84:3501` | im `HistoryDetailPage` (features/history) |
 
 ## Screens
 
@@ -91,7 +93,8 @@ Klassen folgen dem Angular-Styleguide 2025 (ohne `Component`-Suffix), Selektor-P
 | Training · Timer-Dauer | `/workout` | `79:2663` | `79:2832` |
 | Training · Letzte Übung | `/workout` | `84:3791` | `84:4068` |
 | Verlauf | `/history` | `37:29734` | `37:29861` |
-| Verlauf-Detail | `/history/:sessionId` | `84:3364` | `84:4001` |
+| Verlauf · Leer | `/history` | `106:1654` | `106:1764` |
+| Verlauf-Detail | `/history/:sessionId` | `84:3364` (Menü `106:1648`) | `84:4001` (Menü `106:1651`) |
 | Einstellungen | `/settings` | `84:2796` | `84:3950` |
 
-Hinweis: «Training · Timer-Dauer» lag über «Verlauf» und liegt jetzt bei y=19992.
+Hinweis: «Training · Timer-Dauer» lag über «Verlauf» und liegt jetzt bei y=19992. «Verlauf · Leer» liegt bei y=20944.
