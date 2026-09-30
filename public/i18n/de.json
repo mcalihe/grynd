@@ -94,7 +94,8 @@
       "label": "Übungsmenü",
       "back": "1 nach hinten verschieben",
       "end": "Ans Ende verschieben"
-    }
+    },
+    "overviewSets": "{{done}} von {{total}} Sätzen"
   },
   "history": {
     "title": "Verlauf",

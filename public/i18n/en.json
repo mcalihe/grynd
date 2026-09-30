@@ -94,7 +94,8 @@
       "label": "Exercise menu",
       "back": "Move back one",
       "end": "Move to the end"
-    }
+    },
+    "overviewSets": "{{done}} of {{total}} sets"
   },
   "history": {
     "title": "History",

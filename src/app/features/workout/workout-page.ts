@@ -22,6 +22,7 @@ import { SegmentProgress } from '../../shared/components/segment-progress/segmen
 import { StickyAction } from '../../shared/components/sticky-action/sticky-action';
 import { TimerBar } from '../../shared/components/timer-bar/timer-bar';
 import { ExercisePage } from './exercise-page';
+import { OverviewSheet } from './overview-sheet';
 
 /**
  * Active workout (Figma Training 56:48015 / Swipe 60:3568): one exercise per page with
@@ -31,6 +32,7 @@ import { ExercisePage } from './exercise-page';
   selector: 'app-workout-page',
   imports: [
     ExercisePage,
+    OverviewSheet,
     SegmentProgress,
     StickyAction,
     TimerBar,
@@ -116,6 +118,8 @@ import { ExercisePage } from './exercise-page';
           </button>
         }
       </app-sticky-action>
+
+      <app-overview-sheet [(open)]="overviewOpen" />
     }
   `,
 })
