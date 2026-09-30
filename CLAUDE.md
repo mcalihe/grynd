@@ -65,6 +65,7 @@ Node 24 (`.nvmrc`), pnpm via `corepack enable` (version pinned in `package.json`
 - Lint: `pnpm lint` · Format: `pnpm format` / `pnpm format:check`
 - Build: `pnpm build` (output `dist/grynd/browser`)
 - Sync native projects: `pnpm build && pnpm exec cap sync`
+- Rebuild the exercise catalog (free-exercise-db → `public/data/exercises.json`, thumbnails, `catalog-version.ts`): `pnpm catalog:import`
 - Add a Spartan helm component: `pnpm ng g @spartan-ng/cli:ui <name>` (goes to `src/app/shared/ui`, then align it with the Figma component)
 - CI (`.github/workflows/ci.yml`) runs format check, lint, test and build on every push and PR.
 

@@ -43,17 +43,19 @@ Umgesetzt wie geplant, Details in [0007](decisions/0007-tooling.md).
 | 1.9 | ✅ App-Shell: Routen `/plans`, `/plans/new`, `/plans/:id`, `/plans/:id/edit`, `/plans/:id/add-exercises`, `/workout`, `/history`, `/history/:sessionId`, `/settings` (Platzhalter) | – |
 | 1.10 | ✅ GitHub Actions: Lint, Test, Build | – |
 
-## M2 – Datenschicht
+## M2 – Datenschicht ✅
+
+Umgesetzt, Details in [0008](decisions/0008-data-layer.md). Katalog: alle 876 Übungen mit Thumbnails.
 
 | # | Aufgabe |
 | --- | --- |
-| 2.1 | `@capacitor-community/sqlite` + `jeep-sqlite` (Browser), DB-Service mit Init/Open |
-| 2.2 | Migrationssystem (versionierte SQL-Skripte), Schema aller 7 Tabellen aus §6 inkl. `id/createdAt/updatedAt/deletedAt` |
-| 2.3 | UUIDv7-Generator (ohne neue Dependency oder nach Freigabe), UTC-Zeitstempel-Helper |
-| 2.4 | Basis-Repository (Soft Delete, `updatedAt`), Repositories: exercise, plan, plan_exercise, workout_session, session_exercise, exercise_interval, set_log |
-| 2.5 | Import-Skript free-exercise-db → gebündeltes JSON: `muscleGroup`-Ableitung (Brust, Rücken, Schultern, Beine, Po, Arme, Core), `force`, `equipment`-Mapping, deutsche Namen (AI-Übersetzung, einmalig), Bilder-Strategie festlegen |
-| 2.6 | Seed des Katalogs beim ersten Start |
-| 2.7 | Unit-Tests: Repositories gegen In-Memory-/jeep-DB, UUIDv7-Sortierung |
+| 2.1 | ✅ `@capacitor-community/sqlite` + `jeep-sqlite` (Browser), DB-Service mit Init/Open |
+| 2.2 | ✅ Migrationssystem (versionierte SQL-Skripte), Schema aller 7 Tabellen aus §6 inkl. `id/createdAt/updatedAt/deletedAt` |
+| 2.3 | ✅ UUIDv7-Generator (ohne neue Dependency oder nach Freigabe), UTC-Zeitstempel-Helper |
+| 2.4 | ✅ Basis-Repository (Soft Delete, `updatedAt`), Repositories: exercise, plan, plan_exercise, workout_session, session_exercise, exercise_interval, set_log |
+| 2.5 | ✅ Import-Skript free-exercise-db → gebündeltes JSON: `muscleGroup`-Ableitung (Brust, Rücken, Schultern, Beine, Po, Arme, Core), `force`, `equipment`-Mapping, deutsche Namen (AI-Übersetzung, einmalig), Bilder-Strategie festlegen |
+| 2.6 | ✅ Seed des Katalogs beim ersten Start |
+| 2.7 | ✅ Unit-Tests: Repositories gegen In-Memory-/jeep-DB, UUIDv7-Sortierung |
 
 ## M3 – Basis-Komponenten
 

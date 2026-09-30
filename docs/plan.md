@@ -71,15 +71,15 @@ Figma ist die Quelle für Tokens. Die Variablen tragen bereits ihren CSS-Namen a
 
 ## 6. Datenmodell (lokal, SQLite)
 
-Alle Tabellen haben `id` (UUIDv7), `createdAt`, `updatedAt`, `deletedAt`.
+Alle Tabellen haben `id` (UUIDv7), `createdAt`, `updatedAt`, `deletedAt`. Dazu kommt eine kleine `meta`-Tabelle (key/value, z.B. `catalogVersion`). Umsetzung und Details: [0008](decisions/0008-data-layer.md).
 
 | Tabelle | Felder | Hinweis |
 | --- | --- | --- |
-| `exercise` | key, nameDe, nameEn, primaryMuscles, secondaryMuscles, muscleGroup, force (push / pull / static), equipment, level, images | Katalog aus free-exercise-db (gemeinfrei), mit der App ausgeliefert, nur lesbar; deutsche Namen per AI übersetzt |
+| `exercise` | key, nameDe, nameEn, primaryMuscles, secondaryMuscles, muscleGroup, force (push / pull / static), equipment, level, category, images | Katalog aus free-exercise-db (gemeinfrei), mit der App ausgeliefert, nur lesbar; deutsche Namen per AI übersetzt |
 | `plan` | name, weekdays (Liste 0–6, optional) | Ein Plan = ein Training |
 | `plan_exercise` | planId, exerciseId, position, targetSets, repMin, repMax, restSeconds | Feste Reihenfolge über `position`; Standard 3 × 8–12, 90 s |
 | `workout_session` | planId (optional), startedAt, finishedAt, status (active / finished / aborted) | Maximal eine aktive Session |
-| `session_exercise` | sessionId, exerciseId, position, status (open / done) | Kopie der Plan-Übungen beim Start |
+| `session_exercise` | sessionId, exerciseId, position, status (open / done), repMin, repMax, restSeconds | Kopie der Plan-Übungen inkl. Ziele beim Start |
 | `exercise_interval` | sessionExerciseId, enteredAt, leftAt | Zeiträume, in denen die Übung angezeigt wurde; beliebig viele |
 | `set_log` | sessionExerciseId, position, weightKg, reps, completedAt, isExtra | Gewicht immer in kg |
 
