@@ -10,7 +10,8 @@
     "test:watch": "ng test",
     "lint": "ng lint",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "catalog:import": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/import-exercises.mjs"
   },
   "private": true,
   "packageManager": "pnpm@12.8.1",

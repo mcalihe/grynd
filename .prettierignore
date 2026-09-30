@@ -6,3 +6,4 @@ ios
 pnpm-lock.yaml
 docs
 *.md
+public/data
