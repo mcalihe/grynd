@@ -85,6 +85,15 @@
       "title": "Workout in progress",
       "text": "Another workout is still running. Continue it or end it first.",
       "confirm": "Continue"
+    },
+    "setMenu": {
+      "duplicate": "Duplicate set",
+      "delete": "Delete set"
+    },
+    "exerciseMenu": {
+      "label": "Exercise menu",
+      "back": "Move back one",
+      "end": "Move to the end"
     }
   },
   "history": {

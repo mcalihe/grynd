@@ -85,6 +85,15 @@
       "title": "Training läuft bereits",
       "text": "Es läuft noch ein anderes Training. Du kannst es fortsetzen oder zuerst beenden.",
       "confirm": "Fortsetzen"
+    },
+    "setMenu": {
+      "duplicate": "Satz duplizieren",
+      "delete": "Satz löschen"
+    },
+    "exerciseMenu": {
+      "label": "Übungsmenü",
+      "back": "1 nach hinten verschieben",
+      "end": "Ans Ende verschieben"
     }
   },
   "history": {

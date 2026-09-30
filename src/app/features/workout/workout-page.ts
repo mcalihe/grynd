@@ -78,7 +78,9 @@ import { ExercisePage } from './exercise-page';
               [item]="item"
               [index]="i"
               [menuSetId]="menuSet()?.id ?? null"
+              [isLast]="i === w.exercises.length - 1"
               (setMenu)="menuSet.set($event)"
+              (moveBack)="moveBack(i, $event)"
               (setCompleted)="timer.start($event)"
             />
           </section>
@@ -176,6 +178,16 @@ export class WorkoutPage {
 
   protected goTo(index: number): void {
     this.scrollTo(index, 'smooth');
+  }
+
+  /**
+   * «1 nach hinten» (1) / «Ans Ende» (-1). The page position stays, so the user now sees the
+   * exercise that moved up, which is usually the point of moving one back.
+   */
+  protected async moveBack(index: number, how: 1 | -1): Promise<void> {
+    const last = (this.workout.workout()?.exercises.length ?? 1) - 1;
+    await this.workout.moveExercise(index, how === 1 ? index + 1 : last);
+    await this.workout.setCurrent(index);
   }
 
   protected async finish(): Promise<void> {

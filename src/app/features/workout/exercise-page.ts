@@ -3,10 +3,12 @@ import { TranslocoPipe } from '@jsverse/transloco';
 import { NgIcon } from '@ng-icons/core';
 import { HlmBadge } from '@spartan-ng/helm/badge';
 import { HlmButton } from '@spartan-ng/helm/button';
+import { HlmDropdownMenuImports } from '@spartan-ng/helm/dropdown-menu';
 import { SetLog } from '../../core/db/models';
 import { ExerciseCatalogService } from '../../core/exercises/exercise-catalog.service';
 import { WorkoutExercise, WorkoutService } from '../../core/workout/workout.service';
 import { SetRow, SetRowState } from '../../shared/components/set-row/set-row';
+import { SetMenu } from './set-menu';
 
 /** "Ziel 8–10" or "Ziel 10" for a fixed rep count. */
 export function repTarget(repMin: number | null, repMax: number | null): string {
@@ -22,7 +24,7 @@ export function repTarget(repMin: number | null, repMax: number | null): string 
  */
 @Component({
   selector: 'app-exercise-page',
-  imports: [SetRow, HlmBadge, HlmButton, NgIcon, TranslocoPipe],
+  imports: [SetRow, SetMenu, HlmBadge, HlmButton, HlmDropdownMenuImports, NgIcon, TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'flex flex-col gap-2 px-4 pt-4 pb-6' },
   template: `
@@ -36,7 +38,27 @@ export function repTarget(repMin: number | null, repMax: number | null): string 
       @if (exercise().muscleGroup; as group) {
         <span hlmBadge variant="secondary" class="mt-1">{{ 'muscles.' + group | transloco }}</span>
       }
-      <ng-content select="[exerciseMenu]" />
+      <button
+        hlmBtn
+        variant="ghost"
+        size="icon"
+        class="-mr-2 text-muted-foreground"
+        align="end"
+        [hlmDropdownMenuTrigger]="exerciseMenu"
+        [attr.aria-label]="'workout.exerciseMenu.label' | transloco"
+      >
+        <ng-icon name="lucideEllipsis" size="20" />
+      </button>
+      <ng-template #exerciseMenu>
+        <hlm-dropdown-menu class="w-60">
+          <button hlmDropdownMenuItem [disabled]="isLast()" (click)="moveBack.emit(1)">
+            {{ 'workout.exerciseMenu.back' | transloco }}
+          </button>
+          <button hlmDropdownMenuItem [disabled]="isLast()" (click)="moveBack.emit(-1)">
+            {{ 'workout.exerciseMenu.end' | transloco }}
+          </button>
+        </hlm-dropdown-menu>
+      </ng-template>
     </header>
 
     <p class="text-sm font-medium text-muted-foreground">
@@ -56,6 +78,13 @@ export function repTarget(repMin: number | null, repMax: number | null): string 
           (complete)="complete(set)"
           (menu)="setMenu.emit(set)"
         />
+        @if (set.id === menuSetId()) {
+          <app-set-menu
+            (duplicate)="duplicate(set)"
+            (remove)="remove(set)"
+            (dismiss)="setMenu.emit(null)"
+          />
+        }
       }
     </div>
 
@@ -76,7 +105,11 @@ export class ExercisePage {
   /** Set whose menu is open (menu-open state). */
   readonly menuSetId = input<string | null>(null);
 
-  readonly setMenu = output<SetLog>();
+  /** Opens (set) or closes (null) the set menu. */
+  readonly setMenu = output<SetLog | null>();
+  /** «1 nach hinten» (1) or «Ans Ende» (-1). */
+  readonly moveBack = output<1 | -1>();
+  readonly isLast = input(false);
   /** Emitted after a set was checked (not unchecked), with the exercise's rest in seconds. */
   readonly setCompleted = output<number>();
 
@@ -108,6 +141,16 @@ export class ExercisePage {
       return 'open';
     }
     return this.workout.records().has(set.id) ? 'record' : 'completed';
+  }
+
+  protected async duplicate(set: SetLog): Promise<void> {
+    this.setMenu.emit(null);
+    await this.workout.duplicateSet(set.id);
+  }
+
+  protected async remove(set: SetLog): Promise<void> {
+    this.setMenu.emit(null);
+    await this.workout.deleteSet(set.id);
   }
 
   protected async complete(set: SetLog): Promise<void> {
