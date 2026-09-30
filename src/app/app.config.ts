@@ -14,6 +14,7 @@ import { APP_LANGS, detectLanguage, FALLBACK_LANG } from './core/i18n/language';
 import { DatabaseService } from './core/db/database.service';
 import { TranslocoHttpLoader } from './core/i18n/transloco-loader';
 import { APP_ICONS } from './core/icons';
+import { BackButtonService } from './core/services/back-button.service';
 import { ThemeService } from './core/services/theme.service';
 
 export const appConfig: ApplicationConfig = {
@@ -26,6 +27,7 @@ export const appConfig: ApplicationConfig = {
       inject(ThemeService);
     }),
     provideAppInitializer(() => inject(DatabaseService).init()),
+    provideAppInitializer(() => inject(BackButtonService).init()),
     provideTransloco({
       config: {
         availableLangs: [...APP_LANGS],

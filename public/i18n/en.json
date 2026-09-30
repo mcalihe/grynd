@@ -48,6 +48,12 @@
       "title": "Delete plan?",
       "text": "The plan is removed. Past workouts stay in your history.",
       "confirm": "Delete"
+    },
+    "discard": {
+      "title": "Discard changes?",
+      "text": "Your changes to this plan will be lost.",
+      "confirm": "Discard",
+      "cancel": "Keep editing"
     }
   },
   "workout": {

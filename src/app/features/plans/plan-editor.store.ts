@@ -84,6 +84,17 @@ export class PlanEditorStore {
     return id;
   }
 
+  /**
+   * Forgets the draft when the editor is left. Route-level providers outlive the visit
+   * (Angular reuses the route injector), so the next visit must start from the database.
+   */
+  reset(): void {
+    this.loadedKey = undefined;
+    this.loaded.set(false);
+    this.draft.set(emptyDraft());
+    this.snapshot.set(emptyDraft());
+  }
+
   async delete(): Promise<void> {
     const id = this.draft().id;
     if (id) {

@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { PlanEditorStore } from './plan-editor.store';
+import { unsavedChangesGuard } from './unsaved-changes.guard';
 
 const placeholder = () =>
   import('../../shared/components/placeholder-page/placeholder-page').then(
@@ -15,7 +16,17 @@ const editorChildren: Routes = [
 /** Mounted under /plans (see app.routes.ts). */
 export const PLANS_ROUTES: Routes = [
   { path: '', loadComponent: () => import('./plans-page').then((m) => m.PlansPage) },
-  { path: 'new', providers: [PlanEditorStore], children: editorChildren },
+  {
+    path: 'new',
+    providers: [PlanEditorStore],
+    canDeactivate: [unsavedChangesGuard],
+    children: editorChildren,
+  },
   { path: ':id', loadComponent: () => import('./plan-detail-page').then((m) => m.PlanDetailPage) },
-  { path: ':id/edit', providers: [PlanEditorStore], children: editorChildren },
+  {
+    path: ':id/edit',
+    providers: [PlanEditorStore],
+    canDeactivate: [unsavedChangesGuard],
+    children: editorChildren,
+  },
 ];

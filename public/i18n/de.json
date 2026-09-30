@@ -48,6 +48,12 @@
       "title": "Plan löschen?",
       "text": "Der Plan wird entfernt. Vergangene Trainings bleiben im Verlauf.",
       "confirm": "Löschen"
+    },
+    "discard": {
+      "title": "Änderungen verwerfen?",
+      "text": "Deine Änderungen an diesem Plan gehen verloren.",
+      "confirm": "Verwerfen",
+      "cancel": "Weiter bearbeiten"
     }
   },
   "workout": {
