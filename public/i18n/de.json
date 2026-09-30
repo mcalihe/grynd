@@ -17,7 +17,11 @@
     "exerciseCount": "{{count}} Übungen",
     "exerciseCountOne": "1 Übung",
     "today": "Heute",
-    "mine": "Meine Pläne"
+    "mine": "Meine Pläne",
+    "empty": {
+      "title": "Noch keine Pläne",
+      "text": "Lege deinen ersten Plan an, z.B. Oberkörper oder Beine."
+    }
   },
   "workout": {
     "title": "Training",

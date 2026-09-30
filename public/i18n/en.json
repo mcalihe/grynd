@@ -17,7 +17,11 @@
     "exerciseCount": "{{count}} exercises",
     "exerciseCountOne": "1 exercise",
     "today": "Today",
-    "mine": "My plans"
+    "mine": "My plans",
+    "empty": {
+      "title": "No plans yet",
+      "text": "Create your first plan, e.g. upper body or legs."
+    }
   },
   "workout": {
     "title": "Workout",
