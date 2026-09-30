@@ -24,6 +24,13 @@
       "complete": "Satz abhaken",
       "menu": "Satzmenü",
       "record": "PR"
+    },
+    "timer": {
+      "duration": "Pausendauer wählen",
+      "start": "Timer starten",
+      "stop": "Timer stoppen",
+      "minus15": "15 Sekunden weniger",
+      "plus15": "15 Sekunden mehr"
     }
   },
   "history": {

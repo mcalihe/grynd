@@ -24,6 +24,13 @@
       "complete": "Complete set",
       "menu": "Set menu",
       "record": "PR"
+    },
+    "timer": {
+      "duration": "Choose rest duration",
+      "start": "Start timer",
+      "stop": "Stop timer",
+      "minus15": "15 seconds less",
+      "plus15": "15 seconds more"
     }
   },
   "history": {

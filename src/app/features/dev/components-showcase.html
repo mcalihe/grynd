@@ -36,6 +36,13 @@
   </section>
 
   <section class="flex flex-col gap-3">
+    <h2 class="text-sm font-semibold text-muted-foreground">Timer Bar · Figma 72:2641</h2>
+    <app-timer-bar [durationSec]="restSeconds()" (durationChange)="restSeconds.set($event)" />
+    <app-timer-bar [running]="true" [remainingMs]="72000" [totalMs]="90000" />
+    <app-timer-bar [running]="true" [remainingMs]="8000" [totalMs]="90000" />
+  </section>
+
+  <section class="flex flex-col gap-3">
     <h2 class="text-sm font-semibold text-muted-foreground">Button · Figma 9:206</h2>
     @for (variant of buttonVariants; track variant) {
       <div class="flex flex-wrap items-center gap-2">

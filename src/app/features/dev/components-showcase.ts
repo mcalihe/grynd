@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { NgIcon } from '@ng-icons/core';
 import { HlmAlertDialogImports } from '@spartan-ng/helm/alert-dialog';
 import { HlmBadge } from '@spartan-ng/helm/badge';
@@ -13,6 +13,7 @@ import { ThemeMode, ThemeService } from '../../core/services/theme.service';
 import { ProgressRing } from '../../shared/components/progress-ring/progress-ring';
 import { SegmentProgress } from '../../shared/components/segment-progress/segment-progress';
 import { SetRow, SetRowState } from '../../shared/components/set-row/set-row';
+import { TimerBar } from '../../shared/components/timer-bar/timer-bar';
 
 /**
  * Dev-only catalogue of every UI building block in all states (route /dev/components, not in
@@ -34,6 +35,7 @@ import { SetRow, SetRowState } from '../../shared/components/set-row/set-row';
     SetRow,
     ProgressRing,
     SegmentProgress,
+    TimerBar,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './components-showcase.html',
@@ -58,6 +60,7 @@ export class ComponentsShowcase {
     { done: 0, total: 4 },
     { done: 0, total: 3 },
   ];
+  protected readonly restSeconds = signal(90);
   protected readonly buttonSizes = ['sm', 'default', 'lg'] as const;
   protected readonly badgeVariants = [
     'default',
