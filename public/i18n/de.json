@@ -1,6 +1,12 @@
 {
-  "app": { "name": "Grynd" },
-  "nav": { "plans": "Pläne", "history": "Verlauf", "settings": "Einstellungen" },
+  "app": {
+    "name": "Grynd"
+  },
+  "nav": {
+    "plans": "Pläne",
+    "history": "Verlauf",
+    "settings": "Einstellungen"
+  },
   "plans": {
     "title": "Pläne",
     "new": "Neuer Plan",
@@ -8,8 +14,23 @@
     "edit": "Plan bearbeiten",
     "addExercises": "Übungen hinzufügen"
   },
-  "workout": { "title": "Training" },
-  "history": { "title": "Verlauf", "detail": "Training" },
-  "settings": { "title": "Einstellungen" },
-  "common": { "back": "Zurück", "placeholder": "Kommt bald." }
+  "workout": {
+    "title": "Training"
+  },
+  "history": {
+    "title": "Verlauf",
+    "detail": "Training"
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "theme": {
+      "system": "Automatisch",
+      "light": "Hell",
+      "dark": "Dunkel"
+    }
+  },
+  "common": {
+    "back": "Zurück",
+    "placeholder": "Kommt bald."
+  }
 }

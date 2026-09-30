@@ -1,6 +1,12 @@
 {
-  "app": { "name": "Grynd" },
-  "nav": { "plans": "Plans", "history": "History", "settings": "Settings" },
+  "app": {
+    "name": "Grynd"
+  },
+  "nav": {
+    "plans": "Plans",
+    "history": "History",
+    "settings": "Settings"
+  },
   "plans": {
     "title": "Plans",
     "new": "New plan",
@@ -8,8 +14,23 @@
     "edit": "Edit plan",
     "addExercises": "Add exercises"
   },
-  "workout": { "title": "Workout" },
-  "history": { "title": "History", "detail": "Workout" },
-  "settings": { "title": "Settings" },
-  "common": { "back": "Back", "placeholder": "Coming soon." }
+  "workout": {
+    "title": "Workout"
+  },
+  "history": {
+    "title": "History",
+    "detail": "Workout"
+  },
+  "settings": {
+    "title": "Settings",
+    "theme": {
+      "system": "System",
+      "light": "Light",
+      "dark": "Dark"
+    }
+  },
+  "common": {
+    "back": "Back",
+    "placeholder": "Coming soon."
+  }
 }

@@ -42,3 +42,6 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
+
+# Local Claude Code launch config (machine-specific paths)
+.claude/launch.json
