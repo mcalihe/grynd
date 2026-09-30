@@ -14,7 +14,7 @@ Vor dem Bau von UI hier nachsehen. Neue eigene Komponenten hier ergänzen.
 | Foundations (Previous) | `2:1449` | Veraltet, ignorieren |
 | Foundations | `7:5` | Variablen-Doku (`7:6`) |
 | Components | `9:5` | Alle Komponenten im Frame `9:6` |
-| Screens | `25:1442` | 36 Frames à 393×852, jeweils Light und Dark |
+| Screens | `25:1442` | 44 Frames à 393×852, jeweils Light und Dark. Neue Frames ab y=16184 |
 
 **Variablen** (alle Semantic- und Radius-Variablen haben Web-Code-Syntax, siehe [Entscheid](../decisions/0004-token-names.md)): `Primitives` (31: brand/50–950, neutral/50–950, green/amber/red, white), `Semantic` (27, Modi Light/Dark, Code-Syntax `var(--…)`), `Layout` (spacing 4/8/12/16/24/32/48, radius base/lg/xl/pill).
 
@@ -31,14 +31,15 @@ Vor dem Bau von UI hier nachsehen. Neue eigene Komponenten hier ergänzen.
 | Separator | `9:298` | horizontal/vertical | helm `separator` | shared/ui |
 | Toast | `9:326` | default/success/destructive | helm `sonner` | shared/ui |
 | Card | `9:266` | – | helm `card` | shared/ui |
-| Tabs | `9:271` | – | helm `tabs` (Segmented Control, z.B. Theme) | shared/ui |
+| Tabs | `9:271` | – | helm `tabs` (nur 2 Optionen, sonst Segmented Control) | shared/ui |
 | Sheet | `9:299` | – | helm `sheet` (Übersicht) | shared/ui |
 | Dialog | `9:303` | – | helm `alert-dialog` (Änderungen verwerfen) | shared/ui |
-| Icon | `9:25` | plus, minus, check, close, arrow, timer, dumbbell, calendar, chartline, skipforward, search, chevrondown, clipboardlist | ng-icons Lucide (`lucidePlus`, … `lucideClipboardList`) | – |
+| Icon | `9:25` | plus, minus, check, close, arrow, timer, dumbbell, calendar, chartline, skipforward, search, chevrondown, clipboardlist, settings | ng-icons Lucide (`lucidePlus`, … `lucideClipboardList`) | – |
 | Grynd/Set Row | `15:1822` | State=open/completed/record/menu-open | `SetRowComponent` `state: 'open' \| 'completed' \| 'record' \| 'menu-open'` | shared/components |
 | Grynd/Timer Bar | `72:2641` | State=ready/running/warning/duration | `TimerBarComponent` | shared/components |
 | Grynd/Progress Ring | `66:2852` | Value=0, 1/3, 1/2, 2/3, full | `ProgressRingComponent` `value: number (0–1)` | shared/components |
-| Grynd/Bottom Navigation | `15:2111` | Active=plans/training/history | `BottomNavigationComponent` | shared/components |
+| Grynd/Bottom Navigation | `15:2111` | Active=plans/history/settings | `BottomNavigationComponent` | shared/components |
+| Grynd/Segmented Control | `84:2788` | Options=2/3 × Active=1–3, Texte `Option 1–3` | `SegmentedControlComponent` (helm toggle-group) | shared/components |
 | Grynd/Training Day Card | `15:2023` | – | `PlanCardComponent` (Name, Anzahl, Wochentag-Chips, Pfeil → öffnet Plan) | shared/components |
 | Grynd/Exercise Card | `15:1823` | – | `ExerciseCardComponent` (Übungskopf im Training) – vor dem Bau prüfen | shared/components |
 | Grynd/Rest Timer | `15:2022` | running/warning | **Deprecated** – ersetzt durch Timer Bar, nicht umsetzen ([Entscheid](../decisions/0003-rest-timer-deprecated.md)) | – |
@@ -51,6 +52,7 @@ Weekday-Chips (helm `toggle-group`), Filter-Chips, Popover-Menüs Satz/Übung (h
 | Screen | Route | Light | Dark |
 | --- | --- | --- | --- |
 | Pläne | `/plans` | `37:27416` (verstecktes, leeres «Sticky Aktion» ignorieren) | `37:27562` |
+| Pläne · Leer | `/plans` | `84:3262` | `84:3986` |
 | Plan-Detail | `/plans/:id` | `37:27708` | `37:27902` |
 | Plan bearbeiten | `/plans/:id/edit` | `37:28096` | `37:28317` |
 | Plan bearbeiten · Dialog | `/plans/:id/edit` | `66:1196` | `66:1271` |
@@ -67,6 +69,9 @@ Weekday-Chips (helm `toggle-group`), Filter-Chips, Popover-Menüs Satz/Übung (h
 | Training · Übungsmenü | `/workout` | `56:48305` | `56:48455` |
 | Training · Übersicht | `/workout` | `56:48605` | `56:48814` |
 | Training · Timer-Dauer | `/workout` | `79:2663` | `79:2832` |
+| Training · Letzte Übung | `/workout` | `84:3791` | `84:4068` |
 | Verlauf | `/history` | `37:29734` | `37:29861` |
-| Verlauf-Detail | `/history/:sessionId` | fehlt | fehlt |
-| Einstellungen | `/settings` | fehlt | fehlt |
+| Verlauf-Detail | `/history/:sessionId` | `84:3364` | `84:4001` |
+| Einstellungen | `/settings` | `84:2796` | `84:3950` |
+
+Hinweis: «Training · Timer-Dauer» lag über «Verlauf» und liegt jetzt bei y=19992.
