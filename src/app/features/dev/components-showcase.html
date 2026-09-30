@@ -42,6 +42,22 @@
     <app-timer-bar [running]="true" [remainingMs]="8000" [totalMs]="90000" />
   </section>
 
+  <section class="-mx-4 flex flex-col gap-3">
+    <h2 class="px-4 text-sm font-semibold text-muted-foreground">
+      Page header · Plan card · Sticky
+    </h2>
+    <app-page-header title="Pläne" />
+    <app-page-header variant="bar" />
+    <div class="px-4">
+      <app-plan-card name="Oberkörper" [exerciseCount]="6" [weekdays]="[1, 4]" [today]="true" />
+      <app-plan-card name="Beine" [exerciseCount]="5" [weekdays]="[2, 5]" />
+      <app-plan-card name="Ganzkörper" [exerciseCount]="1" />
+    </div>
+    <app-sticky-action class="static">
+      <button hlmBtn size="lg"><ng-icon name="lucideArrowRight" />Training starten</button>
+    </app-sticky-action>
+  </section>
+
   <section class="flex flex-col gap-3">
     <h2 class="text-sm font-semibold text-muted-foreground">Button · Figma 9:206</h2>
     @for (variant of buttonVariants; track variant) {

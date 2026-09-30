@@ -5,14 +5,19 @@
   "nav": {
     "plans": "Plans",
     "history": "History",
-    "settings": "Settings"
+    "settings": "Settings",
+    "label": "Main navigation"
   },
   "plans": {
     "title": "Plans",
     "new": "New plan",
     "detail": "Plan",
     "edit": "Edit plan",
-    "addExercises": "Add exercises"
+    "addExercises": "Add exercises",
+    "exerciseCount": "{{count}} exercises",
+    "exerciseCountOne": "1 exercise",
+    "today": "Today",
+    "mine": "My plans"
   },
   "workout": {
     "title": "Workout",

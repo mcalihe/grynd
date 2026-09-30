@@ -24,7 +24,7 @@ describe('App', () => {
     await fixture.whenStable();
 
     expect(TestBed.inject(Router).url).toBe('/plans');
-    expect(fixture.nativeElement.querySelector('app-nav-placeholder')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('app-bottom-navigation')).not.toBeNull();
   });
 
   it('hides the navigation during a workout', async () => {
@@ -32,6 +32,6 @@ describe('App', () => {
     await TestBed.inject(Router).navigateByUrl('/workout');
     await fixture.whenStable();
 
-    expect(fixture.nativeElement.querySelector('app-nav-placeholder')).toBeNull();
+    expect(fixture.nativeElement.querySelector('app-bottom-navigation')).toBeNull();
   });
 });

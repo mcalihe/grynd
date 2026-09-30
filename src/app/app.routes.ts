@@ -21,7 +21,7 @@ export const routes: Routes = [
   {
     path: 'settings',
     loadComponent: placeholder,
-    data: { titleKey: 'settings.title', showThemeSwitch: true },
+    data: { titleKey: 'settings.title' },
   },
   ...(isDevMode()
     ? [

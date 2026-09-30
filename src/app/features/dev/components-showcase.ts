@@ -10,9 +10,12 @@ import { HlmSheetImports } from '@spartan-ng/helm/sheet';
 import { HlmSwitchImports } from '@spartan-ng/helm/switch';
 import { HlmToggleGroupImports } from '@spartan-ng/helm/toggle-group';
 import { ThemeMode, ThemeService } from '../../core/services/theme.service';
+import { PageHeader } from '../../shared/components/page-header/page-header';
+import { PlanCard } from '../../shared/components/plan-card/plan-card';
 import { ProgressRing } from '../../shared/components/progress-ring/progress-ring';
 import { SegmentProgress } from '../../shared/components/segment-progress/segment-progress';
 import { SetRow, SetRowState } from '../../shared/components/set-row/set-row';
+import { StickyAction } from '../../shared/components/sticky-action/sticky-action';
 import { TimerBar } from '../../shared/components/timer-bar/timer-bar';
 
 /**
@@ -36,6 +39,9 @@ import { TimerBar } from '../../shared/components/timer-bar/timer-bar';
     ProgressRing,
     SegmentProgress,
     TimerBar,
+    PageHeader,
+    PlanCard,
+    StickyAction,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './components-showcase.html',
