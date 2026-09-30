@@ -73,6 +73,18 @@
       "stop": "Stop timer",
       "minus15": "15 seconds less",
       "plus15": "15 seconds more"
+    },
+    "overview": "Overview",
+    "end": "End",
+    "next": "Next: {{name}}",
+    "finish": "Finish workout",
+    "addSet": "Set",
+    "setProgress": "Set {{current}} of {{total}}",
+    "targetLine": "{{sets}} sets · target {{reps}} reps",
+    "resume": {
+      "title": "Workout in progress",
+      "text": "Another workout is still running. Continue it or end it first.",
+      "confirm": "Continue"
     }
   },
   "history": {

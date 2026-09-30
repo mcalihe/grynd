@@ -1,0 +1,206 @@
+import {
+  afterNextRender,
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  DestroyRef,
+  effect,
+  ElementRef,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
+import { Router } from '@angular/router';
+import { TranslocoPipe } from '@jsverse/transloco';
+import { NgIcon } from '@ng-icons/core';
+import { HlmButton } from '@spartan-ng/helm/button';
+import { SetLog } from '../../core/db/models';
+import { ExerciseCatalogService } from '../../core/exercises/exercise-catalog.service';
+import { RestTimerService } from '../../core/workout/rest-timer.service';
+import { WorkoutService } from '../../core/workout/workout.service';
+import { SegmentProgress } from '../../shared/components/segment-progress/segment-progress';
+import { StickyAction } from '../../shared/components/sticky-action/sticky-action';
+import { TimerBar } from '../../shared/components/timer-bar/timer-bar';
+import { ExercisePage } from './exercise-page';
+
+/**
+ * Active workout (Figma Training 56:48015 / Swipe 60:3568): one exercise per page with
+ * horizontal scroll-snap; header, progress, timer and the next button stay in place.
+ */
+@Component({
+  selector: 'app-workout-page',
+  imports: [
+    ExercisePage,
+    SegmentProgress,
+    StickyAction,
+    TimerBar,
+    HlmButton,
+    NgIcon,
+    TranslocoPipe,
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { class: 'bg-background pt-safe px-safe fixed inset-0 z-10 flex flex-col' },
+  template: `
+    @if (workout.workout(); as w) {
+      <header class="flex h-13 shrink-0 items-center justify-between px-4">
+        <button
+          type="button"
+          class="flex h-11 items-center gap-2 rounded-full bg-secondary px-3 text-sm font-semibold text-secondary-foreground"
+          [attr.aria-label]="'workout.overview' | transloco"
+          (click)="overviewOpen.set(true)"
+        >
+          <ng-icon name="lucideList" size="18" />
+          {{ current() + 1 }} / {{ w.exercises.length }}
+          <ng-icon name="lucideChevronDown" size="16" />
+        </button>
+        <button hlmBtn variant="ghost" size="sm" (click)="end()">
+          <ng-icon name="lucideX" />{{ 'workout.end' | transloco }}
+        </button>
+      </header>
+
+      <app-segment-progress
+        class="shrink-0 px-4 pt-2 pb-2"
+        [segments]="segments()"
+        [current]="current()"
+      />
+
+      <div
+        #pager
+        class="flex min-h-0 flex-1 snap-x snap-mandatory [scrollbar-width:none] overflow-x-auto overscroll-x-contain"
+      >
+        @for (item of w.exercises; track item.entry.id; let i = $index) {
+          <section
+            class="w-full shrink-0 snap-start snap-always overflow-y-auto"
+            [attr.data-index]="i"
+            [attr.aria-label]="catalog.nameById(item.entry.exerciseId)"
+          >
+            <app-exercise-page
+              [item]="item"
+              [index]="i"
+              [menuSetId]="menuSet()?.id ?? null"
+              (setMenu)="menuSet.set($event)"
+              (setCompleted)="timer.start($event)"
+            />
+          </section>
+        }
+      </div>
+
+      <div class="shrink-0 px-4 pb-2">
+        <app-timer-bar
+          [running]="timer.running()"
+          [remainingMs]="timer.remainingMs()"
+          [totalMs]="timer.totalMs()"
+          [durationSec]="restSeconds()"
+          (start)="timer.start(restSeconds())"
+          (stop)="timer.stop()"
+          (adjust)="timer.adjust($event)"
+          (durationChange)="workout.setRestSeconds(current(), $event)"
+        />
+      </div>
+
+      <app-sticky-action [divider]="true">
+        @if (next(); as nextItem) {
+          <button hlmBtn size="lg" (click)="goTo(current() + 1)">
+            <ng-icon name="lucideArrowRight" />
+            <span class="truncate">
+              {{
+                'workout.next' | transloco: { name: catalog.nameById(nextItem.entry.exerciseId) }
+              }}
+            </span>
+          </button>
+        } @else {
+          <button hlmBtn size="lg" [disabled]="busy()" (click)="finish()">
+            <ng-icon name="lucideCheck" />{{ 'workout.finish' | transloco }}
+          </button>
+        }
+      </app-sticky-action>
+    }
+  `,
+})
+export class WorkoutPage {
+  protected readonly workout = inject(WorkoutService);
+  protected readonly timer = inject(RestTimerService);
+  protected readonly catalog = inject(ExerciseCatalogService);
+  private readonly router = inject(Router);
+  private readonly pager = viewChild<ElementRef<HTMLElement>>('pager');
+
+  protected readonly current = this.workout.current;
+  protected readonly menuSet = signal<SetLog | null>(null);
+  protected readonly overviewOpen = signal(false);
+  protected readonly busy = signal(false);
+
+  protected readonly segments = computed(() =>
+    (this.workout.workout()?.exercises ?? []).map(({ sets }) => ({
+      done: sets.filter((s) => s.completedAt !== null).length,
+      total: sets.length,
+    })),
+  );
+  protected readonly next = computed(
+    () => this.workout.workout()?.exercises[this.current() + 1] ?? null,
+  );
+  protected readonly restSeconds = computed(
+    () => this.workout.workout()?.exercises[this.current()]?.entry.restSeconds ?? 90,
+  );
+
+  constructor() {
+    void this.catalog.load();
+    const destroyRef = inject(DestroyRef);
+
+    afterNextRender(() => {
+      const pager = this.pager()?.nativeElement;
+      if (!pager) {
+        return;
+      }
+      this.scrollTo(this.current(), 'instant');
+      // The page that is mostly visible becomes the current exercise (starts its time interval).
+      const observer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) {
+              void this.workout.setCurrent(Number((entry.target as HTMLElement).dataset['index']));
+            }
+          }
+        },
+        { root: pager, threshold: 0.6 },
+      );
+      pager.querySelectorAll('section[data-index]').forEach((page) => observer.observe(page));
+      destroyRef.onDestroy(() => observer.disconnect());
+    });
+
+    // Keep the pager in sync when the current exercise changes elsewhere (overview, reorder).
+    effect(() => {
+      const index = this.current();
+      queueMicrotask(() => this.scrollTo(index, 'smooth'));
+    });
+  }
+
+  protected goTo(index: number): void {
+    this.scrollTo(index, 'smooth');
+  }
+
+  protected async finish(): Promise<void> {
+    this.busy.set(true);
+    try {
+      this.timer.stop();
+      const id = await this.workout.finish();
+      await this.router.navigate(['/history', id], { replaceUrl: true });
+    } finally {
+      this.busy.set(false);
+    }
+  }
+
+  /** «Beenden»: decided in step 5.8 (save, discard or continue). */
+  protected async end(): Promise<void> {
+    await this.finish();
+  }
+
+  private scrollTo(index: number, behavior: ScrollBehavior): void {
+    const page = this.pager()?.nativeElement.querySelector<HTMLElement>(
+      `section[data-index="${index}"]`,
+    );
+    const pager = this.pager()?.nativeElement;
+    if (page && pager && Math.abs(pager.scrollLeft - page.offsetLeft) > 2) {
+      pager.scrollTo({ left: page.offsetLeft, behavior });
+    }
+  }
+}

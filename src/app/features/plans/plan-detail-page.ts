@@ -6,6 +6,8 @@ import { HlmButton } from '@spartan-ng/helm/button';
 import { ExerciseCatalogService } from '../../core/exercises/exercise-catalog.service';
 import { PlanDraft } from '../../core/plans/plan-draft';
 import { PlansService } from '../../core/plans/plans.service';
+import { ConfirmService } from '../../core/services/confirm.service';
+import { WorkoutService } from '../../core/workout/workout.service';
 import { PageHeader } from '../../shared/components/page-header/page-header';
 import { StickyAction } from '../../shared/components/sticky-action/sticky-action';
 import { WeekdayChips } from '../../shared/components/weekday-chips/weekday-chips';
@@ -74,6 +76,8 @@ export class PlanDetailPage implements OnInit {
 
   private readonly plans = inject(PlansService);
   private readonly router = inject(Router);
+  private readonly workout = inject(WorkoutService);
+  private readonly confirm = inject(ConfirmService);
   protected readonly catalog = inject(ExerciseCatalogService);
 
   protected readonly plan = signal<PlanDraft | undefined>(undefined);
@@ -96,8 +100,21 @@ export class PlanDetailPage implements OnInit {
     void this.router.navigate(['/plans', this.id(), 'edit']);
   }
 
-  protected start(): void {
-    // M5 creates the session here; until then the workout route is a placeholder.
-    void this.router.navigate(['/workout']);
+  protected async start(): Promise<void> {
+    // Only one workout at a time: offer to continue the running one instead.
+    if (this.workout.isActive()) {
+      const resume = await this.confirm.confirm({
+        title: 'workout.resume.title',
+        message: 'workout.resume.text',
+        confirm: 'workout.resume.confirm',
+        cancel: 'common.cancel',
+      });
+      if (resume) {
+        await this.router.navigate(['/workout']);
+      }
+      return;
+    }
+    await this.workout.start(this.id());
+    await this.router.navigate(['/workout']);
   }
 }

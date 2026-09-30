@@ -10,7 +10,10 @@ export const routes: Routes = [
     path: 'plans',
     loadChildren: () => import('./features/plans/plans.routes').then((m) => m.PLANS_ROUTES),
   },
-  { path: 'workout', loadComponent: placeholder, data: { titleKey: 'workout.title' } },
+  {
+    path: 'workout',
+    loadChildren: () => import('./features/workout/workout.routes').then((m) => m.WORKOUT_ROUTES),
+  },
   { path: 'history', loadComponent: placeholder, data: { titleKey: 'history.title' } },
   { path: 'history/:sessionId', loadComponent: placeholder, data: { titleKey: 'history.detail' } },
   {

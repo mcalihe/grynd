@@ -1,9 +1,11 @@
 import {
+  afterNextRender,
   ChangeDetectionStrategy,
   Component,
   computed,
   ElementRef,
   inject,
+  Injector,
   input,
   model,
   signal,
@@ -86,6 +88,7 @@ export class NumberStepper {
 
   private readonly lang = toSignal(inject(TranslocoService).langChanges$, { initialValue: 'de' });
   private readonly field = viewChild<ElementRef<HTMLInputElement>>('field');
+  private readonly injector = inject(Injector);
 
   protected readonly editing = signal(false);
   protected readonly display = computed(() =>
@@ -102,11 +105,15 @@ export class NumberStepper {
 
   protected startEditing(): void {
     this.editing.set(true);
-    queueMicrotask(() => {
-      const element = this.field()?.nativeElement;
-      element?.focus();
-      element?.select();
-    });
+    // Focus once the input exists; a microtask runs before Angular renders it.
+    afterNextRender(
+      () => {
+        const element = this.field()?.nativeElement;
+        element?.focus();
+        element?.select();
+      },
+      { injector: this.injector },
+    );
   }
 
   protected commit(text: string): void {
