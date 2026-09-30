@@ -78,4 +78,22 @@ export class SetLogRepository extends BaseRepository<SetLog> {
       'position',
     );
   }
+
+  /**
+   * Best estimated 1RM (Epley) of the exercise over completed sets of finished, not deleted
+   * sessions started before `before`: the baseline for records (plan.md §7).
+   */
+  async bestOneRepMaxBefore(exerciseId: string, before: string): Promise<number | null> {
+    const [row] = await this.db.query<{ best: number | null }>(
+      `SELECT max(sl.weightKg * (1 + sl.reps / 30.0)) AS best
+         FROM set_log sl
+         JOIN session_exercise se ON se.id = sl.sessionExerciseId AND se.deletedAt IS NULL
+         JOIN workout_session ws ON ws.id = se.sessionId AND ws.deletedAt IS NULL
+        WHERE se.exerciseId = ? AND ws.status = 'finished' AND ws.startedAt < ?
+          AND sl.completedAt IS NOT NULL AND sl.deletedAt IS NULL
+          AND sl.weightKg > 0 AND sl.reps > 0`,
+      [exerciseId, before],
+    );
+    return row?.best ?? null;
+  }
 }
