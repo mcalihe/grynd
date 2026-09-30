@@ -16,7 +16,7 @@ Vor dem Bau von UI hier nachsehen. Neue eigene Komponenten hier ergänzen.
 | Components | `9:5` | Alle Komponenten im Frame `9:6` |
 | Screens | `25:1442` | 36 Frames à 393×852, jeweils Light und Dark |
 
-**Variablen:** `Primitives` (31: brand/50–950, neutral/50–950, green/amber/red, white), `Semantic` (27, Modi Light/Dark, Code-Syntax `var(--…)`), `Layout` (spacing 4/8/12/16/24/32/48, radius base/lg/xl/pill).
+**Variablen** (alle Semantic- und Radius-Variablen haben Web-Code-Syntax, siehe [Entscheid](../decisions/0004-token-names.md)): `Primitives` (31: brand/50–950, neutral/50–950, green/amber/red, white), `Semantic` (27, Modi Light/Dark, Code-Syntax `var(--…)`), `Layout` (spacing 4/8/12/16/24/32/48, radius base/lg/xl/pill).
 
 ## Komponenten
 
@@ -39,9 +39,9 @@ Vor dem Bau von UI hier nachsehen. Neue eigene Komponenten hier ergänzen.
 | Grynd/Timer Bar | `72:2641` | State=ready/running/warning/duration | `TimerBarComponent` | shared/components |
 | Grynd/Progress Ring | `66:2852` | Value=0, 1/3, 1/2, 2/3, full | `ProgressRingComponent` `value: number (0–1)` | shared/components |
 | Grynd/Bottom Navigation | `15:2111` | Active=plans/training/history | `BottomNavigationComponent` | shared/components |
-| Grynd/Training Day Card | `15:2023` | – | `PlanCardComponent` (Name, Anzahl, Wochentag-Chips, Play) | shared/components |
+| Grynd/Training Day Card | `15:2023` | – | `PlanCardComponent` (Name, Anzahl, Wochentag-Chips, Pfeil → öffnet Plan) | shared/components |
 | Grynd/Exercise Card | `15:1823` | – | `ExerciseCardComponent` (Übungskopf im Training) – vor dem Bau prüfen | shared/components |
-| Grynd/Rest Timer | `15:2022` | running/warning | **Wahrscheinlich veraltet** (grosser Ring statt Leiste). Ersetzt durch Timer Bar, nicht umsetzen. | – |
+| Grynd/Rest Timer | `15:2022` | running/warning | **Deprecated** – ersetzt durch Timer Bar, nicht umsetzen ([Entscheid](../decisions/0003-rest-timer-deprecated.md)) | – |
 
 **Nur in Screens vorhanden, ohne eigene Figma-Komponente** (als eigene Komponenten aus den Screens ableiten):
 Weekday-Chips (helm `toggle-group`), Filter-Chips, Popover-Menüs Satz/Übung (helm `dropdown-menu`), Timer-Dauer-Popover (helm `popover`), Segment-Fortschritt (`SegmentProgressComponent`), Plan-Übungszeile mit Drag-Handle (`PlanExerciseRowComponent`), Übungs-Listeneintrag mit Auswahl und «Im Plan» (`ExerciseListItemComponent`), Kopfzeile/Seitentitel (`PageHeaderComponent`), Sticky-Aktion (`StickyActionComponent`), Wochen-Balkendiagramm (`WeekChartComponent`), Verlaufseintrag (`SessionRowComponent`).
@@ -50,7 +50,7 @@ Weekday-Chips (helm `toggle-group`), Filter-Chips, Popover-Menüs Satz/Übung (h
 
 | Screen | Route | Light | Dark |
 | --- | --- | --- | --- |
-| Pläne | `/plans` | `37:27416` | `37:27562` |
+| Pläne | `/plans` | `37:27416` (verstecktes, leeres «Sticky Aktion» ignorieren) | `37:27562` |
 | Plan-Detail | `/plans/:id` | `37:27708` | `37:27902` |
 | Plan bearbeiten | `/plans/:id/edit` | `37:28096` | `37:28317` |
 | Plan bearbeiten · Dialog | `/plans/:id/edit` | `66:1196` | `66:1271` |

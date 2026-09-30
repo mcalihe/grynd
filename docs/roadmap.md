@@ -22,7 +22,8 @@ Link-Schema für Node-IDs: `https://www.figma.com/design/iCoAOIvfyeCFYFU4Og7rVf/
 | 0.1 | ✅ `plan.md` → `docs/plan.md` verschieben, weil `CLAUDE.md` dorthin verweist |
 | 0.2 | ✅ `docs/roadmap.md` und `docs/design/component-map.md` anlegen |
 | 0.2b | ✅ `docs/plan.md` §8 Einstellungen: Hinweis «Deine Daten sind nur auf diesem Gerät gespeichert» streichen (MVP ist nur lokal) |
-| 0.3 | Abweichungen Plan ↔ Figma klären (siehe «Offene Punkte») und `docs/decisions/` anlegen |
+| 0.3 | ✅ Abweichungen Plan ↔ Figma geklärt, siehe `docs/decisions/0001`–`0005` |
+| 0.4 | Fehlende Screens in Figma entwerfen (Claude), Freigabe durch Michael: Pläne leer (vor 4.2), Training letzte Übung (vor 5.3), Verlauf-Detail (vor 6.3), Einstellungen samt Einstieg (vor 7.2) |
 
 ## M1 – Setup
 
@@ -31,7 +32,7 @@ Link-Schema für Node-IDs: `https://www.figma.com/design/iCoAOIvfyeCFYFU4Og7rVf/
 | 1.1 | Angular-Projekt (aktuell, standalone, ohne SSR, pnpm), Ordnerstruktur nach `CLAUDE.md` | – |
 | 1.2 | ESLint (angular-eslint), Prettier + `prettier-plugin-tailwindcss`, Vitest; Scripts `start/test/lint/build` | – |
 | 1.3 | Tailwind v4 CSS-first, `@custom-variant dark`, Inter lokal gebündelt, `tabular-nums` als Standard für Zahlen | – |
-| 1.4 | **Tokens:** `src/styles/tokens.css` aus den Variablen generieren: Primitives, Semantic Light in `:root`, Dark in `.dark`, Layout (spacing/radius), per `@theme inline` an Tailwind gebunden. `surface-elevated`, `radius/lg`, `radius/xl` und `radius/pill` haben noch keine Code-Syntax, Namen festlegen. | Foundations `7:6` |
+| 1.4 | **Tokens:** `src/styles/tokens.css` aus den Variablen generieren: Primitives, Semantic Light in `:root`, Dark in `.dark`, Layout (spacing/radius), per `@theme inline` an Tailwind gebunden. Namen laut Figma-Code-Syntax, inkl. `--surface-elevated`, `--radius-lg`, `--radius-xl`, `--radius-full`. | Foundations `7:6` |
 | 1.5 | Spartan UI (brain + helm) initialisieren, vorerst nur `button` als Test | Button `9:206` |
 | 1.6 | Transloco (de, en), Sprache aus Gerät, Fallback en | – |
 | 1.7 | `ThemeService` (auto/hell/dunkel, `prefers-color-scheme` live, `.dark` an `html`, Status-Bar-Hook) | – |
@@ -64,7 +65,7 @@ Jede Komponente mit Light/Dark gegen die Figma-Komponente prüfen. Dazu eine Sto
 | 3.5 | `ProgressRingComponent` (SVG, `primary`, voll = Haken) | Progress Ring `66:2852` |
 | 3.6 | `TimerBarComponent` (ready/running/warning/duration; −15/+15, Stopp, Fortschrittslinie) | Timer Bar `72:2641` |
 | 3.7 | `BottomNavigationComponent` (Pläne, Training, Verlauf; RouterLinkActive) | Bottom Navigation `15:2111` |
-| 3.8 | `PlanCardComponent` (Play in `primary` wenn heute, sonst `secondary`, 44 px) | Training Day Card `15:2023`, Beispiel in Pläne `37:27420` |
+| 3.8 | `PlanCardComponent` (Pfeil öffnet Plan; `primary` wenn heute, sonst `secondary`, 44 px) | Training Day Card `15:2023`, Beispiel in Pläne `37:27420` |
 | 3.9 | `PageHeaderComponent` (Seitentitel groß / Kopfzeile mit Zurück, Titel, Aktion) und `StickyActionComponent` (Primary unten, volle Breite, über Safe Area) | «Seitentitel» `37:27418`, «Kopfzeile» `37:27710`, «Sticky Aktion» `37:27886` |
 | 3.10 | `SegmentProgressComponent` (Segment pro Übung, anteilig, aktuelles hervorgehoben) | «Trainingsfortschritt» `56:48035` |
 | 3.11 | Weekday-Chips (toggle-group, 7 Chips) | Plan bearbeiten `37:28125` |
@@ -106,14 +107,14 @@ Jede Komponente mit Light/Dark gegen die Figma-Komponente prüfen. Dazu eine Sto
 | --- | --- | --- | --- |
 | 6.1 | `HistoryService`: Sessions nach Woche gruppiert, Dauer aus Zeitstempeln, Gesamtvolumen (test-first) | – | – |
 | 6.2 | **Verlauf** `/history`: Wochen-Balkendiagramm (`chart-1`, leere Tage grau), Liste | Verlauf `37:29734` | `37:29861` |
-| 6.3 | **Verlauf-Detail** `/history/:sessionId` | **Fehlt in Figma** | – |
+| 6.3 | **Verlauf-Detail** `/history/:sessionId` | Entwurf aus 0.4 | – |
 
 ## M7 – Einstellungen
 
 | # | Aufgabe | Figma |
 | --- | --- | --- |
 | 7.1 | `SettingsService` (Capacitor Preferences): Theme, Einheit, Sprache, Timer-Autostart | – |
-| 7.2 | **Einstellungen** `/settings`: Theme (Tabs), kg/lb, DE/EN, Autostart (Switch). Kein Hinweis «Daten nur auf diesem Gerät»: Im MVP gibt es nur lokale Speicherung, also nichts zu erklären. | **Screen fehlt in Figma.** Aus Tabs `9:271`, Switch `9:284`, Card `9:266` aufbauen. Einstieg ebenfalls offen, da die Bottom-Nav keinen Tab dafür hat. |
+| 7.2 | **Einstellungen** `/settings`: Theme (Tabs), kg/lb, DE/EN, Autostart (Switch). Kein Hinweis «Daten nur auf diesem Gerät»: Im MVP gibt es nur lokale Speicherung, also nichts zu erklären. | Entwurf aus 0.4 (Tabs `9:271`, Switch `9:284`, Card `9:266`) |
 | 7.3 | JSON-Export (Filesystem + Share) und Import mit Validierung und Bestätigungsdialog | Dialog `9:303`, Toast `9:326` |
 
 ## M8 – Native Feinschliff und Release
@@ -128,15 +129,15 @@ Jede Komponente mit Light/Dark gegen die Figma-Komponente prüfen. Dazu eine Sto
 
 ---
 
-## Offene Punkte / Abweichungen Plan ↔ Figma (in M0 klären)
+## Entscheide aus M0
 
-1. **Play-Button der Plan-Karte:** Laut Plan ein Play-Icon, in Figma (`37:27416`) ein Pfeil (arrow). Das Icon-Set hat kein `play`.
-2. **Set-Row-Zustand:** Plan/`CLAUDE.md` sagen `done`, Figma sagt `completed`. Vorschlag: Figma-Name übernehmen und `CLAUDE.md` anpassen.
-3. **Grynd/Rest Timer** (`15:2022`): Ist er durch die Timer Bar ersetzt? Vorschlag: ja, in Figma als deprecated markieren.
-4. **Pläne Light** hat einen Frame «Sticky Aktion» (`37:27526`), Dark nicht. Laut Regel hat der Pläne-Screen keinen Primary-Button. Prüfen, ob er versteckt oder übrig geblieben ist.
-5. **Fehlende Screens:** Einstellungen (mit Einstieg), Verlauf-Detail, Pläne-Leerzustand (erster Start), Training bei der letzten Übung.
-6. **Tokens ohne Code-Syntax:** `surface-elevated`, `radius/lg|xl|pill`.
-7. Grynd/Exercise Card (`15:1823`): Wo sie verwendet wird, vor M3 prüfen.
+| # | Entscheid |
+| --- | --- |
+| [0001](decisions/0001-plan-card-opens-plan.md) | Plan-Karte hat einen Pfeil und öffnet den Plan; Start im Plan-Detail |
+| [0002](decisions/0002-set-row-state-names.md) | Set-Row-Zustände heissen wie in Figma: `open`, `completed`, `record`, `menu-open` |
+| [0003](decisions/0003-rest-timer-deprecated.md) | `Grynd/Rest Timer` ist veraltet, die Timer Bar ersetzt ihn |
+| [0004](decisions/0004-token-names.md) | CSS-Namen für `surface-elevated` und Radien |
+| [0005](decisions/0005-missing-screens.md) | Fehlende Screens entwirft Claude in Figma (Aufgabe 0.4) |
 
 ## Verifikation
 
