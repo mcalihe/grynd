@@ -1,0 +1,11 @@
+<div class="flex min-h-dvh flex-col pt-safe px-safe">
+  <main class="flex-1">
+    <router-outlet />
+  </main>
+
+  @if (showNav()) {
+    <div class="sticky bottom-0 bg-background pb-safe">
+      <app-nav-placeholder />
+    </div>
+  }
+</div>

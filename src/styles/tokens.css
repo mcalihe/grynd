@@ -1,0 +1,139 @@
+/*
+ * Design tokens generated from Figma (file grynd, collections Primitives, Semantic, Layout).
+ * Do not edit by hand: regenerate as described in scripts/figma-tokens.md.
+ * Spacing uses Tailwind's default 4px step (p-1 = 4px … p-12 = 48px), matching Figma Layout/spacing.
+ */
+
+:root {
+  /* Primitives */
+  --white: #ffffff;
+  --brand-50: #f8ffe5;
+  --brand-100: #efffba;
+  --brand-200: #e2ff7a;
+  --brand-300: #d4ff3d;
+  --brand-400: #c8ff00;
+  --brand-500: #a8db00;
+  --brand-600: #82ad00;
+  --brand-700: #637f05;
+  --brand-800: #4d6410;
+  --brand-900: #405314;
+  --brand-950: #203000;
+  --neutral-50: #fafafa;
+  --neutral-100: #f4f4f5;
+  --neutral-200: #e4e4e7;
+  --neutral-300: #d4d4d8;
+  --neutral-400: #a1a1aa;
+  --neutral-500: #71717a;
+  --neutral-600: #52525b;
+  --neutral-700: #3f3f46;
+  --neutral-800: #27272a;
+  --neutral-900: #18181b;
+  --neutral-950: #09090b;
+  --green-400: #4ade80;
+  --green-600: #16a34a;
+  --green-700: #15803d;
+  --amber-400: #fbbf24;
+  --amber-500: #f59e0b;
+  --amber-700: #b45309;
+  --red-400: #f87171;
+  --red-600: #dc2626;
+
+  /* Semantic (light) */
+  --background: var(--neutral-100);
+  --foreground: var(--neutral-950);
+  --card: var(--white);
+  --card-foreground: var(--neutral-950);
+  --popover: var(--white);
+  --popover-foreground: var(--neutral-950);
+  --primary: var(--brand-500);
+  --primary-foreground: var(--brand-950);
+  --secondary: var(--neutral-200);
+  --secondary-foreground: var(--neutral-900);
+  --muted: var(--neutral-200);
+  --muted-foreground: var(--neutral-600);
+  --accent: var(--brand-100);
+  --accent-foreground: var(--brand-950);
+  --destructive: var(--red-600);
+  --border: var(--neutral-200);
+  --input: var(--neutral-300);
+  --ring: var(--brand-700);
+  --chart-1: var(--brand-500);
+  --chart-2: var(--brand-700);
+  --chart-3: var(--green-600);
+  --chart-4: var(--amber-500);
+  --chart-5: var(--red-600);
+  --success: var(--green-700);
+  --warning: var(--amber-700);
+  --highlight: var(--brand-200);
+  --surface-elevated: var(--white);
+
+  /* Layout */
+  --radius: 12px;
+}
+
+.dark {
+  /* Semantic (dark) */
+  --background: var(--neutral-950);
+  --foreground: var(--neutral-50);
+  --card: var(--neutral-900);
+  --card-foreground: var(--neutral-50);
+  --popover: var(--neutral-900);
+  --popover-foreground: var(--neutral-50);
+  --primary: var(--brand-400);
+  --primary-foreground: var(--brand-950);
+  --secondary: var(--neutral-800);
+  --secondary-foreground: var(--neutral-50);
+  --muted: var(--neutral-800);
+  --muted-foreground: var(--neutral-400);
+  --accent: var(--brand-950);
+  --accent-foreground: var(--brand-100);
+  --destructive: var(--red-400);
+  --border: var(--neutral-800);
+  --input: var(--neutral-700);
+  --ring: var(--brand-400);
+  --chart-1: var(--brand-400);
+  --chart-2: var(--brand-600);
+  --chart-3: var(--green-400);
+  --chart-4: var(--amber-400);
+  --chart-5: var(--red-400);
+  --success: var(--green-400);
+  --warning: var(--amber-400);
+  --highlight: var(--brand-400);
+  --surface-elevated: var(--neutral-900);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-highlight: var(--highlight);
+  --color-surface-elevated: var(--surface-elevated);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: var(--radius);
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-full: 9999px;
+}
