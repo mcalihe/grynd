@@ -1,8 +1,7 @@
 @import 'tailwindcss';
+@import '@spartan-ng/brain/hlm-tailwind-preset.css';
 @import '@fontsource-variable/inter';
 @import './styles/tokens.css';
-
-@custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
   --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
@@ -23,6 +22,6 @@
   }
 
   * {
-    @apply border-border;
+    @apply border-border outline-ring/50;
   }
 }

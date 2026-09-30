@@ -34,6 +34,20 @@ module.exports = defineConfig([
     },
   },
   {
+    // Spartan helm components (generated, see components.json) use the hlm/brn prefixes.
+    files: ['src/app/shared/ui/**/*.ts'],
+    rules: {
+      '@angular-eslint/directive-selector': [
+        'error',
+        { type: 'attribute', prefix: ['hlm', 'brn'], style: 'camelCase' },
+      ],
+      '@angular-eslint/component-selector': [
+        'error',
+        { type: ['element', 'attribute'], prefix: ['hlm', 'brn'], style: 'kebab-case' },
+      ],
+    },
+  },
+  {
     files: ['**/*.html'],
     extends: [angular.configs.templateRecommended, angular.configs.templateAccessibility],
     rules: {},
