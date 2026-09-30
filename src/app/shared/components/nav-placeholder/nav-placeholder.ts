@@ -1,14 +1,12 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideChartLine, lucideClipboardList, lucideSettings } from '@ng-icons/lucide';
+import { NgIcon } from '@ng-icons/core';
 
 /** Simple tab bar until BottomNavigationComponent (Figma 15:2111) is built in M3. */
 @Component({
   selector: 'app-nav-placeholder',
   imports: [RouterLink, RouterLinkActive, TranslocoPipe, NgIcon],
-  providers: [provideIcons({ lucideClipboardList, lucideChartLine, lucideSettings })],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <nav class="mx-4 mb-2 flex rounded-full border bg-card p-1">

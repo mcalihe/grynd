@@ -45,6 +45,8 @@ module.exports = defineConfig([
         'error',
         { type: ['element', 'attribute'], prefix: ['hlm', 'brn'], style: 'kebab-case' },
       ],
+      // Spartan helm aliases inputs such as `class` → `userClass`.
+      '@angular-eslint/no-input-rename': 'off',
     },
   },
   {

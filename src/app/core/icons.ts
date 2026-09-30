@@ -1,0 +1,51 @@
+import {
+  lucideArrowLeft,
+  lucideArrowRight,
+  lucideCalendar,
+  lucideChartLine,
+  lucideCheck,
+  lucideChevronDown,
+  lucideChevronUp,
+  lucideClipboardList,
+  lucideDumbbell,
+  lucideEllipsis,
+  lucideGripVertical,
+  lucideList,
+  lucideMinus,
+  lucidePlay,
+  lucidePlus,
+  lucideSearch,
+  lucideSettings,
+  lucideSkipForward,
+  lucideSquare,
+  lucideTimer,
+  lucideX,
+} from '@ng-icons/lucide';
+
+/**
+ * Every Lucide icon the app uses (Figma "Icon" 9:25 plus icons drawn in the screens).
+ * Registered once in app.config via provideIcons; use as <ng-icon name="lucidePlus" />.
+ */
+export const APP_ICONS = {
+  lucideArrowLeft,
+  lucideArrowRight,
+  lucideCalendar,
+  lucideChartLine,
+  lucideCheck,
+  lucideChevronDown,
+  lucideChevronUp,
+  lucideClipboardList,
+  lucideDumbbell,
+  lucideEllipsis,
+  lucideGripVertical,
+  lucideList,
+  lucideMinus,
+  lucidePlay,
+  lucidePlus,
+  lucideSearch,
+  lucideSettings,
+  lucideSkipForward,
+  lucideSquare,
+  lucideTimer,
+  lucideX,
+};
