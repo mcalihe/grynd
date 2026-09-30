@@ -50,7 +50,7 @@ docs/
 
 ## Workflow
 
-1. Work in small steps: one screen or one function at a time, following the milestones in `docs/plan.md` §10.
+1. Work in small steps: one screen or one function at a time, following the tasks in `docs/roadmap.md` (milestones from `docs/plan.md` §10).
 2. Start in plan mode, wait for approval, then implement.
 3. One branch per feature; commit after each working step.
 4. Lint and tests must pass before a task is done.
@@ -69,4 +69,4 @@ Fill in once the project is set up:
 ## Tools
 
 - Use the Spartan MCP server (`@spartan-ng/mcp`) for current Spartan docs and the Angular CLI MCP server (`ng mcp`) for Angular best practices. Verify setup commands against current docs; versions change.
-- Use the Figma MCP server to read variables and frames. To refresh tokens: read the Semantic, Primitives and Layout variables from Figma and regenerate the token CSS (light in `:root`, dark in `.dark`).
+- Use the Figma MCP server to read variables and frames. Node IDs per screen and component are in `docs/design/component-map.md`; `get_metadata` only lists the first page, use `use_figma` to browse the others. To refresh tokens: read the Semantic, Primitives and Layout variables from Figma and regenerate the token CSS (light in `:root`, dark in `.dark`).
