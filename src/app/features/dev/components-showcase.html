@@ -59,6 +59,23 @@
   </section>
 
   <section class="flex flex-col gap-3">
+    <h2 class="text-sm font-semibold text-muted-foreground">
+      Week chart · History row · Verlauf 37:29734
+    </h2>
+    <app-week-chart
+      title="3 Trainings"
+      subtitle="Diese Woche · 2 Std. 41 Min."
+      [trend]="1"
+      [bars]="weekBars"
+    />
+    <app-week-chart title="0 Trainings" subtitle="Diese Woche · 0 Min." [trend]="-2" />
+    <div>
+      <app-history-row name="Oberkörper" details="Heute · 54 Min. · 6 Übungen" />
+      <app-history-row name="Beine" details="Freitag · 61 Min. · 5 Übungen" />
+    </div>
+  </section>
+
+  <section class="flex flex-col gap-3">
     <h2 class="text-sm font-semibold text-muted-foreground">Weekday chips · Segmented 84:2788</h2>
     <app-weekday-chips [(value)]="weekdays" />
     <app-segmented-control
