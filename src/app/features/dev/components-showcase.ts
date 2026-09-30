@@ -1,0 +1,53 @@
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { NgIcon } from '@ng-icons/core';
+import { HlmAlertDialogImports } from '@spartan-ng/helm/alert-dialog';
+import { HlmBadge } from '@spartan-ng/helm/badge';
+import { HlmButton } from '@spartan-ng/helm/button';
+import { HlmDropdownMenuImports } from '@spartan-ng/helm/dropdown-menu';
+import { HlmInput } from '@spartan-ng/helm/input';
+import { HlmPopoverImports } from '@spartan-ng/helm/popover';
+import { HlmSheetImports } from '@spartan-ng/helm/sheet';
+import { HlmSwitchImports } from '@spartan-ng/helm/switch';
+import { HlmToggleGroupImports } from '@spartan-ng/helm/toggle-group';
+import { ThemeMode, ThemeService } from '../../core/services/theme.service';
+
+/**
+ * Dev-only catalogue of every UI building block in all states (route /dev/components, not in
+ * production builds). Labels here are developer-facing and intentionally not translated.
+ */
+@Component({
+  selector: 'app-components-showcase',
+  imports: [
+    NgIcon,
+    HlmButton,
+    HlmBadge,
+    HlmInput,
+    HlmSwitchImports,
+    HlmToggleGroupImports,
+    HlmDropdownMenuImports,
+    HlmPopoverImports,
+    HlmSheetImports,
+    HlmAlertDialogImports,
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  templateUrl: './components-showcase.html',
+})
+export class ComponentsShowcase {
+  protected readonly theme = inject(ThemeService);
+  protected readonly themeModes: ThemeMode[] = ['system', 'light', 'dark'];
+  protected readonly buttonVariants = [
+    'default',
+    'secondary',
+    'outline',
+    'ghost',
+    'destructive',
+  ] as const;
+  protected readonly buttonSizes = ['sm', 'default', 'lg'] as const;
+  protected readonly badgeVariants = [
+    'default',
+    'secondary',
+    'success',
+    'warning',
+    'destructive',
+  ] as const;
+}

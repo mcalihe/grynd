@@ -1,3 +1,4 @@
+import { isDevMode } from '@angular/core';
 import { Routes } from '@angular/router';
 
 const placeholder = () =>
@@ -22,5 +23,14 @@ export const routes: Routes = [
     loadComponent: placeholder,
     data: { titleKey: 'settings.title', showThemeSwitch: true },
   },
+  ...(isDevMode()
+    ? [
+        {
+          path: 'dev/components',
+          loadComponent: () =>
+            import('./features/dev/components-showcase').then((m) => m.ComponentsShowcase),
+        },
+      ]
+    : []),
   { path: '**', redirectTo: 'plans' },
 ];

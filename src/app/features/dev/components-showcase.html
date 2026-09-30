@@ -1,0 +1,116 @@
+<div class="flex flex-col gap-8 px-4 py-6">
+  <header class="flex flex-col gap-3">
+    <h1 class="text-2xl font-semibold">Components</h1>
+    <div class="flex gap-2">
+      @for (mode of themeModes; track mode) {
+        <button
+          hlmBtn
+          size="sm"
+          [variant]="theme.mode() === mode ? 'default' : 'secondary'"
+          (click)="theme.setMode(mode)"
+        >
+          {{ mode }}
+        </button>
+      }
+    </div>
+  </header>
+
+  <section class="flex flex-col gap-3">
+    <h2 class="text-sm font-semibold text-muted-foreground">Button · Figma 9:206</h2>
+    @for (variant of buttonVariants; track variant) {
+      <div class="flex flex-wrap items-center gap-2">
+        @for (size of buttonSizes; track size) {
+          <button hlmBtn [variant]="variant" [size]="size">
+            <ng-icon name="lucidePlus" />{{ variant }}
+          </button>
+        }
+        <button hlmBtn [variant]="variant" disabled>disabled</button>
+      </div>
+    }
+  </section>
+
+  <section class="flex flex-col gap-3">
+    <h2 class="text-sm font-semibold text-muted-foreground">Badge · Figma 9:265</h2>
+    <div class="flex flex-wrap gap-2">
+      @for (variant of badgeVariants; track variant) {
+        <span hlmBadge [variant]="variant">{{ variant }}</span>
+      }
+    </div>
+  </section>
+
+  <section class="flex flex-col gap-3">
+    <h2 class="text-sm font-semibold text-muted-foreground">Input · Figma 9:219</h2>
+    <input hlmInput placeholder="Planname" />
+    <input hlmInput value="Invalid" aria-invalid="true" data-matches-spartan-invalid="true" />
+  </section>
+
+  <section class="flex flex-col gap-3">
+    <h2 class="text-sm font-semibold text-muted-foreground">Switch · Figma 9:284</h2>
+    <div class="flex gap-4">
+      <hlm-switch />
+      <hlm-switch [checked]="true" />
+      <hlm-switch [disabled]="true" />
+    </div>
+  </section>
+
+  <section class="flex flex-col gap-3">
+    <h2 class="text-sm font-semibold text-muted-foreground">Toggle group</h2>
+    <hlm-toggle-group type="multiple" [value]="['1', '4']" variant="outline">
+      @for (day of ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So']; track $index) {
+        <button hlmToggleGroupItem [value]="'' + ($index + 1)">{{ day }}</button>
+      }
+    </hlm-toggle-group>
+  </section>
+
+  <section class="flex flex-col gap-3">
+    <h2 class="text-sm font-semibold text-muted-foreground">Overlays</h2>
+    <div class="flex flex-wrap gap-2">
+      <button hlmBtn variant="secondary" [hlmDropdownMenuTrigger]="menu">Menu</button>
+      <ng-template #menu>
+        <hlm-dropdown-menu class="w-56">
+          <button hlmDropdownMenuItem>Satz duplizieren</button>
+          <button hlmDropdownMenuItem variant="destructive">Satz löschen</button>
+        </hlm-dropdown-menu>
+      </ng-template>
+
+      <hlm-popover>
+        <button hlmBtn variant="secondary" hlmPopoverTrigger>Popover</button>
+        <hlm-popover-content *hlmPopoverPortal="let ctx" class="w-auto">
+          <div class="flex gap-2">
+            @for (d of ['0:30', '1:00', '1:30', '2:00', '3:00']; track d) {
+              <button hlmBtn size="sm" [variant]="d === '1:30' ? 'default' : 'secondary'">
+                {{ d }}
+              </button>
+            }
+          </div>
+        </hlm-popover-content>
+      </hlm-popover>
+
+      <hlm-sheet side="bottom">
+        <button hlmBtn variant="secondary" hlmSheetTrigger>Sheet</button>
+        <hlm-sheet-content *hlmSheetPortal="let ctx">
+          <hlm-sheet-header>
+            <h3 hlmSheetTitle>Übersicht</h3>
+          </hlm-sheet-header>
+          <p class="px-6 pb-6 text-sm">Sheet content</p>
+        </hlm-sheet-content>
+      </hlm-sheet>
+
+      <hlm-alert-dialog>
+        <button hlmBtn variant="secondary" hlmAlertDialogTrigger>Dialog</button>
+        <hlm-alert-dialog-content *hlmAlertDialogPortal="let ctx">
+          <hlm-alert-dialog-header>
+            <h2 hlmAlertDialogTitle>Änderungen verwerfen?</h2>
+            <p hlmAlertDialogDescription>Deine Änderungen gehen verloren.</p>
+          </hlm-alert-dialog-header>
+          <hlm-alert-dialog-footer>
+            <button hlmAlertDialogCancel>Weiter bearbeiten</button>
+            <button hlmAlertDialogAction variant="destructive" (click)="ctx.close()">
+              Verwerfen
+            </button>
+          </hlm-alert-dialog-footer>
+        </hlm-alert-dialog-content>
+      </hlm-alert-dialog>
+    </div>
+  </section>
+</div>
