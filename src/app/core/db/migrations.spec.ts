@@ -54,9 +54,7 @@ describe('migrate', () => {
     await expect(migrate(driver, [...MIGRATIONS, broken])).rejects.toThrow();
 
     expect(await getSchemaVersion(driver)).toBe(MIGRATIONS.at(-1)?.version);
-    const brokenTables = await driver.query(
-      "SELECT name FROM sqlite_master WHERE name = 'broken'",
-    );
+    const brokenTables = await driver.query("SELECT name FROM sqlite_master WHERE name = 'broken'");
     expect(brokenTables).toEqual([]);
   });
 
