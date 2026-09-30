@@ -10,6 +10,8 @@ import { HlmSheetImports } from '@spartan-ng/helm/sheet';
 import { HlmSwitchImports } from '@spartan-ng/helm/switch';
 import { HlmToggleGroupImports } from '@spartan-ng/helm/toggle-group';
 import { ThemeMode, ThemeService } from '../../core/services/theme.service';
+import { ProgressRing } from '../../shared/components/progress-ring/progress-ring';
+import { SegmentProgress } from '../../shared/components/segment-progress/segment-progress';
 import { SetRow, SetRowState } from '../../shared/components/set-row/set-row';
 
 /**
@@ -30,6 +32,8 @@ import { SetRow, SetRowState } from '../../shared/components/set-row/set-row';
     HlmSheetImports,
     HlmAlertDialogImports,
     SetRow,
+    ProgressRing,
+    SegmentProgress,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './components-showcase.html',
@@ -45,6 +49,15 @@ export class ComponentsShowcase {
     'destructive',
   ] as const;
   protected readonly setStates: SetRowState[] = ['open', 'completed', 'record', 'menu-open'];
+  protected readonly ringValues = [0, 1 / 3, 1 / 2, 2 / 3, 1];
+  protected readonly segments = [
+    { done: 3, total: 3 },
+    { done: 2, total: 3 },
+    { done: 1, total: 3 },
+    { done: 0, total: 3 },
+    { done: 0, total: 4 },
+    { done: 0, total: 3 },
+  ];
   protected readonly buttonSizes = ['sm', 'default', 'lg'] as const;
   protected readonly badgeVariants = [
     'default',

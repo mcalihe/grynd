@@ -24,6 +24,18 @@
   </section>
 
   <section class="flex flex-col gap-3">
+    <h2 class="text-sm font-semibold text-muted-foreground">
+      Progress Ring 66:2852 · Segments 56:48035
+    </h2>
+    <div class="flex gap-3">
+      @for (value of ringValues; track value) {
+        <app-progress-ring [value]="value" />
+      }
+    </div>
+    <app-segment-progress [segments]="segments" [current]="2" />
+  </section>
+
+  <section class="flex flex-col gap-3">
     <h2 class="text-sm font-semibold text-muted-foreground">Button · Figma 9:206</h2>
     @for (variant of buttonVariants; track variant) {
       <div class="flex flex-wrap items-center gap-2">
