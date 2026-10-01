@@ -7,3 +7,5 @@ pnpm-lock.yaml
 docs
 *.md
 public/data
+/test-results
+/playwright-report

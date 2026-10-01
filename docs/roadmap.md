@@ -135,13 +135,16 @@ Umgesetzt in einem PR (`feat/m7-settings`), Entscheide in [0013](decisions/0013-
 
 ## M8 – Native Feinschliff und Release
 
+App-Seite umgesetzt in `feat/m8-native`, Entscheide in [0014](decisions/0014-native-polish.md). Die Release-Pipeline (8.5) ist aufgeteilt: unsignierte Builds jetzt, Signatur und Store-Uploads, sobald Apple- und Google-Konto bestehen.
+
 | # | Aufgabe |
 | --- | --- |
-| 8.1 | Haptik (Satz abhaken, Long-Press, Timer-Ende, Wisch-Schritte auf Zahlenfeldern) |
-| 8.2 | Local Notifications (Timer), Keep-Awake, Status-Bar passend zum Theme, Splash |
-| 8.3 | App-Icons und Splash aus Brand (Volt Lime, Brand-Mark aus `0:1`) |
-| 8.4 | Playwright-E2E: Plan anlegen → Training → Verlauf |
-| 8.5 | Cloud-Build iOS (GitHub Actions macOS), TestFlight; Android interner Test bei Google Play |
+| 8.1 | ✅ Haptik (Satz abhaken, Long-Press, Timer-Ende, Wisch-Schritte auf Zahlenfeldern) |
+| 8.2 | ✅ Local Notifications (Timer), Keep-Awake, Status-Bar passend zum Theme, Splash |
+| 8.3 | ✅ App-Icons und Splash: «Pulse Arc» (Figma-Seite «App Icon – Fitness», `85:3759`) |
+| 8.4 | ✅ Playwright-E2E: Plan anlegen → Training → Verlauf |
+| 8.5a | Unsignierte Builds in CI: Android-Debug-APK als Artefakt, iOS-Kompilierprüfung auf macOS |
+| 8.5b | Signatur, TestFlight und interner Test bei Google Play (braucht Apple Developer Program und Play Console) |
 
 ---
 

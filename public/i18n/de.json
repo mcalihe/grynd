@@ -73,7 +73,9 @@
       "start": "Timer starten",
       "stop": "Timer stoppen",
       "minus15": "15 Sekunden weniger",
-      "plus15": "15 Sekunden mehr"
+      "plus15": "15 Sekunden mehr",
+      "doneTitle": "Pause vorbei",
+      "doneText": "Weiter mit dem nächsten Satz."
     },
     "overview": "Übersicht",
     "end": "Beenden",

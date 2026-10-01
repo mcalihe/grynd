@@ -1,6 +1,8 @@
 import { computed, DestroyRef, inject, Injectable, signal } from '@angular/core';
+import { HapticsService } from '../services/haptics.service';
 import { SettingsService } from '../settings/settings.service';
 import { Clock } from '../utils/time';
+import { TimerNotificationService } from './timer-notification.service';
 
 const STORAGE_KEY = 'grynd.restTimer';
 const TICK_MS = 250;
@@ -19,6 +21,8 @@ interface TimerState {
 export class RestTimerService {
   private readonly clock = inject(Clock);
   private readonly settings = inject(SettingsService);
+  private readonly haptics = inject(HapticsService);
+  private readonly notification = inject(TimerNotificationService);
   private readonly state = signal<TimerState | null>(this.read());
   private readonly now = signal(this.clock.now().getTime());
   private tick?: ReturnType<typeof setInterval>;
@@ -72,8 +76,8 @@ export class RestTimerService {
     this.now.set(this.clock.now().getTime());
     if (this.state() && this.remainingMs() === 0) {
       this.stop();
-      // Sound and local notification follow with the native plugins (M8).
-      globalThis.navigator?.vibrate?.([200, 100, 200]);
+      // In the background the scheduled notification brings the sound.
+      this.haptics.success();
     }
   }
 
@@ -89,6 +93,7 @@ export class RestTimerService {
 
   private set(state: TimerState | null): void {
     this.state.set(state);
+    void (state ? this.notification.schedule(state.endAt) : this.notification.cancel());
     try {
       if (state) {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state));

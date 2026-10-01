@@ -4,6 +4,8 @@ allowBuilds:
   lmdb: true
   msgpackr-extract: true
   nx: false
+  # @capacitor/assets uses sharp 0.32, which fetches libvips in its install script.
+  sharp: true
 
 overrides:
   # jeep-sqlite 2.8.0 bundles the sql.js 1.11.0 JS glue; the served wasm must match it.

@@ -1,5 +1,13 @@
 import { DOCUMENT } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import {
+  afterNextRender,
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+} from '@angular/core';
+import { Capacitor } from '@capacitor/core';
+import { SplashScreen } from '@capacitor/splash-screen';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { TranslocoService } from '@jsverse/transloco';
@@ -34,6 +42,13 @@ export class App {
   protected readonly showNav = computed(() => TAB_ROUTES.includes(this.url()));
 
   constructor() {
+    // App initializers are done once the first frame renders: no blank flash, no theme flicker.
+    afterNextRender(() => {
+      if (Capacitor.isNativePlatform()) {
+        void SplashScreen.hide({ fadeOutDuration: 200 }).catch(() => undefined);
+      }
+    });
+
     // An active session survives restarts: open it again on startup (plan.md §7 «Fortsetzen»).
     const workout = inject(WorkoutService);
     this.router.events

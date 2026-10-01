@@ -1,14 +1,23 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslocoTestingModule } from '@jsverse/transloco';
+import { HapticsService } from '../../../core/services/haptics.service';
 import { LONG_PRESS_MS, SetRow } from './set-row';
 
 describe('SetRow', () => {
   let fixture: ComponentFixture<SetRow>;
   let host: HTMLElement;
+  const haptics = {
+    tap: vi.fn(),
+    press: vi.fn(),
+    selectionStart: vi.fn(),
+    tick: vi.fn(),
+    selectionEnd: vi.fn(),
+  };
 
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [SetRow, TranslocoTestingModule.forRoot({ langs: { de: {} } })],
+      providers: [{ provide: HapticsService, useValue: haptics }],
     });
     fixture = TestBed.createComponent(SetRow);
     fixture.componentRef.setInput('number', 1);
@@ -57,6 +66,7 @@ describe('SetRow', () => {
 
     expect(complete).toHaveBeenCalledOnce();
     expect(menu).toHaveBeenCalledOnce();
+    expect(haptics.tap).toHaveBeenCalled();
   });
 
   it('shows the check as done for completed and record sets', () => {
@@ -87,6 +97,7 @@ describe('SetRow', () => {
 
     host.dispatchEvent(new PointerEvent('pointerdown', { button: 0 }));
     vi.advanceTimersByTime(LONG_PRESS_MS);
+    expect(haptics.press).toHaveBeenCalled();
     host.dispatchEvent(new PointerEvent('pointerup'));
     checkButton().click();
 

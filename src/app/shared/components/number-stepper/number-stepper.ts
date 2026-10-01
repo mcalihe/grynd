@@ -16,6 +16,7 @@ import { DOCUMENT } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { NgIcon } from '@ng-icons/core';
+import { HapticsService } from '../../../core/services/haptics.service';
 import {
   clamp,
   formatNumber,
@@ -117,6 +118,7 @@ export class NumberStepper {
   private readonly field = viewChild<ElementRef<HTMLInputElement>>('field');
   private readonly injector = inject(Injector);
   private readonly document = inject(DOCUMENT);
+  private readonly haptics = inject(HapticsService);
 
   constructor() {
     inject(DestroyRef).onDestroy(() => this.listen(false));
@@ -176,6 +178,7 @@ export class NumberStepper {
       }
       swipe.active = true;
       swipe.lastX = swipe.startX + Math.sign(dx) * SWIPE_THRESHOLD_PX;
+      this.haptics.selectionStart();
     }
     const delta = event.clientX - swipe.lastX;
     const elapsed = Math.max(1, event.timeStamp - swipe.lastTime);
@@ -185,7 +188,11 @@ export class NumberStepper {
     const { steps, rest } = swipeSteps(swipe.travel + delta, swipe.velocity);
     swipe.travel = rest;
     if (steps !== 0) {
-      this.value.set(stepValue(this.value(), steps * this.stepSize(), this.bounds));
+      const next = stepValue(this.value(), steps * this.stepSize(), this.bounds);
+      if (next !== this.value()) {
+        this.haptics.tick();
+      }
+      this.value.set(next);
     }
   }
 
@@ -195,6 +202,7 @@ export class NumberStepper {
     }
     if (this.swipe?.active) {
       this.swallowNextClick = true;
+      this.haptics.selectionEnd();
     }
     this.endSwipe();
   }

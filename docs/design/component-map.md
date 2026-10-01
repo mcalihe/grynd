@@ -98,3 +98,12 @@ Klassen folgen dem Angular-Styleguide 2025 (ohne `Component`-Suffix), Selektor-P
 | Einstellungen | `/settings` (`SettingsPage`, features/settings) | `84:2796` | `84:3950` |
 
 Hinweis: «Training · Timer-Dauer» lag über «Verlauf» und liegt jetzt bei y=19992. «Verlauf · Leer» liegt bei y=20944.
+
+## App-Icon und Splash
+
+| Element | Figma | Code |
+| --- | --- | --- |
+| App-Icon «Pulse Arc» (Master) | `85:3762` | `assets/icon-only.png` → iOS AppIcon, Android mipmaps (`pnpm assets:generate`) |
+| Adaptive Icon Hinter-/Vordergrund | `112:40` / `112:47` | `assets/icon-background.png` / `assets/icon-foreground.png` |
+| Splash hell/dunkel | `112:54` / `112:61` | `assets/splash.png` / `assets/splash-dark.png` |
+| Favicon, Apple-Touch-Icon | aus `icon-only.png` | `public/favicon.png`, `public/apple-touch-icon.png` |

@@ -73,7 +73,9 @@
       "start": "Start timer",
       "stop": "Stop timer",
       "minus15": "15 seconds less",
-      "plus15": "15 seconds more"
+      "plus15": "15 seconds more",
+      "doneTitle": "Rest is over",
+      "doneText": "Time for the next set."
     },
     "overview": "Overview",
     "end": "End",
