@@ -2,6 +2,7 @@ import { computed, DestroyRef, inject, Injectable, signal } from '@angular/core'
 import { HapticsService } from '../services/haptics.service';
 import { SettingsService } from '../settings/settings.service';
 import { Clock } from '../utils/time';
+import { TimerNotificationService } from './timer-notification.service';
 
 const STORAGE_KEY = 'grynd.restTimer';
 const TICK_MS = 250;
@@ -21,6 +22,7 @@ export class RestTimerService {
   private readonly clock = inject(Clock);
   private readonly settings = inject(SettingsService);
   private readonly haptics = inject(HapticsService);
+  private readonly notification = inject(TimerNotificationService);
   private readonly state = signal<TimerState | null>(this.read());
   private readonly now = signal(this.clock.now().getTime());
   private tick?: ReturnType<typeof setInterval>;
@@ -91,6 +93,7 @@ export class RestTimerService {
 
   private set(state: TimerState | null): void {
     this.state.set(state);
+    void (state ? this.notification.schedule(state.endAt) : this.notification.cancel());
     try {
       if (state) {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
