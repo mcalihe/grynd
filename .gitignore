@@ -45,3 +45,8 @@ Thumbs.db
 
 # Local Claude Code launch config (machine-specific paths)
 .claude/launch.json
+
+# Playwright
+/test-results
+/playwright-report
+/blob-report
