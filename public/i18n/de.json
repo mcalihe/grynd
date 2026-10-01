@@ -65,7 +65,8 @@
       "number": "Satz {{number}}",
       "complete": "Satz abhaken",
       "menu": "Satzmenü",
-      "record": "PR"
+      "record": "PR",
+      "lb": "LB"
     },
     "timer": {
       "duration": "Pausendauer wählen",
@@ -123,8 +124,8 @@
       "text": "Starte ein Training über einen Plan. Abgeschlossene Trainings erscheinen hier."
     },
     "repsOnly": "{{reps}} Wdh.",
-    "setValue": "{{weight}} kg × {{reps}}",
-    "volume": "{{volume}} kg",
+    "setValue": "{{weight}} {{unit}} × {{reps}}",
+    "volume": "{{volume}} {{unit}}",
     "stats": {
       "duration": "Dauer",
       "volume": "Volumen",
@@ -146,11 +147,39 @@
       "system": "Automatisch",
       "light": "Hell",
       "dark": "Dunkel"
+    },
+    "appearance": "Darstellung",
+    "units": "Einheiten",
+    "language": "Sprache",
+    "training": "Training",
+    "data": "Daten",
+    "autostart": {
+      "title": "Timer automatisch starten",
+      "text": "Startet nach jedem abgehakten Satz"
+    },
+    "backup": {
+      "text": "Sicherung als JSON-Datei exportieren oder wiederherstellen.",
+      "export": "Exportieren",
+      "import": "Importieren",
+      "exported": "Sicherung exportiert",
+      "exportFailed": "Export fehlgeschlagen",
+      "imported": "Sicherung wiederhergestellt",
+      "importFailed": "Import fehlgeschlagen",
+      "errors": {
+        "format": "Die Datei ist keine Grynd-Sicherung.",
+        "newerSchema": "Die Sicherung stammt aus einer neueren App-Version.",
+        "invalidRow": "Die Sicherung enthält ungültige Daten.",
+        "missingReference": "Die Sicherung ist unvollständig oder verweist auf unbekannte Übungen."
+      },
+      "confirm": {
+        "title": "Daten ersetzen?",
+        "text": "Alle Pläne und Trainings auf diesem Gerät werden durch die Sicherung ersetzt.",
+        "confirm": "Ersetzen"
+      }
     }
   },
   "common": {
     "back": "Zurück",
-    "placeholder": "Kommt bald.",
     "decrease": "{{label}} verringern",
     "increase": "{{label}} erhöhen",
     "save": "Speichern",

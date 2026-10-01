@@ -86,7 +86,7 @@ import { OverviewSheet } from './overview-sheet';
               [isLast]="i === w.exercises.length - 1"
               (setMenu)="menuSet.set($event)"
               (moveBack)="moveBack(i, $event)"
-              (setCompleted)="timer.start($event)"
+              (setCompleted)="timer.autoStart($event)"
             />
           </section>
         }

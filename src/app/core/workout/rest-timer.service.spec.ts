@@ -1,4 +1,7 @@
 import { TestBed } from '@angular/core/testing';
+import { TranslocoTestingModule } from '@jsverse/transloco';
+import { provideMemorySettings } from '../../../testing/settings';
+import { SettingsService } from '../settings/settings.service';
 import { FakeClock } from '../../../testing/test-database';
 import { Clock } from '../utils/time';
 import { RestTimerService } from './rest-timer.service';
@@ -10,7 +13,10 @@ describe('RestTimerService', () => {
     localStorage.clear();
     vi.useFakeTimers();
     clock = new FakeClock();
-    TestBed.configureTestingModule({ providers: [{ provide: Clock, useValue: clock }] });
+    TestBed.configureTestingModule({
+      imports: [TranslocoTestingModule.forRoot({ langs: { de: {} } })],
+      providers: [{ provide: Clock, useValue: clock }, provideMemorySettings()],
+    });
   });
 
   afterEach(() => vi.useRealTimers());
@@ -25,6 +31,17 @@ describe('RestTimerService', () => {
     timer.update();
     expect(timer.remainingMs()).toBe(72_000);
     expect(timer.totalMs()).toBe(90_000);
+  });
+
+  it('starts automatically only when autostart is on', async () => {
+    const timer = TestBed.inject(RestTimerService);
+    timer.autoStart(90);
+    expect(timer.running()).toBe(true);
+    timer.stop();
+
+    await TestBed.inject(SettingsService).update({ timerAutostart: false });
+    timer.autoStart(90);
+    expect(timer.running()).toBe(false);
   });
 
   it('adjusts by ±15 seconds', () => {
@@ -51,7 +68,10 @@ describe('RestTimerService', () => {
     clock.advance(20_000);
 
     TestBed.resetTestingModule();
-    TestBed.configureTestingModule({ providers: [{ provide: Clock, useValue: clock }] });
+    TestBed.configureTestingModule({
+      imports: [TranslocoTestingModule.forRoot({ langs: { de: {} } })],
+      providers: [{ provide: Clock, useValue: clock }, provideMemorySettings()],
+    });
     const restored = TestBed.inject(RestTimerService);
     expect(restored.running()).toBe(true);
     expect(restored.remainingMs()).toBe(100_000);

@@ -65,7 +65,8 @@
       "number": "Set {{number}}",
       "complete": "Complete set",
       "menu": "Set menu",
-      "record": "PR"
+      "record": "PR",
+      "lb": "LB"
     },
     "timer": {
       "duration": "Choose rest duration",
@@ -123,8 +124,8 @@
       "text": "Start a workout from a plan. Finished workouts show up here."
     },
     "repsOnly": "{{reps}} reps",
-    "setValue": "{{weight}} kg × {{reps}}",
-    "volume": "{{volume}} kg",
+    "setValue": "{{weight}} {{unit}} × {{reps}}",
+    "volume": "{{volume}} {{unit}}",
     "stats": {
       "duration": "Duration",
       "volume": "Volume",
@@ -146,11 +147,39 @@
       "system": "System",
       "light": "Light",
       "dark": "Dark"
+    },
+    "appearance": "Appearance",
+    "units": "Units",
+    "language": "Language",
+    "training": "Workout",
+    "data": "Data",
+    "autostart": {
+      "title": "Start timer automatically",
+      "text": "Starts after every completed set"
+    },
+    "backup": {
+      "text": "Export a backup as a JSON file or restore one.",
+      "export": "Export",
+      "import": "Import",
+      "exported": "Backup exported",
+      "exportFailed": "Export failed",
+      "imported": "Backup restored",
+      "importFailed": "Import failed",
+      "errors": {
+        "format": "This file is not a Grynd backup.",
+        "newerSchema": "The backup comes from a newer app version.",
+        "invalidRow": "The backup contains invalid data.",
+        "missingReference": "The backup is incomplete or refers to unknown exercises."
+      },
+      "confirm": {
+        "title": "Replace data?",
+        "text": "All plans and workouts on this device will be replaced by the backup.",
+        "confirm": "Replace"
+      }
     }
   },
   "common": {
     "back": "Back",
-    "placeholder": "Coming soon.",
     "decrease": "Decrease {{label}}",
     "increase": "Increase {{label}}",
     "save": "Save",

@@ -1,11 +1,9 @@
 import { DOCUMENT } from '@angular/common';
 import { computed, effect, inject, Injectable, signal } from '@angular/core';
+import { SettingsService, ThemeMode } from '../settings/settings.service';
 
-export type ThemeMode = 'system' | 'light' | 'dark';
+export type { ThemeMode } from '../settings/settings.service';
 export type ResolvedTheme = 'light' | 'dark';
-
-const STORAGE_KEY = 'grynd.theme';
-const THEME_MODES: readonly ThemeMode[] = ['system', 'light', 'dark'];
 
 export function resolveTheme(mode: ThemeMode, prefersDark: boolean): ResolvedTheme {
   if (mode === 'system') {
@@ -15,16 +13,17 @@ export function resolveTheme(mode: ThemeMode, prefersDark: boolean): ResolvedThe
 }
 
 /**
- * Applies the chosen theme by toggling `.dark` on <html> and follows the OS setting live in `system` mode.
- * The choice is kept in localStorage for now; M7 moves it to Capacitor Preferences.
+ * Applies the chosen theme by toggling `.dark` on <html> and follows the OS setting live in
+ * `system` mode. The choice itself lives in the SettingsService.
  */
 @Injectable({ providedIn: 'root' })
 export class ThemeService {
   private readonly document = inject(DOCUMENT);
+  private readonly settings = inject(SettingsService);
   private readonly media = this.document.defaultView?.matchMedia?.('(prefers-color-scheme: dark)');
   private readonly prefersDark = signal(this.media?.matches ?? false);
 
-  readonly mode = signal<ThemeMode>(this.readStoredMode());
+  readonly mode = computed(() => this.settings.settings().theme);
   readonly resolved = computed(() => resolveTheme(this.mode(), this.prefersDark()));
 
   constructor() {
@@ -38,20 +37,6 @@ export class ThemeService {
   }
 
   setMode(mode: ThemeMode): void {
-    this.mode.set(mode);
-    try {
-      this.document.defaultView?.localStorage.setItem(STORAGE_KEY, mode);
-    } catch {
-      // Storage can be unavailable (private mode); the choice then lasts for this session only.
-    }
-  }
-
-  private readStoredMode(): ThemeMode {
-    try {
-      const stored = this.document.defaultView?.localStorage.getItem(STORAGE_KEY);
-      return THEME_MODES.find((mode) => mode === stored) ?? 'system';
-    } catch {
-      return 'system';
-    }
+    void this.settings.update({ theme: mode });
   }
 }

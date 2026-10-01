@@ -1,4 +1,7 @@
 import { TestBed } from '@angular/core/testing';
+import { TranslocoTestingModule } from '@jsverse/transloco';
+import { provideMemorySettings } from '../../../testing/settings';
+import { SettingsService } from '../settings/settings.service';
 import { resolveTheme, ThemeService } from './theme.service';
 
 describe('resolveTheme', () => {
@@ -15,37 +18,27 @@ describe('resolveTheme', () => {
 
 describe('ThemeService', () => {
   beforeEach(() => {
-    localStorage.clear();
     document.documentElement.classList.remove('dark');
+    TestBed.configureTestingModule({
+      imports: [TranslocoTestingModule.forRoot({ langs: { de: {} } })],
+      providers: [provideMemorySettings()],
+    });
   });
 
   it('defaults to system mode', () => {
-    const service = TestBed.inject(ThemeService);
-    expect(service.mode()).toBe('system');
+    expect(TestBed.inject(ThemeService).mode()).toBe('system');
   });
 
-  it('toggles the dark class and stores the choice', () => {
+  it('toggles the dark class and stores the choice in the settings', () => {
     const service = TestBed.inject(ThemeService);
 
     service.setMode('dark');
     TestBed.tick();
     expect(document.documentElement.classList.contains('dark')).toBe(true);
-    expect(localStorage.getItem('grynd.theme')).toBe('dark');
+    expect(TestBed.inject(SettingsService).settings().theme).toBe('dark');
 
     service.setMode('light');
     TestBed.tick();
     expect(document.documentElement.classList.contains('dark')).toBe(false);
-  });
-
-  it('restores a stored choice', () => {
-    localStorage.setItem('grynd.theme', 'dark');
-    const service = TestBed.inject(ThemeService);
-    expect(service.mode()).toBe('dark');
-  });
-
-  it('ignores invalid stored values', () => {
-    localStorage.setItem('grynd.theme', 'purple');
-    const service = TestBed.inject(ThemeService);
-    expect(service.mode()).toBe('system');
   });
 });

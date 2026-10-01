@@ -131,7 +131,7 @@ export class HistoryDetailPage implements OnInit {
       { label: 'history.stats.duration', value: this.format.duration(sessionDurationMs(summary)) },
       {
         label: 'history.stats.volume',
-        value: this.format.t('history.volume', { volume: this.format.number(summary.volumeKg, 0) }),
+        value: this.format.volume(summary.volumeKg),
       },
       { label: 'history.stats.sets', value: String(summary.setCount) },
     ];

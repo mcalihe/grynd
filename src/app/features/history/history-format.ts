@@ -2,6 +2,8 @@ import { inject, Injectable } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { TranslocoService } from '@jsverse/transloco';
 import { dayLabel, durationParts, HistoryWeek } from '../../core/history/history-stats';
+import { SettingsService } from '../../core/settings/settings.service';
+import { kgToDisplay, weightDecimals } from '../../core/units/weight';
 
 /**
  * Locale-aware texts for the history screens. Every method reads `ready`, so computeds that use
@@ -11,6 +13,7 @@ import { dayLabel, durationParts, HistoryWeek } from '../../core/history/history
 export class HistoryFormat {
   private readonly transloco = inject(TranslocoService);
   private readonly ready = toSignal(this.transloco.selectTranslation());
+  private readonly settings = inject(SettingsService);
   readonly locale = toSignal(this.transloco.langChanges$, { initialValue: 'de' });
 
   t(key: string, params?: Record<string, unknown>): string {
@@ -78,11 +81,22 @@ export class HistoryFormat {
     return new Intl.NumberFormat(this.locale(), { maximumFractionDigits: decimals }).format(value);
   }
 
-  /** "80 kg × 8", or "12 Wdh." without weight. */
+  /** "80 kg × 8" / "176,4 lb × 8", or "12 Wdh." without weight. */
   set(weightKg: number | null, reps: number | null): string {
     if (!weightKg) {
       return this.t('history.repsOnly', { reps: reps ?? 0 });
     }
-    return this.t('history.setValue', { weight: this.number(weightKg), reps: reps ?? 0 });
+    const unit = this.settings.settings().unit;
+    return this.t('history.setValue', {
+      weight: this.number(kgToDisplay(weightKg, unit) ?? 0, weightDecimals(unit)),
+      unit,
+      reps: reps ?? 0,
+    });
+  }
+
+  /** Total volume in the chosen unit, e.g. "8.420 kg". */
+  volume(kg: number): string {
+    const unit = this.settings.settings().unit;
+    return this.t('history.volume', { volume: this.number(kgToDisplay(kg, unit) ?? 0, 0), unit });
   }
 }

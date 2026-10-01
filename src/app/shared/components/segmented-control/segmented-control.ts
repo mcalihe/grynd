@@ -18,7 +18,7 @@ export interface SegmentedOption<T> {
       <button
         type="button"
         role="radio"
-        class="h-11 min-w-0 flex-1 truncate rounded-lg px-3 text-sm font-medium"
+        class="h-11 min-w-0 flex-1 truncate rounded-lg px-2 text-sm font-medium"
         [class]="
           option.value === value() ? 'bg-card text-foreground shadow-xs' : 'text-muted-foreground'
         "
