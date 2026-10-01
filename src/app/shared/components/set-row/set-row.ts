@@ -14,6 +14,7 @@ import { NgIcon } from '@ng-icons/core';
 import { HlmBadge } from '@spartan-ng/helm/badge';
 import { WeightUnit } from '../../../core/settings/settings.service';
 import { displayToKg, kgToDisplay, WEIGHT_STEP, weightDecimals } from '../../../core/units/weight';
+import { HapticsService } from '../../../core/services/haptics.service';
 import { NumberStepper } from '../number-stepper/number-stepper';
 
 export type SetRowState = 'open' | 'completed' | 'record' | 'menu-open';
@@ -77,7 +78,7 @@ const LONG_PRESS_SLOP_PX = 8;
         "
         [attr.aria-label]="'workout.set.complete' | transloco"
         [attr.aria-pressed]="done()"
-        (click)="complete.emit()"
+        (click)="haptics.tap(); complete.emit()"
       >
         <ng-icon name="lucideCheck" size="22" />
       </button>
@@ -111,6 +112,7 @@ export class SetRow implements OnDestroy {
   protected readonly weightStep = WEIGHT_STEP;
   protected readonly displayWeight = computed(() => kgToDisplay(this.weight(), this.unit()));
   protected readonly decimals = computed(() => weightDecimals(this.unit()));
+  protected readonly haptics = inject(HapticsService);
   private pressTimer?: ReturnType<typeof setTimeout>;
   private longPressFired = false;
   private pressStart?: { x: number; y: number };
@@ -141,6 +143,7 @@ export class SetRow implements OnDestroy {
     this.pressStart = { x: event.clientX, y: event.clientY };
     this.pressTimer = setTimeout(() => {
       this.longPressFired = true;
+      this.haptics.press();
       this.menu.emit();
     }, LONG_PRESS_MS);
   }

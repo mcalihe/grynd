@@ -1,4 +1,5 @@
 import { computed, DestroyRef, inject, Injectable, signal } from '@angular/core';
+import { HapticsService } from '../services/haptics.service';
 import { SettingsService } from '../settings/settings.service';
 import { Clock } from '../utils/time';
 
@@ -19,6 +20,7 @@ interface TimerState {
 export class RestTimerService {
   private readonly clock = inject(Clock);
   private readonly settings = inject(SettingsService);
+  private readonly haptics = inject(HapticsService);
   private readonly state = signal<TimerState | null>(this.read());
   private readonly now = signal(this.clock.now().getTime());
   private tick?: ReturnType<typeof setInterval>;
@@ -72,8 +74,8 @@ export class RestTimerService {
     this.now.set(this.clock.now().getTime());
     if (this.state() && this.remainingMs() === 0) {
       this.stop();
-      // Sound and local notification follow with the native plugins (M8).
-      globalThis.navigator?.vibrate?.([200, 100, 200]);
+      // In the background the scheduled notification brings the sound.
+      this.haptics.success();
     }
   }
 
