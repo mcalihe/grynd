@@ -11,6 +11,7 @@
     "lint": "ng lint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "assets:generate": "capacitor-assets generate --android --ios --splashBackgroundColor \"#f4f4f5\" --splashBackgroundColorDark \"#09090b\" --iconBackgroundColor \"#6d3df5\" --iconBackgroundColorDark \"#6d3df5\"",
     "catalog:import": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/import-exercises.mjs"
   },
   "private": true,
@@ -53,6 +54,7 @@
     "@angular/build": "^22.2.0",
     "@angular/cli": "^22.2.0",
     "@angular/compiler-cli": "^22.2.0",
+    "@capacitor/assets": "3.0.5",
     "@capacitor/cli": "8.5.2",
     "@eslint/js": "^10.0.1",
     "@spartan-ng/cli": "1.5.0",
