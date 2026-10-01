@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { TranslocoTestingModule } from '@jsverse/transloco';
 import { provideMemorySettings } from '../../../testing/settings';
 import { SettingsService } from '../settings/settings.service';
-import { resolveTheme, ThemeService } from './theme.service';
+import { resolveTheme, STATUS_BAR, ThemeService } from './theme.service';
 
 describe('resolveTheme', () => {
   it('follows the OS preference in system mode', () => {
@@ -17,11 +17,14 @@ describe('resolveTheme', () => {
 });
 
 describe('ThemeService', () => {
+  const statusBar = { setStyle: vi.fn().mockResolvedValue(undefined) };
+
   beforeEach(() => {
+    statusBar.setStyle.mockClear();
     document.documentElement.classList.remove('dark');
     TestBed.configureTestingModule({
       imports: [TranslocoTestingModule.forRoot({ langs: { de: {} } })],
-      providers: [provideMemorySettings()],
+      providers: [provideMemorySettings(), { provide: STATUS_BAR, useValue: statusBar }],
     });
   });
 
@@ -40,5 +43,15 @@ describe('ThemeService', () => {
     service.setMode('light');
     TestBed.tick();
     expect(document.documentElement.classList.contains('dark')).toBe(false);
+  });
+
+  it('matches the native status bar text to the theme', () => {
+    const service = TestBed.inject(ThemeService);
+    service.setMode('dark');
+    TestBed.tick();
+    expect(statusBar.setStyle).toHaveBeenLastCalledWith({ style: 'DARK' });
+    service.setMode('light');
+    TestBed.tick();
+    expect(statusBar.setStyle).toHaveBeenLastCalledWith({ style: 'LIGHT' });
   });
 });
