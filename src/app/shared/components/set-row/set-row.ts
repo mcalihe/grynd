@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   ElementRef,
   inject,
   input,
@@ -11,16 +12,17 @@ import {
 import { TranslocoPipe } from '@jsverse/transloco';
 import { NgIcon } from '@ng-icons/core';
 import { HlmBadge } from '@spartan-ng/helm/badge';
+import { WeightUnit } from '../../../core/settings/settings.service';
+import { displayToKg, kgToDisplay, WEIGHT_STEP, weightDecimals } from '../../../core/units/weight';
 import { NumberStepper } from '../number-stepper/number-stepper';
 
 export type SetRowState = 'open' | 'completed' | 'record' | 'menu-open';
 
 export const LONG_PRESS_MS = 500;
-export const WEIGHT_STEP_KG = 2.5;
 
 /**
- * One set in a workout (Figma Grynd/Set Row 96:3055, decision 0009): number, kg and reps
- * steppers, check, menu. Long-press (500 ms) or the ⋯ button opens the set menu.
+ * One set in a workout (Figma Grynd/Set Row 96:3055, decision 0009): number, weight and reps
+ * steppers, check, menu. `weight` is always kg; `unit` only changes what is shown and typed. Long-press (500 ms) or the ⋯ button opens the set menu.
  */
 @Component({
   selector: 'app-set-row',
@@ -56,11 +58,12 @@ export const WEIGHT_STEP_KG = 2.5;
       </span>
 
       <app-number-stepper
-        [label]="'workout.set.kg' | transloco"
-        [(value)]="weight"
+        [label]="'workout.set.' + unit() | transloco"
+        [value]="displayWeight()"
         [stepSize]="weightStep"
-        [decimals]="2"
-        [max]="999"
+        [decimals]="decimals()"
+        [max]="unit() === 'kg' ? 999 : 2200"
+        (valueChange)="weight.set(toKg($event))"
       />
       <app-number-stepper [label]="'workout.set.reps' | transloco" [(value)]="reps" [max]="999" />
 
@@ -98,11 +101,14 @@ export class SetRow implements OnDestroy {
   readonly reps = model<number | null>(null);
   readonly state = input<SetRowState>('open');
   readonly extra = input(false);
+  readonly unit = input<WeightUnit>('kg');
 
   readonly complete = output<void>();
   readonly menu = output<void>();
 
-  protected readonly weightStep = WEIGHT_STEP_KG;
+  protected readonly weightStep = WEIGHT_STEP;
+  protected readonly displayWeight = computed(() => kgToDisplay(this.weight(), this.unit()));
+  protected readonly decimals = computed(() => weightDecimals(this.unit()));
   private pressTimer?: ReturnType<typeof setTimeout>;
   private longPressFired = false;
 
@@ -113,6 +119,10 @@ export class SetRow implements OnDestroy {
       (event) => this.swallowClickAfterLongPress(event),
       true,
     );
+  }
+
+  protected toKg(value: number | null): number | null {
+    return displayToKg(value, this.unit());
   }
 
   protected done(): boolean {

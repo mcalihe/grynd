@@ -33,6 +33,19 @@ describe('SetRow', () => {
     expect(fixture.componentInstance.reps()).toBe(9);
   });
 
+  it('shows pounds, steps by 2.5 lb and still emits kilograms', () => {
+    fixture.componentRef.setInput('unit', 'lb');
+    fixture.componentInstance.weight.set(60);
+    fixture.detectChanges();
+    expect(host.textContent).toContain('132.3');
+
+    const [, , weightPlus] = buttons();
+    weightPlus.click();
+    fixture.detectChanges();
+    expect(host.textContent).toContain('134.8');
+    expect(fixture.componentInstance.weight()).toBeCloseTo(61.1443, 3);
+  });
+
   it('emits complete and menu', () => {
     const complete = vi.fn();
     const menu = vi.fn();

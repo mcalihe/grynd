@@ -65,7 +65,8 @@
       "number": "Set {{number}}",
       "complete": "Complete set",
       "menu": "Set menu",
-      "record": "PR"
+      "record": "PR",
+      "lb": "LB"
     },
     "timer": {
       "duration": "Choose rest duration",
@@ -123,8 +124,8 @@
       "text": "Start a workout from a plan. Finished workouts show up here."
     },
     "repsOnly": "{{reps}} reps",
-    "setValue": "{{weight}} kg × {{reps}}",
-    "volume": "{{volume}} kg",
+    "setValue": "{{weight}} {{unit}} × {{reps}}",
+    "volume": "{{volume}} {{unit}}",
     "stats": {
       "duration": "Duration",
       "volume": "Volume",

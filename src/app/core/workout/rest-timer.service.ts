@@ -1,4 +1,5 @@
 import { computed, DestroyRef, inject, Injectable, signal } from '@angular/core';
+import { SettingsService } from '../settings/settings.service';
 import { Clock } from '../utils/time';
 
 const STORAGE_KEY = 'grynd.restTimer';
@@ -17,6 +18,7 @@ interface TimerState {
 @Injectable({ providedIn: 'root' })
 export class RestTimerService {
   private readonly clock = inject(Clock);
+  private readonly settings = inject(SettingsService);
   private readonly state = signal<TimerState | null>(this.read());
   private readonly now = signal(this.clock.now().getTime());
   private tick?: ReturnType<typeof setInterval>;
@@ -40,6 +42,13 @@ export class RestTimerService {
     this.set({ endAt: this.clock.now().getTime() + totalMs, totalMs });
     this.now.set(this.clock.now().getTime());
     this.startTicking();
+  }
+
+  /** After a set was checked: starts only when «Timer automatisch starten» is on. */
+  autoStart(seconds: number): void {
+    if (this.settings.settings().timerAutostart) {
+      this.start(seconds);
+    }
   }
 
   /** −15 / +15 seconds; the bar length follows the new total. */

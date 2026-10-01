@@ -65,7 +65,8 @@
       "number": "Satz {{number}}",
       "complete": "Satz abhaken",
       "menu": "Satzmenü",
-      "record": "PR"
+      "record": "PR",
+      "lb": "LB"
     },
     "timer": {
       "duration": "Pausendauer wählen",
@@ -123,8 +124,8 @@
       "text": "Starte ein Training über einen Plan. Abgeschlossene Trainings erscheinen hier."
     },
     "repsOnly": "{{reps}} Wdh.",
-    "setValue": "{{weight}} kg × {{reps}}",
-    "volume": "{{volume}} kg",
+    "setValue": "{{weight}} {{unit}} × {{reps}}",
+    "volume": "{{volume}} {{unit}}",
     "stats": {
       "duration": "Dauer",
       "volume": "Volumen",

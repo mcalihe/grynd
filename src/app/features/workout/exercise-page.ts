@@ -6,6 +6,7 @@ import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmDropdownMenuImports } from '@spartan-ng/helm/dropdown-menu';
 import { SetLog } from '../../core/db/models';
 import { ExerciseCatalogService } from '../../core/exercises/exercise-catalog.service';
+import { SettingsService } from '../../core/settings/settings.service';
 import { WorkoutExercise, WorkoutService } from '../../core/workout/workout.service';
 import { SetRow, SetRowState } from '../../shared/components/set-row/set-row';
 import { SetMenu } from './set-menu';
@@ -73,6 +74,7 @@ export function repTarget(repMin: number | null, repMax: number | null): string 
           [reps]="set.reps"
           [state]="stateOf(set)"
           [extra]="set.isExtra && !item().sets[i - 1]?.isExtra"
+          [unit]="unit()"
           (weightChange)="workout.updateSet(set.id, { weightKg: $event })"
           (repsChange)="workout.updateSet(set.id, { reps: $event })"
           (complete)="complete(set)"
@@ -115,6 +117,8 @@ export class ExercisePage {
 
   protected readonly workout = inject(WorkoutService);
   private readonly catalog = inject(ExerciseCatalogService);
+  private readonly settings = inject(SettingsService);
+  protected readonly unit = computed(() => this.settings.settings().unit);
 
   protected readonly exercise = computed(
     () => this.catalog.byId().get(this.item().entry.exerciseId) ?? { muscleGroup: null },
