@@ -143,8 +143,8 @@ App-Seite umgesetzt in `feat/m8-native`, Entscheide in [0014](decisions/0014-nat
 | 8.2 | ✅ Local Notifications (Timer), Keep-Awake, Status-Bar passend zum Theme, Splash |
 | 8.3 | ✅ App-Icons und Splash: «Pulse Arc» (Figma-Seite «App Icon – Fitness», `85:3759`) |
 | 8.4 | ✅ Playwright-E2E: Plan anlegen → Training → Verlauf |
-| 8.5a | Unsignierte Builds in CI: Android-Debug-APK als Artefakt, iOS-Kompilierprüfung auf macOS |
-| 8.5b | Signatur, TestFlight und interner Test bei Google Play (braucht Apple Developer Program und Play Console) |
+| 8.5a | ✅ Unsignierte Builds in CI: Android-Debug-APK als Artefakt, iOS-Kompilierprüfung auf macOS ([release.md](release.md)) |
+| 8.5b | Signatur, TestFlight und interner Test bei Google Play (braucht Apple Developer Program und Play Console; Secrets in [release.md](release.md)) |
 
 ---
 
