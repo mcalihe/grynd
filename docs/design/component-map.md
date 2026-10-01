@@ -31,7 +31,7 @@ Klassen folgen dem Angular-Styleguide 2025 (ohne `Component`-Suffix), Selektor-P
 | Switch | `9:284` | checked × default/disabled | helm `hlm-switch` (52×32) | shared/ui/switch |
 | Checkbox | `9:295` | checked × default/disabled | noch nicht generiert (bei Bedarf) | – |
 | Separator | `9:298` | horizontal/vertical | noch nicht generiert, Linien über `border-b` | – |
-| Toast | `9:326` | default/success/destructive | helm `hlm-toaster` (sonner) | shared/ui/sonner |
+| Toast | `9:326` | default/success/destructive | helm `hlm-toaster` (sonner, in der App-Shell, `toast()` aus `@spartan-ng/brain/sonner`) | shared/ui/sonner |
 | Card | `9:266` | – | kein helm card; Karten als `bg-card rounded-lg border` | – |
 | Tabs | `9:271` | – | nicht verwendet, stattdessen Segmented Control | – |
 | Sheet | `9:299` | – | helm `hlm-sheet` (`side="bottom"`, Radius 20) | shared/ui/sheet |
@@ -95,6 +95,6 @@ Klassen folgen dem Angular-Styleguide 2025 (ohne `Component`-Suffix), Selektor-P
 | Verlauf | `/history` | `37:29734` | `37:29861` |
 | Verlauf · Leer | `/history` | `106:1654` | `106:1764` |
 | Verlauf-Detail | `/history/:sessionId` | `84:3364` (Menü `106:1648`) | `84:4001` (Menü `106:1651`) |
-| Einstellungen | `/settings` | `84:2796` | `84:3950` |
+| Einstellungen | `/settings` (`SettingsPage`, features/settings) | `84:2796` | `84:3950` |
 
 Hinweis: «Training · Timer-Dauer» lag über «Verlauf» und liegt jetzt bei y=19992. «Verlauf · Leer» liegt bei y=20944.

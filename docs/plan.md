@@ -65,7 +65,7 @@ Figma ist die Quelle für Tokens. Die Variablen tragen bereits ihren CSS-Namen a
 - **Markenfarbe:** Volt Lime (Skala `brand/50–950`), dazu `neutral/50–950` sowie Statusfarben `green`, `amber`, `red`.
 - **Semantische Tokens** (Light und Dark, Namen wie shadcn/Spartan): `background`, `foreground`, `card`, `card-foreground`, `popover`, `popover-foreground`, `primary`, `primary-foreground`, `secondary`, `secondary-foreground`, `muted`, `muted-foreground`, `accent`, `accent-foreground`, `destructive`, `border`, `input`, `ring`, `chart-1` bis `chart-5` sowie eigene: `success`, `warning`, `highlight`, `surface-elevated`. Radien: `--radius` (12), `--radius-lg` (16), `--radius-xl` (20), `--radius-full` (Pill).
 - **Farbregeln:** Fortschritt immer in `primary`. `success` nur für Status-Meldungen (Badges, Toasts, Trends). Icons übernehmen die Vordergrundfarbe ihrer Fläche (auf `primary` → `primary-foreground`).
-- **Theme:** Automatisch (`prefers-color-scheme`, reagiert live), Hell oder Dunkel; Wahl lokal gespeichert. Ein `ThemeService` setzt `.dark` am `html`-Element (Tailwind v4: `@custom-variant dark`) und passt die Statusleiste an. Light und Dark zeigen nur auf verschiedene Stufen derselben Palette.
+- **Theme:** Automatisch (`prefers-color-scheme`, reagiert live), Hell oder Dunkel; Wahl in den Einstellungen gespeichert. Ein `ThemeService` setzt `.dark` am `html`-Element (Tailwind v4: `@custom-variant dark`) und passt die Statusleiste an. Light und Dark zeigen nur auf verschiedene Stufen derselben Palette.
 - **Schrift:** Inter (Platzhalter, finale Wahl offen), lokal gebündelt, Tabellenziffern für alle Zahlen.
 - **Layout:** 4er-Raster, Touch-Ziele mindestens 44 px, Kontrast für Text mindestens 4,5:1.
 
@@ -92,7 +92,7 @@ Alle Tabellen haben `id` (UUIDv7), `createdAt`, `updatedAt`, `deletedAt`. Dazu k
 - **Fortsetzen:** Eine aktive Session überlebt App-Neustarts; die App öffnet sie beim Start wieder.
 - **Rekord:** Ein Satz ist ein PR, wenn sein geschätztes 1RM (Epley: kg × (1 + reps / 30)) über allen bisherigen abgehakten Sätzen dieser Übung liegt (abgeschlossene Sessions und frühere Sätze der laufenden). Ohne Basis und bei Gleichstand kein PR. Wird zur Laufzeit berechnet, nicht gespeichert.
 - **Beenden/Abschliessen:** siehe [0011](decisions/0011-workout-flow.md). «Beenden und speichern» → `finished`, «Training verwerfen» → `aborted` (nicht im Verlauf).
-- **Einheiten:** intern kg, Umrechnung in lb nur für die Anzeige.
+- **Einheiten:** intern kg, Umrechnung in lb nur für die Anzeige (auf 0,1 gerundet, Schritt 2,5 lb; eingegebene lb bleiben exakt erhalten).
 - **Zeiterfassung:**
   - Training: `startedAt` beim Start, `finishedAt` bei «Training abschliessen».
   - Übung: Jedes Mal, wenn eine Übung zur aktuellen Seite wird, beginnt ein Intervall (`enteredAt`); beim Wegwischen oder Abschliessen wird es geschlossen (`leftAt`). Zeit pro Übung = Summe der Intervalle.
@@ -128,7 +128,7 @@ Alle Tabellen haben `id` (UUIDv7), `createdAt`, `updatedAt`, `deletedAt`. Dazu k
 - **Segment-Indikator oben:** ein Segment pro Übung (Session-Reihenfolge), füllt sich anteilig zu den erledigten Sätzen (inkl. Extra-Sätze), aktuelles Segment hervorgehoben, ohne Zahlen.
 - **Übersicht:** Pill «2 / 6» mit Listen-Icon und Chevron öffnet ein Sheet mit allen Übungen. Umsortieren per Angular CDK Drag and Drop, alle Zeilen immer verschiebbar. Status als Fortschrittsring in `primary` (voll = Haken), aktuelle Übung über Hintergrund und Rahmen markiert, kein Text. Tippen springt zur Übung.
 - **Übungsmenü (drei Punkte):** «1 nach hinten verschieben», «Ans Ende verschieben».
-- **Satz-Zeile** (80 px): Nummer, Vorwert, Stepper für kg und Wdh., Haken. Zustände: offen, erledigt, Rekord, Menü offen. Kein «aktiv»-Zustand.
+- **Satz-Zeile** (80 px): Nummer, Vorwert, Stepper für kg und Wdh., Haken. Werte lassen sich auch durch waagrechtes Wischen über das Zahlenfeld ändern (schneller = grössere Sprünge). Zustände: offen, erledigt, Rekord, Menü offen. Kein «aktiv»-Zustand.
 - **Satz-Kontextmenü:** Long-Press (ca. 500 ms, mit Haptik) oder kleines Drei-Punkte-Icon; «Satz duplizieren», «Satz löschen». Kein Swipe-to-Delete.
 - **«+ Satz»** unter den Sätzen; Extra-Sätze mit Label «Extra».
 - **Timer:** neutraler Timer als feste Leiste über dem Weiter-Button (kein Sheet). Bereit: Standarddauer + Chevron + Play. Läuft: Restzeit, Fortschrittslinie, −15 / +15, Stopp. Letzte 10 s in `warning`. Tippen auf die Zeit öffnet ein Popover mit 0:30, 1:00, 1:30, 2:00, 3:00. Startet automatisch nach dem Abhaken eines Satzes (abschaltbar). Speichert die Endzeit, nicht einen Zähler. Bei Ablauf: Vibration, Ton, lokale Benachrichtigung.
@@ -147,7 +147,9 @@ Alle Tabellen haben `id` (UUIDv7), `createdAt`, `updatedAt`, `deletedAt`. Dazu k
 
 ### Einstellungen (`/settings`)
 - Letzter Tab der Bottom-Navigation (Zahnrad).
-- Theme (Automatisch/Hell/Dunkel), Einheiten (kg/lb), Sprache (DE/EN), Timer-Autostart, JSON-Export/Import als Backup.
+- Theme (Automatisch/Hell/Dunkel), Einheiten (kg/lb), Sprache (Deutsch/English, bis zur Wahl die Gerätesprache), Timer-Autostart, JSON-Export/Import als Backup, Version.
+- Gespeichert mit `@capacitor/preferences`, wirksam sofort ([0013](decisions/0013-settings-units-swipe-backup.md)).
+- **Import ersetzt alle Pläne und Trainings** nach Prüfung der Datei und Bestätigung; Export als Download bzw. über das Teilen-Menü.
 
 ## 9. UI-Regeln
 

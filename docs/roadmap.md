@@ -123,19 +123,21 @@ Umgesetzt in einem PR (`feat/m6-history`), Entscheide in [0012](decisions/0012-h
 | 6.2 | ✅ **Verlauf** `/history`: Wochen-Balkendiagramm (`chart-1`, leere Tage grau), Liste | Verlauf `37:29734` | `37:29861` |
 | 6.3 | ✅ **Verlauf-Detail** `/history/:sessionId`: Kennzahlen (Dauer, Volumen, Sätze), pro Übung Zeit und Satzliste mit Badges «Rekord»/«Extra» | Verlauf-Detail `84:3364` | `84:4001` |
 
-## M7 – Einstellungen
+## M7 – Einstellungen ✅
+
+Umgesetzt in einem PR (`feat/m7-settings`), Entscheide in [0013](decisions/0013-settings-units-swipe-backup.md). Zusätzlich: Werte durch Wischen über die Zahlenfelder ändern.
 
 | # | Aufgabe | Figma |
 | --- | --- | --- |
-| 7.1 | `SettingsService` (Capacitor Preferences): Theme, Einheit, Sprache, Timer-Autostart | – |
-| 7.2 | **Einstellungen** `/settings` (Tab in der Bottom-Nav): Theme, kg/lb, DE/EN (Segmented Control), Autostart (Switch), Version. Kein Hinweis «Daten nur auf diesem Gerät»: Im MVP gibt es nur lokale Speicherung, also nichts zu erklären. | Einstellungen `84:2796` / Dark `84:3950` |
-| 7.3 | JSON-Export (Filesystem + Share) und Import mit Validierung und Bestätigungsdialog | Dialog `9:303`, Toast `9:326` |
+| 7.1 | ✅ `SettingsService` (Capacitor Preferences): Theme, Einheit, Sprache, Timer-Autostart | – |
+| 7.2 | ✅ **Einstellungen** `/settings` (Tab in der Bottom-Nav): Theme, kg/lb, DE/EN (Segmented Control), Autostart (Switch), Version. Kein Hinweis «Daten nur auf diesem Gerät»: Im MVP gibt es nur lokale Speicherung, also nichts zu erklären. | Einstellungen `84:2796` / Dark `84:3950` |
+| 7.3 | ✅ JSON-Export (Filesystem + Share) und Import mit Validierung und Bestätigungsdialog | Dialog `9:303`, Toast `9:326` |
 
 ## M8 – Native Feinschliff und Release
 
 | # | Aufgabe |
 | --- | --- |
-| 8.1 | Haptik (Satz abhaken, Long-Press, Timer-Ende) |
+| 8.1 | Haptik (Satz abhaken, Long-Press, Timer-Ende, Wisch-Schritte auf Zahlenfeldern) |
 | 8.2 | Local Notifications (Timer), Keep-Awake, Status-Bar passend zum Theme, Splash |
 | 8.3 | App-Icons und Splash aus Brand (Volt Lime, Brand-Mark aus `0:1`) |
 | 8.4 | Playwright-E2E: Plan anlegen → Training → Verlauf |
