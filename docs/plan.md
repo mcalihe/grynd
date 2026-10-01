@@ -173,6 +173,8 @@ Jeder Meilenstein wird in kleinen Schritten umgesetzt, jeweils mit Plan Mode, ei
 ## 11. Offene Punkte
 
 - Finale Schrift (Inter als Platzhalter).
-- Rekord-Definition (Vorschlag: geschätztes 1RM nach Epley).
 - Name «Grynd»: Verfügbarkeit in den Stores, Domain und Marke prüfen.
-- Zeitpunkt Google-Entwicklerkonto (spätestens vor Store-Release); Apple-Konto wird für TestFlight früh gebraucht.
+- Apple Developer Program und Google Play Console anlegen; danach Signatur, TestFlight und interner Test (Roadmap 8.5b, [release.md](release.md)).
+- Datenschutzerklärung unter einer öffentlichen URL bereitstellen (beide Stores verlangen eine); Entwurf in [store/privacy.md](store/privacy.md).
+
+Entschieden und daher hier gestrichen: Rekord-Definition (Epley-1RM, [0011](decisions/0011-workout-flow.md), [0012](decisions/0012-history.md)).
