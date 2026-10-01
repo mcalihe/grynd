@@ -160,7 +160,22 @@
     "backup": {
       "text": "Sicherung als JSON-Datei exportieren oder wiederherstellen.",
       "export": "Exportieren",
-      "import": "Importieren"
+      "import": "Importieren",
+      "exported": "Sicherung exportiert",
+      "exportFailed": "Export fehlgeschlagen",
+      "imported": "Sicherung wiederhergestellt",
+      "importFailed": "Import fehlgeschlagen",
+      "errors": {
+        "format": "Die Datei ist keine Grynd-Sicherung.",
+        "newerSchema": "Die Sicherung stammt aus einer neueren App-Version.",
+        "invalidRow": "Die Sicherung enthält ungültige Daten.",
+        "missingReference": "Die Sicherung ist unvollständig oder verweist auf unbekannte Übungen."
+      },
+      "confirm": {
+        "title": "Daten ersetzen?",
+        "text": "Alle Pläne und Trainings auf diesem Gerät werden durch die Sicherung ersetzt.",
+        "confirm": "Ersetzen"
+      }
     }
   },
   "common": {

@@ -4,21 +4,24 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { TranslocoService } from '@jsverse/transloco';
 import { filter, map, take } from 'rxjs';
+import { ThemeService } from './core/services/theme.service';
 import { WorkoutService } from './core/workout/workout.service';
 import { BottomNavigation } from './shared/components/bottom-navigation/bottom-navigation';
 import { ConfirmDialogHost } from './shared/components/confirm-dialog/confirm-dialog-host';
+import { HlmToaster } from '@spartan-ng/helm/sonner';
 
 /** Routes that show the bottom navigation (top-level tabs only). */
 const TAB_ROUTES = ['/plans', '/history', '/settings'];
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, BottomNavigation, ConfirmDialogHost],
+  imports: [RouterOutlet, BottomNavigation, ConfirmDialogHost, HlmToaster],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './app.html',
 })
 export class App {
   private readonly router = inject(Router);
+  protected readonly theme = inject(ThemeService);
 
   private readonly url = toSignal(
     this.router.events.pipe(

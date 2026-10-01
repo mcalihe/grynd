@@ -13,4 +13,5 @@
 <!-- Loaded after startup: keeps the CDK overlay out of the initial bundle. -->
 @defer (on idle) {
   <app-confirm-dialog-host />
+  <hlm-toaster position="top-center" [theme]="theme.resolved()" />
 }

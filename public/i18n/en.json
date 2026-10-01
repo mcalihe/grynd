@@ -160,7 +160,22 @@
     "backup": {
       "text": "Export a backup as a JSON file or restore one.",
       "export": "Export",
-      "import": "Import"
+      "import": "Import",
+      "exported": "Backup exported",
+      "exportFailed": "Export failed",
+      "imported": "Backup restored",
+      "importFailed": "Import failed",
+      "errors": {
+        "format": "This file is not a Grynd backup.",
+        "newerSchema": "The backup comes from a newer app version.",
+        "invalidRow": "The backup contains invalid data.",
+        "missingReference": "The backup is incomplete or refers to unknown exercises."
+      },
+      "confirm": {
+        "title": "Replace data?",
+        "text": "All plans and workouts on this device will be replaced by the backup.",
+        "confirm": "Replace"
+      }
     }
   },
   "common": {
