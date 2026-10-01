@@ -1,6 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 import { TranslocoTestingModule } from '@jsverse/transloco';
-import { clamp, formatNumber, parseNumber, stepValue } from './number-stepper.logic';
+import {
+  clamp,
+  formatNumber,
+  parseNumber,
+  stepValue,
+  swipeStepPx,
+  swipeSteps,
+} from './number-stepper.logic';
 import { NumberStepper } from './number-stepper';
 
 const kg = { min: 0, max: 999, decimals: 2 };
@@ -32,6 +39,20 @@ describe('number stepper logic', () => {
     expect(clamp(12.3456, kg)).toBe(12.35);
   });
 
+  it('needs fewer pixels per step the faster the swipe', () => {
+    expect(swipeStepPx(0)).toBe(24);
+    expect(swipeStepPx(5)).toBe(4);
+    expect(swipeStepPx(0.8)).toBeGreaterThan(4);
+    expect(swipeStepPx(0.8)).toBeLessThan(24);
+  });
+
+  it('turns travel into whole steps in both directions and keeps the rest', () => {
+    expect(swipeSteps(50, 0)).toEqual({ steps: 2, rest: 2 });
+    expect(swipeSteps(-50, 0)).toEqual({ steps: -2, rest: -2 });
+    expect(swipeSteps(10, 0)).toEqual({ steps: 0, rest: 10 });
+    expect(swipeSteps(40, 5).steps).toBe(10);
+  });
+
   it('formats per locale', () => {
     expect(formatNumber(82.5, 'de', 2)).toBe('82,5');
     expect(formatNumber(82.5, 'en', 2)).toBe('82.5');
@@ -60,5 +81,58 @@ describe('NumberStepper', () => {
     minus.click();
 
     expect(fixture.componentInstance.value()).toBe(82.5);
+  });
+
+  describe('swiping across the value', () => {
+    const setup = () => {
+      const fixture = TestBed.createComponent(NumberStepper);
+      fixture.componentRef.setInput('label', 'KG');
+      fixture.componentRef.setInput('stepSize', 2.5);
+      fixture.componentRef.setInput('decimals', 2);
+      fixture.componentInstance.value.set(80);
+      fixture.detectChanges();
+      const area = fixture.nativeElement.querySelector('.touch-pan-y') as HTMLElement;
+      const fire = (type: string, clientX: number, clientY = 0) =>
+        area.dispatchEvent(new MouseEvent(type, { clientX, clientY, button: 0, bubbles: true }));
+      return { fixture, area, fire };
+    };
+
+    it('increases to the right and decreases to the left', () => {
+      const { fixture, fire } = setup();
+      fire('pointerdown', 100);
+      fire('pointermove', 160);
+      fire('pointerup', 160);
+      const afterRight = fixture.componentInstance.value()!;
+      expect(afterRight).toBeGreaterThan(80);
+
+      fire('pointerdown', 160);
+      fire('pointermove', 60);
+      fire('pointerup', 60);
+      expect(fixture.componentInstance.value()!).toBeLessThan(afterRight);
+    });
+
+    it('still opens the text field on a tap but not after a swipe', () => {
+      const { fixture, area, fire } = setup();
+      fire('pointerdown', 100);
+      fire('pointermove', 160);
+      fire('pointerup', 160);
+      area.querySelector('button')!.click();
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('input')).toBeNull();
+
+      fire('pointerdown', 100);
+      fire('pointerup', 102);
+      area.querySelector('button')!.click();
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('input')).not.toBeNull();
+    });
+
+    it('ignores vertical movement', () => {
+      const { fixture, fire } = setup();
+      fire('pointerdown', 100, 0);
+      fire('pointermove', 104, 60);
+      fire('pointermove', 160, 60);
+      expect(fixture.componentInstance.value()).toBe(80);
+    });
   });
 });

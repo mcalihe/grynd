@@ -19,6 +19,7 @@ import { NumberStepper } from '../number-stepper/number-stepper';
 export type SetRowState = 'open' | 'completed' | 'record' | 'menu-open';
 
 export const LONG_PRESS_MS = 500;
+const LONG_PRESS_SLOP_PX = 8;
 
 /**
  * One set in a workout (Figma Grynd/Set Row 96:3055, decision 0009): number, weight and reps
@@ -31,6 +32,7 @@ export const LONG_PRESS_MS = 500;
   host: {
     class: 'block',
     '(pointerdown)': 'startPress($event)',
+    '(pointermove)': 'movePress($event)',
     '(pointerup)': 'cancelPress()',
     '(pointercancel)': 'cancelPress()',
     '(pointerleave)': 'cancelPress()',
@@ -111,6 +113,7 @@ export class SetRow implements OnDestroy {
   protected readonly decimals = computed(() => weightDecimals(this.unit()));
   private pressTimer?: ReturnType<typeof setTimeout>;
   private longPressFired = false;
+  private pressStart?: { x: number; y: number };
 
   constructor() {
     // Capture phase: runs before the button under the finger handles the click.
@@ -135,10 +138,22 @@ export class SetRow implements OnDestroy {
     }
     this.longPressFired = false;
     this.cancelPress();
+    this.pressStart = { x: event.clientX, y: event.clientY };
     this.pressTimer = setTimeout(() => {
       this.longPressFired = true;
       this.menu.emit();
     }, LONG_PRESS_MS);
+  }
+
+  /** A moving finger (swipe, scroll) is not a long press. */
+  protected movePress(event: PointerEvent): void {
+    const start = this.pressStart;
+    if (
+      start &&
+      Math.hypot(event.clientX - start.x, event.clientY - start.y) > LONG_PRESS_SLOP_PX
+    ) {
+      this.cancelPress();
+    }
   }
 
   protected cancelPress(): void {
