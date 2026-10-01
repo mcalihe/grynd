@@ -147,11 +147,24 @@
       "system": "System",
       "light": "Light",
       "dark": "Dark"
+    },
+    "appearance": "Appearance",
+    "units": "Units",
+    "language": "Language",
+    "training": "Workout",
+    "data": "Data",
+    "autostart": {
+      "title": "Start timer automatically",
+      "text": "Starts after every completed set"
+    },
+    "backup": {
+      "text": "Export a backup as a JSON file or restore one.",
+      "export": "Export",
+      "import": "Import"
     }
   },
   "common": {
     "back": "Back",
-    "placeholder": "Coming soon.",
     "decrease": "Decrease {{label}}",
     "increase": "Increase {{label}}",
     "save": "Save",

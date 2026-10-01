@@ -1,9 +1,6 @@
 import { isDevMode } from '@angular/core';
 import { Routes } from '@angular/router';
 
-const placeholder = () =>
-  import('./shared/components/placeholder-page/placeholder-page').then((m) => m.PlaceholderPage);
-
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'plans' },
   {
@@ -20,8 +17,7 @@ export const routes: Routes = [
   },
   {
     path: 'settings',
-    loadComponent: placeholder,
-    data: { titleKey: 'settings.title' },
+    loadComponent: () => import('./features/settings/settings-page').then((m) => m.SettingsPage),
   },
   ...(isDevMode()
     ? [

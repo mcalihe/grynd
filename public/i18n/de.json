@@ -147,11 +147,24 @@
       "system": "Automatisch",
       "light": "Hell",
       "dark": "Dunkel"
+    },
+    "appearance": "Darstellung",
+    "units": "Einheiten",
+    "language": "Sprache",
+    "training": "Training",
+    "data": "Daten",
+    "autostart": {
+      "title": "Timer automatisch starten",
+      "text": "Startet nach jedem abgehakten Satz"
+    },
+    "backup": {
+      "text": "Sicherung als JSON-Datei exportieren oder wiederherstellen.",
+      "export": "Exportieren",
+      "import": "Importieren"
     }
   },
   "common": {
     "back": "Zurück",
-    "placeholder": "Kommt bald.",
     "decrease": "{{label}} verringern",
     "increase": "{{label}} erhöhen",
     "save": "Speichern",
