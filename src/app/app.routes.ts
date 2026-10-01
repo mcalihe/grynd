@@ -14,8 +14,10 @@ export const routes: Routes = [
     path: 'workout',
     loadChildren: () => import('./features/workout/workout.routes').then((m) => m.WORKOUT_ROUTES),
   },
-  { path: 'history', loadComponent: placeholder, data: { titleKey: 'history.title' } },
-  { path: 'history/:sessionId', loadComponent: placeholder, data: { titleKey: 'history.detail' } },
+  {
+    path: 'history',
+    loadChildren: () => import('./features/history/history.routes').then((m) => m.HISTORY_ROUTES),
+  },
   {
     path: 'settings',
     loadComponent: placeholder,

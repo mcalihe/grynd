@@ -106,7 +106,39 @@
   },
   "history": {
     "title": "Verlauf",
-    "detail": "Training"
+    "detail": "Training",
+    "untitled": "Training",
+    "today": "Heute",
+    "yesterday": "Gestern",
+    "thisWeek": "Diese Woche",
+    "lastWeek": "Vorwoche",
+    "minutes": "{{minutes}} Min.",
+    "hours": "{{hours}} Std.",
+    "hoursMinutes": "{{hours}} Std. {{minutes}} Min.",
+    "trainingOne": "1 Training",
+    "trainings": "{{count}} Trainings",
+    "trend": "{{count}} im Vergleich zur Vorwoche",
+    "empty": {
+      "title": "Noch keine Trainings",
+      "text": "Starte ein Training über einen Plan. Abgeschlossene Trainings erscheinen hier."
+    },
+    "repsOnly": "{{reps}} Wdh.",
+    "setValue": "{{weight}} kg × {{reps}}",
+    "volume": "{{volume}} kg",
+    "stats": {
+      "duration": "Dauer",
+      "volume": "Volumen",
+      "sets": "Sätze"
+    },
+    "record": "Rekord",
+    "extra": "Extra",
+    "menu": "Trainingsmenü",
+    "delete": {
+      "action": "Training löschen",
+      "title": "Training löschen?",
+      "text": "Das Training verschwindet aus dem Verlauf und zählt nicht mehr für Vorbefüllung und Rekorde.",
+      "confirm": "Löschen"
+    }
   },
   "settings": {
     "title": "Einstellungen",

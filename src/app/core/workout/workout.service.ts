@@ -294,7 +294,10 @@ export class WorkoutService {
       : '';
     const best = new Map<string, number | null>();
     for (const { entry } of exercises) {
-      best.set(entry.exerciseId, await this.historyBestFor(entry.exerciseId, session.id));
+      best.set(
+        entry.exerciseId,
+        await this.sets.bestOneRepMaxBefore(entry.exerciseId, session.startedAt),
+      );
     }
     this.historyBest.set(best);
     this.state.set({ session, planName, exercises });
@@ -407,23 +410,5 @@ export class WorkoutService {
         ORDER BY se.position, sl.position`,
       [exerciseId, exerciseId],
     );
-  }
-
-  /** Best estimated 1RM of the exercise in all other finished sessions. */
-  private async historyBestFor(
-    exerciseId: string,
-    excludeSessionId: string,
-  ): Promise<number | null> {
-    const [row] = await this.database.driver.query<{ best: number | null }>(
-      `SELECT max(sl.weightKg * (1 + sl.reps / 30.0)) AS best
-         FROM set_log sl
-         JOIN session_exercise se ON se.id = sl.sessionExerciseId AND se.deletedAt IS NULL
-         JOIN workout_session ws ON ws.id = se.sessionId AND ws.deletedAt IS NULL
-        WHERE se.exerciseId = ? AND ws.status = 'finished' AND ws.id <> ?
-          AND sl.completedAt IS NOT NULL AND sl.deletedAt IS NULL
-          AND sl.weightKg > 0 AND sl.reps > 0`,
-      [exerciseId, excludeSessionId],
-    );
-    return row?.best ?? null;
   }
 }

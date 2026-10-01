@@ -11,8 +11,10 @@ import { HlmSwitchImports } from '@spartan-ng/helm/switch';
 import { HlmToggleGroupImports } from '@spartan-ng/helm/toggle-group';
 import { ThemeMode, ThemeService } from '../../core/services/theme.service';
 import { PageHeader } from '../../shared/components/page-header/page-header';
+import { HistoryRow } from '../../shared/components/history-row/history-row';
 import { PlanCard } from '../../shared/components/plan-card/plan-card';
 import { ProgressRing } from '../../shared/components/progress-ring/progress-ring';
+import { WeekChart, WeekChartBar } from '../../shared/components/week-chart/week-chart';
 import { SegmentProgress } from '../../shared/components/segment-progress/segment-progress';
 import { SegmentedControl } from '../../shared/components/segmented-control/segmented-control';
 import { SetRow, SetRowState } from '../../shared/components/set-row/set-row';
@@ -43,6 +45,8 @@ import { WeekdayChips } from '../../shared/components/weekday-chips/weekday-chip
     TimerBar,
     PageHeader,
     PlanCard,
+    WeekChart,
+    HistoryRow,
     StickyAction,
     WeekdayChips,
     SegmentedControl,
@@ -51,6 +55,16 @@ import { WeekdayChips } from '../../shared/components/weekday-chips/weekday-chip
   templateUrl: './components-showcase.html',
 })
 export class ComponentsShowcase {
+  protected readonly weekBars: WeekChartBar[] = [
+    { label: 'Mo', trained: false, value: 0 },
+    { label: 'Di', trained: true, value: 0.8 },
+    { label: 'Mi', trained: false, value: 0 },
+    { label: 'Do', trained: true, value: 0.9 },
+    { label: 'Fr', trained: false, value: 0 },
+    { label: 'Sa', trained: true, value: 1 },
+    { label: 'So', trained: false, value: 0 },
+  ];
+
   protected readonly theme = inject(ThemeService);
   protected readonly themeModes: ThemeMode[] = ['system', 'light', 'dark'];
   protected readonly buttonVariants = [

@@ -106,7 +106,39 @@
   },
   "history": {
     "title": "History",
-    "detail": "Workout"
+    "detail": "Workout",
+    "untitled": "Workout",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "thisWeek": "This week",
+    "lastWeek": "Last week",
+    "minutes": "{{minutes}} min",
+    "hours": "{{hours}} h",
+    "hoursMinutes": "{{hours}} h {{minutes}} min",
+    "trainingOne": "1 workout",
+    "trainings": "{{count}} workouts",
+    "trend": "{{count}} compared to last week",
+    "empty": {
+      "title": "No workouts yet",
+      "text": "Start a workout from a plan. Finished workouts show up here."
+    },
+    "repsOnly": "{{reps}} reps",
+    "setValue": "{{weight}} kg × {{reps}}",
+    "volume": "{{volume}} kg",
+    "stats": {
+      "duration": "Duration",
+      "volume": "Volume",
+      "sets": "Sets"
+    },
+    "record": "Record",
+    "extra": "Extra",
+    "menu": "Workout menu",
+    "delete": {
+      "action": "Delete workout",
+      "title": "Delete workout?",
+      "text": "The workout disappears from your history and no longer counts for prefill and records.",
+      "confirm": "Delete"
+    }
   },
   "settings": {
     "title": "Settings",

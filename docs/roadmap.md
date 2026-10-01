@@ -113,13 +113,15 @@ Umgesetzt in einem PR (`feat/m5-workout`), Entscheide in [0011](decisions/0011-w
 | 5.12 | ✅ Zeitintervalle: < 3 s verwerfen, offene Intervalle beim Start mit letztem `completedAt` schliessen (test-first) | – | – |
 | 5.13 | ✅ PR-Erkennung per Epley → Set Row `record` (test-first) | Set Row `State=record` | – |
 
-## M6 – Verlauf
+## M6 – Verlauf ✅
+
+Umgesetzt in einem PR (`feat/m6-history`), Entscheide in [0012](decisions/0012-history.md). Neu in Figma: «Verlauf · Leer» und das Drei-Punkte-Menü im Detail (Training löschen).
 
 | # | Aufgabe | Figma Light | Figma Dark |
 | --- | --- | --- | --- |
-| 6.1 | `HistoryService`: Sessions nach Woche gruppiert, Dauer aus Zeitstempeln, Gesamtvolumen (test-first) | – | – |
-| 6.2 | **Verlauf** `/history`: Wochen-Balkendiagramm (`chart-1`, leere Tage grau), Liste | Verlauf `37:29734` | `37:29861` |
-| 6.3 | **Verlauf-Detail** `/history/:sessionId`: Kennzahlen (Dauer, Volumen, Sätze), pro Übung Zeit und Satzliste mit Badges «Rekord»/«Extra» | Verlauf-Detail `84:3364` | `84:4001` |
+| 6.1 | ✅ `HistoryService`: Sessions nach Woche gruppiert, Dauer aus Zeitstempeln, Gesamtvolumen (test-first) | – | – |
+| 6.2 | ✅ **Verlauf** `/history`: Wochen-Balkendiagramm (`chart-1`, leere Tage grau), Liste | Verlauf `37:29734` | `37:29861` |
+| 6.3 | ✅ **Verlauf-Detail** `/history/:sessionId`: Kennzahlen (Dauer, Volumen, Sätze), pro Übung Zeit und Satzliste mit Badges «Rekord»/«Extra» | Verlauf-Detail `84:3364` | `84:4001` |
 
 ## M7 – Einstellungen
 

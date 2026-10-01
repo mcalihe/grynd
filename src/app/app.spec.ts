@@ -3,6 +3,8 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router, withComponentInputBinding } from '@angular/router';
 import { TranslocoTestingModule } from '@jsverse/transloco';
 import { App } from './app';
+import { ExerciseCatalogService } from './core/exercises/exercise-catalog.service';
+import { HistoryService } from './core/history/history.service';
 import { PlansService } from './core/plans/plans.service';
 import { routes } from './app.routes';
 
@@ -21,6 +23,12 @@ describe('App', () => {
         {
           provide: PlansService,
           useValue: { plans: signal([]), todayPlans: signal([]), load: async () => undefined },
+        },
+        // The history detail page loads from the database; keep it pending in this shell test.
+        { provide: HistoryService, useValue: { detail: () => new Promise(() => undefined) } },
+        {
+          provide: ExerciseCatalogService,
+          useValue: { load: () => new Promise(() => undefined), nameById: () => '' },
         },
       ],
     }).compileComponents();
