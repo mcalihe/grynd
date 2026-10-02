@@ -24,6 +24,23 @@
   padding-right: env(safe-area-inset-right);
 }
 
+/* Soft primary ring that keeps pulsing on a button the user should press next (decision 0015). */
+@keyframes attention {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--primary) 70%, transparent);
+  }
+  70%,
+  100% {
+    box-shadow: 0 0 0 12px color-mix(in oklab, var(--primary) 0%, transparent);
+  }
+}
+
+@utility animate-attention {
+  @media (prefers-reduced-motion: no-preference) {
+    animation: attention 1.6s ease-out infinite;
+  }
+}
+
 @layer base {
   html {
     color-scheme: light;

@@ -20,21 +20,39 @@ import { BackButtonService } from '../../core/services/back-button.service';
 import { ConfirmService } from '../../core/services/confirm.service';
 import { ExerciseCatalogService } from '../../core/exercises/exercise-catalog.service';
 import { RestTimerService } from '../../core/workout/rest-timer.service';
-import { WorkoutService } from '../../core/workout/workout.service';
+import { isExerciseDone, WorkoutService } from '../../core/workout/workout.service';
 import { SegmentProgress } from '../../shared/components/segment-progress/segment-progress';
 import { StickyAction } from '../../shared/components/sticky-action/sticky-action';
 import { TimerBar } from '../../shared/components/timer-bar/timer-bar';
+import { CelebrationService } from '../../shared/motion/celebration.service';
+import { play, shine } from '../../shared/motion/motion';
+import { ExerciseCelebration } from './exercise-celebration';
 import { ExercisePage } from './exercise-page';
 import { OverviewSheet } from './overview-sheet';
+
+/** Number of `workout.praise.N` texts, one is picked at random per finished exercise. */
+export const PRAISE_COUNT = 6;
+
+/** A finished exercise being celebrated. */
+interface ExerciseMoment {
+  index: number;
+  praise: string;
+  done: number;
+  total: number;
+  /** Progress segment the badge flies into. */
+  target: DOMRect | null;
+}
 
 /**
  * Active workout (Figma Training 56:48015 / Swipe 60:3568): one exercise per page with
  * horizontal scroll-snap; header, progress, timer and the next button stay in place.
+ * A finished exercise is celebrated once (decision 0015); when all are done, the finish button pulses.
  */
 @Component({
   selector: 'app-workout-page',
   imports: [
     ExercisePage,
+    ExerciseCelebration,
     OverviewSheet,
     SegmentProgress,
     StickyAction,
@@ -87,6 +105,7 @@ import { OverviewSheet } from './overview-sheet';
               (setMenu)="menuSet.set($event)"
               (moveBack)="moveBack(i, $event)"
               (setCompleted)="timer.autoStart($event)"
+              (exerciseCompleted)="exerciseCompleted(i)"
             />
           </section>
         }
@@ -107,7 +126,18 @@ import { OverviewSheet } from './overview-sheet';
 
       <app-sticky-action [divider]="true">
         @if (next(); as nextItem) {
-          <button hlmBtn size="lg" (click)="goTo(current() + 1)">
+          <button
+            #nextButton
+            hlmBtn
+            size="lg"
+            class="relative overflow-hidden"
+            (click)="goTo(current() + 1)"
+          >
+            <span
+              #nextShine
+              class="pointer-events-none absolute inset-0 bg-linear-to-r from-transparent via-primary-foreground/30 to-transparent opacity-0"
+              aria-hidden="true"
+            ></span>
             <ng-icon name="lucideArrowRight" />
             <span class="truncate">
               {{
@@ -116,13 +146,29 @@ import { OverviewSheet } from './overview-sheet';
             </span>
           </button>
         } @else {
-          <button hlmBtn size="lg" [disabled]="busy()" (click)="finish()">
+          <button
+            hlmBtn
+            size="lg"
+            [class.animate-attention]="allDone()"
+            [disabled]="busy()"
+            (click)="finish()"
+          >
             <ng-icon name="lucideCheck" />{{ 'workout.finish' | transloco }}
           </button>
         }
       </app-sticky-action>
 
       <app-overview-sheet [(open)]="overviewOpen" />
+
+      @if (moment(); as m) {
+        <app-exercise-celebration
+          [praise]="(m.done === m.total ? 'workout.allDone' : m.praise) | transloco"
+          [subline]="'workout.exerciseDone' | transloco: { done: m.done, total: m.total }"
+          [target]="m.target"
+          (landed)="landed(m.index)"
+          (done)="moment.set(null)"
+        />
+      }
     }
   `,
 })
@@ -132,12 +178,19 @@ export class WorkoutPage {
   protected readonly catalog = inject(ExerciseCatalogService);
   private readonly router = inject(Router);
   private readonly confirm = inject(ConfirmService);
+  private readonly celebration = inject(CelebrationService);
   private readonly pager = viewChild<ElementRef<HTMLElement>>('pager');
+  private readonly progress = viewChild(SegmentProgress);
+  private readonly nextButton = viewChild<ElementRef<HTMLElement>>('nextButton');
+  private readonly nextShine = viewChild<ElementRef<HTMLElement>>('nextShine');
+  /** Session exercises already celebrated: unchecking and re-checking does not repeat it. */
+  private readonly celebrated = new Set<string>();
 
   protected readonly current = this.workout.current;
   protected readonly menuSet = signal<SetLog | null>(null);
   protected readonly overviewOpen = signal(false);
   protected readonly busy = signal(false);
+  protected readonly moment = signal<ExerciseMoment | null>(null);
 
   protected readonly segments = computed(() =>
     (this.workout.workout()?.exercises ?? []).map(({ sets }) => ({
@@ -148,6 +201,10 @@ export class WorkoutPage {
   protected readonly next = computed(
     () => this.workout.workout()?.exercises[this.current() + 1] ?? null,
   );
+  protected readonly allDone = computed(() => {
+    const exercises = this.workout.workout()?.exercises ?? [];
+    return exercises.length > 0 && exercises.every((e) => isExerciseDone(e.sets));
+  });
   protected readonly restSeconds = computed(
     () => this.workout.workout()?.exercises[this.current()]?.entry.restSeconds ?? 90,
   );
@@ -191,6 +248,31 @@ export class WorkoutPage {
       const index = this.current();
       queueMicrotask(() => this.scrollTo(index, 'smooth'));
     });
+  }
+
+  protected exerciseCompleted(index: number): void {
+    const exercises = this.workout.workout()?.exercises ?? [];
+    const entry = exercises[index]?.entry;
+    if (!entry || this.celebrated.has(entry.id)) {
+      return;
+    }
+    this.celebrated.add(entry.id);
+    this.moment.set({
+      index,
+      praise: `workout.praise.${1 + Math.floor(Math.random() * PRAISE_COUNT)}`,
+      done: exercises.filter((e) => isExerciseDone(e.sets)).length,
+      total: exercises.length,
+      target: this.progress()?.segmentRect(index) ?? null,
+    });
+  }
+
+  /** The badge reached its segment: the segment bounces and the next button invites to go on. */
+  protected landed(index: number): void {
+    const progress = this.progress();
+    void progress?.flash(index);
+    this.celebration.collect(progress?.segmentRect(index));
+    void shine(this.nextShine()?.nativeElement, 0.9);
+    void play(this.nextButton()?.nativeElement, { scale: [1, 1.04, 1] }, { duration: 0.5 });
   }
 
   protected goTo(index: number): void {
