@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { NgIcon } from '@ng-icons/core';
 import { HlmAlertDialogImports } from '@spartan-ng/helm/alert-dialog';
 import { HlmBadge } from '@spartan-ng/helm/badge';
@@ -21,6 +29,8 @@ import { SetRow, SetRowState } from '../../shared/components/set-row/set-row';
 import { StickyAction } from '../../shared/components/sticky-action/sticky-action';
 import { TimerBar } from '../../shared/components/timer-bar/timer-bar';
 import { WeekdayChips } from '../../shared/components/weekday-chips/weekday-chips';
+import { CelebrationService } from '../../shared/motion/celebration.service';
+import { ExerciseCelebration } from '../workout/exercise-celebration';
 
 /**
  * Dev-only catalogue of every UI building block in all states (route /dev/components, not in
@@ -50,6 +60,8 @@ import { WeekdayChips } from '../../shared/components/weekday-chips/weekday-chip
     StickyAction,
     WeekdayChips,
     SegmentedControl,
+    ExerciseCelebration,
+    RouterLink,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './components-showcase.html',
@@ -104,6 +116,40 @@ export class ComponentsShowcase {
     { value: 'lb' as const, label: 'lb' },
   ];
   protected readonly buttonSizes = ['sm', 'default', 'lg'] as const;
+
+  // Celebrations (decision 0015): replay each moment.
+  protected readonly celebration = inject(CelebrationService);
+  protected readonly demoState = signal<SetRowState>('open');
+  protected readonly demoSegments = signal([
+    { done: 3, total: 3 },
+    { done: 2, total: 3 },
+    { done: 0, total: 3 },
+  ]);
+  protected readonly demoMoment = signal<DOMRect | null | undefined>(undefined);
+  private readonly demoProgress = viewChild<SegmentProgress>('demoProgress');
+  private stopFinale?: () => void;
+
+  /** Set rows only celebrate transitions: go back to open first. */
+  protected replaySet(state: 'completed' | 'record'): void {
+    this.demoState.set('open');
+    setTimeout(() => this.demoState.set(state), 50);
+  }
+
+  protected replayExercise(): void {
+    this.demoSegments.update(([a, , c]) => [a, { done: 3, total: 3 }, c]);
+    this.demoMoment.set(this.demoProgress()?.segmentRect(1) ?? null);
+  }
+
+  protected demoLanded(): void {
+    void this.demoProgress()?.flash(1);
+    this.celebration.collect(this.demoProgress()?.segmentRect(1));
+    setTimeout(() => this.demoSegments.update(([a, , c]) => [a, { done: 2, total: 3 }, c]), 1500);
+  }
+
+  protected replayFinale(): void {
+    this.stopFinale?.();
+    this.stopFinale = this.celebration.finale();
+  }
   protected readonly badgeVariants = [
     'default',
     'secondary',

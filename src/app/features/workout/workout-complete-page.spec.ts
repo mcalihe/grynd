@@ -91,6 +91,11 @@ describe('WorkoutCompletePage', () => {
     expect(el.textContent).toContain('Oberkörper');
     const stats = [...el.querySelectorAll('[data-stat] dd')].map((s) => s.textContent?.trim());
     expect(stats).toEqual(['54 Min.', '1.300 kg', '2', '1']);
+    // Duration and records take the full width, volume and sets share a row.
+    const wide = [...el.querySelectorAll('[data-stat].col-span-2')].map((s) =>
+      s.getAttribute('data-stat'),
+    );
+    expect(wide).toEqual(['duration', 'records']);
     expect(celebration.finale).toHaveBeenCalledOnce();
     expect(celebration.record).toHaveBeenCalledOnce();
   });

@@ -93,11 +93,11 @@ export function completeStats(detail: HistoryDetail): CompleteStats {
         </div>
 
         <dl class="relative grid w-full grid-cols-2 gap-3">
-          @for (stat of stats(); track stat.key; let first = $first) {
+          @for (stat of stats(); track stat.key) {
             <div
               #card
               class="flex min-w-0 flex-col-reverse gap-1 rounded-xl border bg-card p-4"
-              [class.col-span-2]="first && stats().length % 2 === 1"
+              [class.col-span-2]="stat.key === 'duration' || stat.key === 'records'"
               [class.border-primary]="stat.key === 'records'"
               [attr.data-stat]="stat.key"
             >
