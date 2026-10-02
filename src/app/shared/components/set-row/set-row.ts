@@ -1,13 +1,17 @@
 import {
+  afterNextRender,
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   ElementRef,
   inject,
+  Injector,
   input,
   model,
   OnDestroy,
   output,
+  viewChild,
 } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { NgIcon } from '@ng-icons/core';
@@ -15,6 +19,8 @@ import { HlmBadge } from '@spartan-ng/helm/badge';
 import { WeightUnit } from '../../../core/settings/settings.service';
 import { displayToKg, kgToDisplay, WEIGHT_STEP, weightDecimals } from '../../../core/units/weight';
 import { HapticsService } from '../../../core/services/haptics.service';
+import { CelebrationService } from '../../motion/celebration.service';
+import { play, pop, shine, shockwave, SPRING } from '../../motion/motion';
 import { NumberStepper } from '../number-stepper/number-stepper';
 
 export type SetRowState = 'open' | 'completed' | 'record' | 'menu-open';
@@ -25,6 +31,8 @@ const LONG_PRESS_SLOP_PX = 8;
 /**
  * One set in a workout (Figma Grynd/Set Row 96:3055, decision 0009): number, weight and reps
  * steppers, check, menu. `weight` is always kg; `unit` only changes what is shown and typed. Long-press (500 ms) or the ⋯ button opens the set menu.
+ * Checking a set celebrates it (decision 0015): the check pops with a shockwave and sparks and a light
+ * sweeps over the row; a new record adds a star burst and pops the «PR» badge.
  */
 @Component({
   selector: 'app-set-row',
@@ -54,6 +62,15 @@ const LONG_PRESS_SLOP_PX = 8;
       [attr.data-state]="state()"
     >
       <span
+        class="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit]"
+        aria-hidden="true"
+      >
+        <span
+          #sweep
+          class="absolute inset-0 bg-linear-to-r from-transparent via-primary/30 to-transparent opacity-0"
+        ></span>
+      </span>
+      <span
         class="flex size-6 shrink-0 items-center justify-center rounded-full bg-muted text-xs"
         [attr.aria-label]="'workout.set.number' | transloco: { number: number() }"
       >
@@ -71,8 +88,9 @@ const LONG_PRESS_SLOP_PX = 8;
       <app-number-stepper [label]="'workout.set.reps' | transloco" [(value)]="reps" [max]="999" />
 
       <button
+        #check
         type="button"
-        class="flex size-11 shrink-0 items-center justify-center rounded-full border"
+        class="relative flex size-11 shrink-0 items-center justify-center rounded-full border"
         [class]="
           done() ? 'border-primary bg-primary text-primary-foreground' : 'bg-muted text-foreground'
         "
@@ -81,6 +99,11 @@ const LONG_PRESS_SLOP_PX = 8;
         (click)="haptics.tap(); complete.emit()"
       >
         <ng-icon name="lucideCheck" size="22" />
+        <span
+          #ring
+          class="pointer-events-none absolute -inset-px rounded-full border-2 border-primary opacity-0"
+          aria-hidden="true"
+        ></span>
       </button>
 
       <button
@@ -93,7 +116,9 @@ const LONG_PRESS_SLOP_PX = 8;
       </button>
 
       @if (state() === 'record') {
-        <span hlmBadge class="absolute -top-3 right-3">{{ 'workout.set.record' | transloco }}</span>
+        <span #badge hlmBadge class="absolute -top-3 right-3">{{
+          'workout.set.record' | transloco
+        }}</span>
       }
     </div>
   `,
@@ -113,6 +138,12 @@ export class SetRow implements OnDestroy {
   protected readonly displayWeight = computed(() => kgToDisplay(this.weight(), this.unit()));
   protected readonly decimals = computed(() => weightDecimals(this.unit()));
   protected readonly haptics = inject(HapticsService);
+  private readonly celebration = inject(CelebrationService);
+  private readonly injector = inject(Injector);
+  private readonly checkButton = viewChild<ElementRef<HTMLElement>>('check');
+  private readonly ring = viewChild<ElementRef<HTMLElement>>('ring');
+  private readonly sweep = viewChild<ElementRef<HTMLElement>>('sweep');
+  private readonly badge = viewChild<ElementRef<HTMLElement>>('badge');
   private pressTimer?: ReturnType<typeof setTimeout>;
   private longPressFired = false;
   private pressStart?: { x: number; y: number };
@@ -124,6 +155,36 @@ export class SetRow implements OnDestroy {
       (event) => this.swallowClickAfterLongPress(event),
       true,
     );
+
+    // Celebrate transitions only: rows rendered on load or restore stay quiet. «menu-open» hides
+    // the real state, so it is skipped (closing the menu on a record is not a new record).
+    let last: SetRowState | undefined;
+    effect(() => {
+      const state = this.state();
+      if (state === 'menu-open') {
+        return;
+      }
+      const before = last;
+      last = state;
+      if (before !== undefined && before !== state) {
+        afterNextRender(() => this.celebrate(before, state), { injector: this.injector });
+      }
+    });
+  }
+
+  private celebrate(before: SetRowState, state: SetRowState): void {
+    const check = this.checkButton()?.nativeElement;
+    if (before === 'open') {
+      void pop(check, 0.7);
+      void shockwave(this.ring()?.nativeElement);
+      void shine(this.sweep()?.nativeElement);
+      this.celebration.sparks(check);
+    }
+    if (state === 'record') {
+      const badge = this.badge()?.nativeElement;
+      void play(badge, { scale: [0, 1], rotate: [-16, 0] }, SPRING.bouncy);
+      this.celebration.record(badge ?? check);
+    }
   }
 
   protected toKg(value: number | null): number | null {

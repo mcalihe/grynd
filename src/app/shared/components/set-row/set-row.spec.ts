@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslocoTestingModule } from '@jsverse/transloco';
 import { HapticsService } from '../../../core/services/haptics.service';
+import { CelebrationService } from '../../motion/celebration.service';
 import { LONG_PRESS_MS, SetRow } from './set-row';
 
 describe('SetRow', () => {
@@ -13,11 +14,15 @@ describe('SetRow', () => {
     tick: vi.fn(),
     selectionEnd: vi.fn(),
   };
+  const celebration = { sparks: vi.fn(), record: vi.fn() };
 
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [SetRow, TranslocoTestingModule.forRoot({ langs: { de: {} } })],
-      providers: [{ provide: HapticsService, useValue: haptics }],
+      providers: [
+        { provide: HapticsService, useValue: haptics },
+        { provide: CelebrationService, useValue: celebration },
+      ],
     });
     fixture = TestBed.createComponent(SetRow);
     fixture.componentRef.setInput('number', 1);
@@ -27,7 +32,10 @@ describe('SetRow', () => {
     host = fixture.nativeElement;
   });
 
-  afterEach(() => vi.useRealTimers());
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.clearAllMocks();
+  });
 
   const buttons = () => host.querySelectorAll<HTMLButtonElement>('button');
   const checkButton = () => buttons()[buttons().length - 2];
@@ -116,5 +124,40 @@ describe('SetRow', () => {
     vi.advanceTimersByTime(1000);
 
     expect(menu).not.toHaveBeenCalled();
+  });
+
+  describe('celebration', () => {
+    const show = (state: 'open' | 'completed' | 'record' | 'menu-open') => {
+      fixture.componentRef.setInput('state', state);
+      fixture.detectChanges();
+    };
+
+    it('stays quiet on the first render, even for done sets', () => {
+      const other = TestBed.createComponent(SetRow);
+      other.componentRef.setInput('number', 2);
+      other.componentRef.setInput('state', 'record');
+      other.detectChanges();
+      expect(celebration.sparks).not.toHaveBeenCalled();
+      expect(celebration.record).not.toHaveBeenCalled();
+    });
+
+    it('sparks when a set is checked and adds stars for a record', () => {
+      show('completed');
+      expect(celebration.sparks).toHaveBeenCalledOnce();
+      expect(celebration.record).not.toHaveBeenCalled();
+
+      show('record');
+      expect(celebration.sparks).toHaveBeenCalledOnce();
+      expect(celebration.record).toHaveBeenCalledOnce();
+    });
+
+    it('does not celebrate again when the menu opens and closes or the set is unchecked', () => {
+      show('record');
+      show('menu-open');
+      show('record');
+      show('open');
+      expect(celebration.sparks).toHaveBeenCalledOnce();
+      expect(celebration.record).toHaveBeenCalledOnce();
+    });
   });
 });
