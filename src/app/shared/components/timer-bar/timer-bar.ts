@@ -3,6 +3,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
 import { NgIcon } from '@ng-icons/core';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmPopoverImports } from '@spartan-ng/helm/popover';
+import { RollingNumber } from '../rolling-number/rolling-number';
 
 export const REST_DURATIONS_SEC = [30, 60, 90, 120, 180] as const;
 export const WARNING_MS = 10_000;
@@ -26,11 +27,12 @@ export function timerState(running: boolean, remainingMs: number): TimerBarState
 
 /**
  * Rest timer bar above the next button (Figma Grynd/Timer Bar 72:2641). Purely presentational:
- * the TimerService (M5) owns the end time and passes the remaining time in.
+ * the TimerService (M5) owns the end time and passes the remaining time in. The running clock
+ * rolls each changed digit in (RollingNumber).
  */
 @Component({
   selector: 'app-timer-bar',
-  imports: [NgIcon, HlmButton, HlmPopoverImports, TranslocoPipe],
+  imports: [NgIcon, HlmButton, HlmPopoverImports, RollingNumber, TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'bg-card relative flex h-12 items-center gap-2 overflow-hidden rounded-lg border px-3',
@@ -88,7 +90,7 @@ export function timerState(running: boolean, remainingMs: number): TimerBarState
         role="timer"
         aria-live="off"
       >
-        {{ clock(remainingMs()) }}
+        <app-rolling-number [text]="clock(remainingMs())" />
       </span>
       <button
         type="button"

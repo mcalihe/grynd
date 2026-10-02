@@ -40,6 +40,12 @@
     <app-timer-bar [durationSec]="restSeconds()" (durationChange)="restSeconds.set($event)" />
     <app-timer-bar [running]="true" [remainingMs]="72000" [totalMs]="90000" />
     <app-timer-bar [running]="true" [remainingMs]="8000" [totalMs]="90000" />
+    <app-timer-bar
+      [running]="true"
+      [remainingMs]="demoRemainingMs()"
+      [totalMs]="15000"
+      (adjust)="demoRemainingMs.update((ms) => ms + $event * 1000)"
+    />
   </section>
 
   <section class="-mx-4 flex flex-col gap-3">

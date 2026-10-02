@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { NgIcon } from '@ng-icons/core';
 import { HlmAlertDialogImports } from '@spartan-ng/helm/alert-dialog';
 import { HlmBadge } from '@spartan-ng/helm/badge';
@@ -85,6 +85,13 @@ export class ComponentsShowcase {
     { done: 0, total: 3 },
   ];
   protected readonly restSeconds = signal(90);
+  /** Live demo of the rolling clock: counts down from 0:15 and restarts. */
+  protected readonly demoRemainingMs = signal(15_000);
+  private readonly demoTick = setInterval(
+    () => this.demoRemainingMs.update((ms) => (ms <= 0 ? 15_000 : ms - 1000)),
+    1000,
+  );
+  private readonly demoCleanup = inject(DestroyRef).onDestroy(() => clearInterval(this.demoTick));
   protected readonly weekdays = signal<readonly number[]>([1, 4]);
   protected readonly themeOptions = [
     { value: 'system' as const, label: 'Automatisch' },
