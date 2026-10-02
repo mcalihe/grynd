@@ -20,6 +20,7 @@ import {
   lucideSkipForward,
   lucideSquare,
   lucideTimer,
+  lucideTrophy,
   lucideX,
 } from '@ng-icons/lucide';
 
@@ -49,5 +50,6 @@ export const APP_ICONS = {
   lucideSkipForward,
   lucideSquare,
   lucideTimer,
+  lucideTrophy,
   lucideX,
 };

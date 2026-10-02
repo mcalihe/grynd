@@ -294,13 +294,13 @@ export class WorkoutPage {
     try {
       this.timer.stop();
       const id = await this.workout.finish();
-      await this.router.navigate(['/history', id], { replaceUrl: true });
+      await this.router.navigate(['/workout/done', id], { replaceUrl: true });
     } finally {
       this.busy.set(false);
     }
   }
 
-  /** «Beenden»: save (→ history detail), discard (→ plans, not in the history) or continue. */
+  /** «Beenden»: save (→ celebration), discard (→ plans, not in the history) or continue. */
   protected async end(): Promise<void> {
     const choice = await this.confirm.choose({
       title: 'workout.endDialog.title',

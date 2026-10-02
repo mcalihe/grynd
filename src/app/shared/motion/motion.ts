@@ -50,6 +50,27 @@ export async function play(
   await animate(elements, keyframes, options);
 }
 
+/**
+ * Staggered entrance: the elements rise and fade in one after another. They are hidden first, so
+ * nothing flashes during the delay; without animations they simply stay visible.
+ */
+export function enter(
+  targets: readonly Element[],
+  { y = 24, delay = 0, each = 0.08 }: { y?: number; delay?: number; each?: number } = {},
+): Promise<void> {
+  if (!canAnimate()) {
+    return Promise.resolve();
+  }
+  for (const el of targets) {
+    (el as HTMLElement).style.opacity = '0';
+  }
+  return play(
+    targets,
+    { y: [y, 0], opacity: [0, 1] },
+    { duration: 0.55, ease: EASE_OUT, delay: stagger(each, { startDelay: delay }) },
+  );
+}
+
 /** Springy scale-in from `from` (e.g. a check that was just ticked). */
 export function pop(target: Target, from = 0.6): Promise<void> {
   return play(target, { scale: [from, 1] }, SPRING.bouncy);
