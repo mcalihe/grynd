@@ -41,6 +41,7 @@ Klassen folgen dem Angular-Styleguide 2025 (ohne `Component`-Suffix), Selektor-P
 | Icon | `9:25` | plus, minus, check, close, arrow, timer, dumbbell, calendar, chartline, skipforward, search, chevrondown, clipboardlist, settings | ng-icons Lucide, zentral in `core/icons.ts` (`APP_ICONS`) | core |
 | Grynd/Set Row | `96:3055` | State=open/completed/record/menu-open | `SetRow` (`app-set-row`), Entscheid [0009](../decisions/0009-set-row.md) | shared/components/set-row |
 | Grynd/Timer Bar | `72:2641` | State=ready/running/warning/duration | `TimerBar` (`app-timer-bar`) | shared/components/timer-bar |
+| (Timer-Ziffern, Motion) | `72:2641` (Beschreibung) | – | `RollingNumber` (`app-rolling-number`) in `TimerBar` | shared/components/rolling-number |
 | Grynd/Progress Ring | `66:2852` | Value=0, 1/3, 1/2, 2/3, full | `ProgressRing` (`app-progress-ring`, `value` 0–1) | shared/components/progress-ring |
 | Grynd/Bottom Navigation | `15:2111` | Active=plans/history/settings | `BottomNavigation` (`app-bottom-navigation`) | shared/components/bottom-navigation |
 | Grynd/Segmented Control | `84:2788` | Options=2/3 × Active=1–3 | `SegmentedControl` (`app-segmented-control`) | shared/components/segmented-control |
