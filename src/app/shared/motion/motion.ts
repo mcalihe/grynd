@@ -10,7 +10,7 @@ export const SPRING = {
   /** Quick with a small overshoot: buttons, badges, checks. */
   snappy: { type: 'spring', stiffness: 520, damping: 20 },
   /** Big overshoot for hero elements (trophy, exercise badge). */
-  bouncy: { type: 'spring', stiffness: 320, damping: 11 },
+  bouncy: { type: 'spring', stiffness: 320, damping: 13 },
   /** Settles without visible bounce: cards, layout. */
   gentle: { type: 'spring', stiffness: 220, damping: 26 },
 } as const satisfies Record<string, AnimationOptions>;

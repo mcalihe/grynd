@@ -16,14 +16,8 @@ export const CONFETTI_FACTORY = new InjectionToken<ConfettiFactory>('CONFETTI_FA
 });
 
 /** Particle colours come from the design tokens, read at burst time so light and dark both fit. */
-export const CONFETTI_TOKENS = [
-  '--primary',
-  '--chart-2',
-  '--brand-300',
-  '--chart-4',
-  '--foreground',
-];
-const SPARK_TOKENS = ['--primary', '--brand-300', '--chart-2'];
+export const CONFETTI_TOKENS = ['--primary', '--chart-2', '--chart-3', '--chart-4', '--brand-300'];
+const SPARK_TOKENS = ['--primary', '--chart-2'];
 const STAR_TOKENS = ['--primary', '--chart-4', '--brand-300'];
 
 /** Hex values of the given custom properties; anything else is dropped (canvas-confetti needs hex). */
@@ -69,13 +63,13 @@ export class CelebrationService {
   /** Set checked: a quick spark burst around the check (the tap itself gives the haptics). */
   sparks(from: BurstOrigin): void {
     this.fire(from, SPARK_TOKENS, {
-      particleCount: 14,
+      particleCount: 16,
       spread: 360,
-      startVelocity: 13,
+      startVelocity: 15,
       gravity: 0.5,
       decay: 0.86,
       ticks: 45,
-      scalar: 0.55,
+      scalar: 0.7,
       shapes: ['circle'],
     });
   }

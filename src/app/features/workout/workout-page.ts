@@ -25,7 +25,7 @@ import { SegmentProgress } from '../../shared/components/segment-progress/segmen
 import { StickyAction } from '../../shared/components/sticky-action/sticky-action';
 import { TimerBar } from '../../shared/components/timer-bar/timer-bar';
 import { CelebrationService } from '../../shared/motion/celebration.service';
-import { play, shine } from '../../shared/motion/motion';
+import { play } from '../../shared/motion/motion';
 import { ExerciseCelebration } from './exercise-celebration';
 import { ExercisePage } from './exercise-page';
 import { OverviewSheet } from './overview-sheet';
@@ -126,18 +126,7 @@ interface ExerciseMoment {
 
       <app-sticky-action [divider]="true">
         @if (next(); as nextItem) {
-          <button
-            #nextButton
-            hlmBtn
-            size="lg"
-            class="relative overflow-hidden"
-            (click)="goTo(current() + 1)"
-          >
-            <span
-              #nextShine
-              class="pointer-events-none absolute inset-0 bg-linear-to-r from-transparent via-primary-foreground/30 to-transparent opacity-0"
-              aria-hidden="true"
-            ></span>
+          <button #nextButton hlmBtn size="lg" (click)="goTo(current() + 1)">
             <ng-icon name="lucideArrowRight" />
             <span class="truncate">
               {{
@@ -182,7 +171,6 @@ export class WorkoutPage {
   private readonly pager = viewChild<ElementRef<HTMLElement>>('pager');
   private readonly progress = viewChild(SegmentProgress);
   private readonly nextButton = viewChild<ElementRef<HTMLElement>>('nextButton');
-  private readonly nextShine = viewChild<ElementRef<HTMLElement>>('nextShine');
   /** Session exercises already celebrated: unchecking and re-checking does not repeat it. */
   private readonly celebrated = new Set<string>();
 
@@ -271,8 +259,20 @@ export class WorkoutPage {
     const progress = this.progress();
     void progress?.flash(index);
     this.celebration.collect(progress?.segmentRect(index));
-    void shine(this.nextShine()?.nativeElement, 0.9);
-    void play(this.nextButton()?.nativeElement, { scale: [1, 1.04, 1] }, { duration: 0.5 });
+    void play(
+      this.nextButton()?.nativeElement,
+      {
+        scale: [1, 1.05, 1, 1.05, 1],
+        filter: [
+          'brightness(1)',
+          'brightness(1.2)',
+          'brightness(1)',
+          'brightness(1.2)',
+          'brightness(1)',
+        ],
+      },
+      { duration: 0.9, ease: 'easeInOut' },
+    );
   }
 
   protected goTo(index: number): void {
