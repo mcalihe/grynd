@@ -45,12 +45,12 @@ export function rollDirection(next: number, previous: number | undefined): RollD
       display: inline-block;
     }
     .roll-enter {
-      animation: roll-in-down 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
+      animation: roll-in-down 400ms cubic-bezier(0.2, 0.8, 0.2, 1);
     }
     .roll-leave {
       position: absolute;
       inset: 0;
-      animation: roll-out-down 260ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+      animation: roll-out-down 400ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
     }
     :host([data-direction='up']) .roll-enter {
       animation-name: roll-in-up;
