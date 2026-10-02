@@ -38,6 +38,7 @@ Ein **Plan ist genau ein Training**: eine feste Abfolge von Übungen mit Sätzen
 | UI | Spartan UI (brain + helm) | Helm-Komponenten liegen in `shared/ui` |
 | Styling | Tailwind CSS v4 | CSS-first über `@theme`, keine `tailwind.config.js` |
 | Icons | Lucide via `ng-icons` | |
+| Animation | `motion` (Springs, Stagger, Zahlen), `canvas-confetti` (Partikel) | Nur in Lazy-Chunks; respektiert `prefers-reduced-motion` ([0015](decisions/0015-celebrations.md)) |
 | Datenbank | `@capacitor-community/sqlite` (+ `jeep-sqlite` im Browser) | |
 | State | Signals in Services | NgRx SignalStore erst bei Bedarf |
 | i18n | Transloco, Deutsch und Englisch | Keine hart codierten Texte |
@@ -134,7 +135,8 @@ Alle Tabellen haben `id` (UUIDv7), `createdAt`, `updatedAt`, `deletedAt`. Dazu k
 - **Timer:** neutraler Timer als feste Leiste über dem Weiter-Button (kein Sheet). Bereit: Standarddauer + Chevron + Play. Läuft: Restzeit, Fortschrittslinie, −15 / +15, Stopp. Letzte 10 s in `warning`. Tippen auf die Zeit öffnet ein Popover mit 0:30, 1:00, 1:30, 2:00, 3:00. Startet automatisch nach dem Abhaken eines Satzes (abschaltbar). Speichert die Endzeit, nicht einen Zähler. Bei Ablauf: Haptik und eine lokale Benachrichtigung mit Standardton (auch im Hintergrund, [0014](decisions/0014-native-polish.md)).
 - **Weiter-Button:** «Weiter zu {Übungsname}», einzeilig mit Ellipsis; bei der letzten Übung «Training abschliessen».
 - **Beenden:** kleiner Ghost-Button im Kopf; Dialog «Training beenden?» mit «Beenden und speichern», «Training verwerfen» (destructive), «Weiter trainieren». Android-Zurück öffnet denselben Dialog ([0011](decisions/0011-workout-flow.md)).
-- **Abschliessen** führt zum Verlaufs-Detail `/history/:id`.
+- **Belohnungen** ([0015](decisions/0015-celebrations.md)): Satz abhaken = Haken federt auf mit Funken; Rekord = Sterne und «PR»-Badge; Übung fertig = Badge mit Lob und Konfetti, das ins Fortschrittssegment fliegt (einmal pro Übung); alle Übungen erledigt = «Training abschliessen» pulsiert. Nie blockierend, ohne Ton.
+- **Abschliessen** (auch «Beenden und speichern») führt zum Feier-Screen `/workout/done/:id` (Pokal, Konfetti, Kennzahlen zählen hoch) und mit «Weiter» zum Verlaufs-Detail `/history/:id`.
 - «Training starten» bei laufendem Training fragt «Laufendes Training fortsetzen?» und führt zu `/workout`.
 - Bildschirm bleibt an, solange `/workout` offen ist (`@capacitor-community/keep-awake`).
 

@@ -146,6 +146,17 @@ App-Seite umgesetzt in `feat/m8-native`, Entscheide in [0014](decisions/0014-nat
 | 8.5a | ✅ Unsignierte Builds in CI: Android-Debug-APK als Artefakt, iOS-Kompilierprüfung auf macOS ([release.md](release.md)) |
 | 8.5b | Signatur, TestFlight und interner Test bei Google Play (braucht Apple Developer Program und Play Console; Secrets in [release.md](release.md)) |
 
+## Motivation – Belohnungs-Animationen ✅
+
+Umgesetzt in `claude/training-motivation-animations-i5cxg2`, Entscheide in [0015](decisions/0015-celebrations.md). Ohne Figma-Entwurf, abspielbar unter `/dev/components` («Celebrations») und `/dev/celebration/demo`.
+
+| # | Aufgabe |
+| --- | --- |
+| A.1 | ✅ Motion-Grundlage `shared/motion` (Presets, Helfer, reduzierte Bewegung) und `CelebrationService` (Konfetti aus Tokens, Haptik) |
+| A.2 | ✅ Satz abhaken und Rekord in der Set Row; Segment-Fortschritt animiert |
+| A.3 | ✅ Übung fertig: Badge-Overlay, Flug ins Segment, Weiter-Button pulsiert; alle Übungen erledigt → «Training abschliessen» pulsiert |
+| A.4 | ✅ Feier-Screen `/workout/done/:id` nach dem Abschliessen, E2E angepasst |
+
 ---
 
 ## Entscheide aus M0

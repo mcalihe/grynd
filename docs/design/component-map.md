@@ -93,6 +93,8 @@ Klassen folgen dem Angular-Styleguide 2025 (ohne `Component`-Suffix), Selektor-P
 | Training · Übersicht | `/workout` | `56:48605` | `56:48814` |
 | Training · Timer-Dauer | `/workout` | `79:2663` | `79:2832` |
 | Training · Letzte Übung | `/workout` | `84:3791` | `84:4068` |
+| Training · Übung geschafft (Overlay `ExerciseCelebration`) | `/workout` | – (nur Code, [0015](../decisions/0015-celebrations.md)) | – |
+| Training geschafft (`WorkoutCompletePage`) | `/workout/done/:sessionId` | – (nur Code, [0015](../decisions/0015-celebrations.md)) | – |
 | Verlauf | `/history` | `37:29734` | `37:29861` |
 | Verlauf · Leer | `/history` | `106:1654` | `106:1764` |
 | Verlauf-Detail | `/history/:sessionId` | `84:3364` (Menü `106:1648`) | `84:4001` (Menü `106:1651`) |
