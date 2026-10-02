@@ -1,0 +1,12 @@
+# Root of the preview host (httpdocs of the preview FTP user), uploaded by deploy.yml.
+# Each PR lives in /pr-<n>/ with its own .htaccess; the rules below only cover the bare root.
+
+# Keep previews out of search engines (inherited by every /pr-<n>/ folder).
+<IfModule mod_headers.c>
+  Header always set X-Robots-Tag "noindex, nofollow"
+</IfModule>
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteRule ^$ https://fit.michael-isler.com/ [R=302,L]
+</IfModule>

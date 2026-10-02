@@ -1,0 +1,116 @@
+name: Deploy
+
+# Web build over FTPS (docs/release.md, «Web-Deployment»):
+# - production: after CI passed on main, or manually from main → httpdocs/ of the production FTP user
+# - preview: every PR from this repo → httpdocs/pr-<n>/ of the preview FTP user, removed when the PR closes
+# Each GitHub environment holds FTP_HOST, FTP_USER, FTP_PASSWORD (secrets) and SITE_URL (variable).
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+
+permissions:
+  contents: read
+
+jobs:
+  production:
+    if: >-
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
+      && github.event.workflow_run.event == 'push')
+      || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: ${{ vars.SITE_URL }}
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+
+      - run: sed 's|__BASE__|/|' deploy/app.htaccess > dist/grynd/browser/.htaccess
+      - run: sudo apt-get update -q && sudo apt-get install -y -q lftp
+
+      - run: bash scripts/deploy-ftp.sh dist/grynd/browser httpdocs
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          LFTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+
+  preview:
+    # Fork PRs get no secrets, so they get no preview.
+    if: >-
+      github.event_name == 'pull_request' && github.event.action != 'closed'
+      && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    environment:
+      name: preview
+      url: ${{ vars.SITE_URL }}/pr-${{ github.event.pull_request.number }}/
+    concurrency:
+      group: deploy-preview-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
+    env:
+      BASE_HREF: /pr-${{ github.event.pull_request.number }}/
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build --base-href "$BASE_HREF"
+
+      - run: sed "s|__BASE__|$BASE_HREF|" deploy/app.htaccess > dist/grynd/browser/.htaccess
+      - run: sudo apt-get update -q && sudo apt-get install -y -q lftp
+
+      - name: Upload preview root (redirect to production, noindex)
+        run: |
+          mkdir -p preview-root
+          cp deploy/preview-root.htaccess preview-root/.htaccess
+          lftp -c "set ftp:ssl-force true; set ftp:ssl-protect-data true; \
+            open --env-password -u \"$FTP_USER\" \"$FTP_HOST\"; put -O httpdocs preview-root/.htaccess"
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          LFTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+
+      - run: bash scripts/deploy-ftp.sh dist/grynd/browser "httpdocs$BASE_HREF"
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          LFTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+
+  preview-cleanup:
+    if: >-
+      github.event_name == 'pull_request' && github.event.action == 'closed'
+      && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    environment: preview
+    concurrency:
+      group: deploy-preview-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
+    steps:
+      - run: sudo apt-get update -q && sudo apt-get install -y -q lftp
+      - name: Remove httpdocs/pr-${{ github.event.pull_request.number }}
+        run: |
+          lftp -c "set ftp:ssl-force true; set ftp:ssl-protect-data true; \
+            open --env-password -u \"$FTP_USER\" \"$FTP_HOST\"; rm -r -f httpdocs/pr-$PR_NUMBER"
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          LFTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
