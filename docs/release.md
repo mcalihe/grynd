@@ -47,10 +47,10 @@ Der Link zur Preview erscheint im PR als «View deployment».
 
    | Environment | Secrets | Variable `SITE_URL` |
    | --- | --- | --- |
-   | `production` | `FTP_HOST`, `FTP_USER`, `FTP_PASSWORD` | `https://fit.michael-isler.com` |
-   | `preview` | `FTP_HOST`, `FTP_USER`, `FTP_PASSWORD` | `https://preview.fit.michael-isler.com` |
+   | `Production` | `FTP_HOST`, `FTP_USER`, `FTP_PASSWORD` | `https://fit.michael-isler.com` |
+   | `Preview` | `FTP_HOST`, `FTP_USER`, `FTP_PASSWORD` | `https://preview.fit.michael-isler.com` |
 
-3. **Empfohlen:** im Environment `production` unter «Deployment branches and tags» nur `main` erlauben. Dann kommt ein Workflow aus einem PR nicht an die Produktions-Zugangsdaten.
+3. **Empfohlen:** im Environment `Production` unter «Deployment branches and tags» nur `main` erlauben. Dann kommt ein Workflow aus einem PR nicht an die Produktions-Zugangsdaten. Zusätzlich prüft der Job `production-gate`, dass nur der aktuelle Stand von `main` deployt wird.
 
 ### Wenn der Upload scheitert
 

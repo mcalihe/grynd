@@ -17,14 +17,36 @@ permissions:
   contents: read
 
 jobs:
-  production:
+  # A workflow_run job always runs as main, so the environment's branch rule cannot tell where
+  # head_sha came from (a tag named "main" also matches the branch filter). Only the current tip
+  # of main is deployed; if main has moved on, the newer commit's CI run deploys instead.
+  production-gate:
     if: >-
       (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
       && github.event.workflow_run.event == 'push')
       || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
+    outputs:
+      sha: ${{ steps.check.outputs.sha }}
+    steps:
+      - id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+        run: |
+          main=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq .object.sha)
+          if [ "$SHA" = "$main" ]; then
+            echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::Not deploying $SHA: the tip of main is $main."
+          fi
+
+  production:
+    needs: production-gate
+    if: needs.production-gate.outputs.sha != ''
+    runs-on: ubuntu-latest
     environment:
-      name: production
+      name: Production
       url: ${{ vars.SITE_URL }}
     concurrency:
       group: deploy-production
@@ -32,7 +54,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          ref: ${{ needs.production-gate.outputs.sha }}
 
       - uses: actions/setup-node@v4
         with:
@@ -57,7 +79,7 @@ jobs:
       && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     environment:
-      name: preview
+      name: Preview
       url: ${{ vars.SITE_URL }}/pr-${{ github.event.pull_request.number }}/
     concurrency:
       group: deploy-preview-${{ github.event.pull_request.number }}
@@ -99,7 +121,7 @@ jobs:
       github.event_name == 'pull_request' && github.event.action == 'closed'
       && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
-    environment: preview
+    environment: Preview
     concurrency:
       group: deploy-preview-${{ github.event.pull_request.number }}
       cancel-in-progress: true
