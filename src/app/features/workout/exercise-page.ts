@@ -7,7 +7,11 @@ import { HlmDropdownMenuImports } from '@spartan-ng/helm/dropdown-menu';
 import { SetLog } from '../../core/db/models';
 import { ExerciseCatalogService } from '../../core/exercises/exercise-catalog.service';
 import { SettingsService } from '../../core/settings/settings.service';
-import { WorkoutExercise, WorkoutService } from '../../core/workout/workout.service';
+import {
+  exerciseJustDone,
+  WorkoutExercise,
+  WorkoutService,
+} from '../../core/workout/workout.service';
 import { SetRow, SetRowState } from '../../shared/components/set-row/set-row';
 import { SetMenu } from './set-menu';
 
@@ -114,6 +118,8 @@ export class ExercisePage {
   readonly isLast = input(false);
   /** Emitted after a set was checked (not unchecked), with the exercise's rest in seconds. */
   readonly setCompleted = output<number>();
+  /** Emitted when checking a set finished the exercise (all planned sets done). */
+  readonly exerciseCompleted = output<void>();
 
   protected readonly workout = inject(WorkoutService);
   private readonly catalog = inject(ExerciseCatalogService);
@@ -158,8 +164,13 @@ export class ExercisePage {
   }
 
   protected async complete(set: SetLog): Promise<void> {
+    const { entry, sets: before } = this.item();
     if (await this.workout.toggleComplete(set.id)) {
-      this.setCompleted.emit(this.item().entry.restSeconds ?? 90);
+      this.setCompleted.emit(entry.restSeconds ?? 90);
+      const after = this.workout.workout()?.exercises.find((e) => e.entry.id === entry.id)?.sets;
+      if (after && exerciseJustDone(before, after)) {
+        this.exerciseCompleted.emit();
+      }
     }
   }
 }

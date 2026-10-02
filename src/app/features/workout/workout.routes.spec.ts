@@ -5,7 +5,7 @@ import { SetLog } from '../../core/db/models';
 import { WorkoutExercise, WorkoutService } from '../../core/workout/workout.service';
 import { repTarget } from './exercise-page';
 import { exerciseProgress } from './overview-sheet';
-import { activeWorkoutGuard } from './workout.routes';
+import { activeWorkoutGuard, WORKOUT_ROUTES } from './workout.routes';
 
 describe('activeWorkoutGuard', () => {
   const setup = (active: boolean) => {
@@ -26,6 +26,14 @@ describe('activeWorkoutGuard', () => {
     const result = setup(false);
     expect(result).toBeInstanceOf(UrlTree);
     expect(String(result)).toBe('/plans');
+  });
+});
+
+describe('WORKOUT_ROUTES', () => {
+  it('opens the celebration without the active-workout guard (the session is finished)', () => {
+    const done = WORKOUT_ROUTES.find((r) => r.path === 'done/:sessionId');
+    expect(done).toBeDefined();
+    expect(done?.canActivate).toBeUndefined();
   });
 });
 

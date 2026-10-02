@@ -1,6 +1,8 @@
 import { closeStaleInterval, keepInterval } from './intervals';
 import { prefillSets } from './prefill';
+import { SetLog } from '../db/models';
 import { estimatedOneRepMax, recordSetIds } from './records';
+import { exerciseJustDone } from './workout.service';
 
 describe('prefillSets', () => {
   it('starts empty with the plan minimum without history', () => {
@@ -79,5 +81,29 @@ describe('intervals', () => {
     expect(closeStaleInterval(t(0), t(40))).toBe(t(40));
     expect(closeStaleInterval(t(0), null)).toBeNull();
     expect(closeStaleInterval(t(10), t(11))).toBeNull();
+  });
+});
+
+describe('exerciseJustDone', () => {
+  const set = (done: boolean, isExtra = false) =>
+    ({ completedAt: done ? '2026-10-02T10:00:00.000Z' : null, isExtra }) as SetLog;
+
+  it('is true when the last planned set gets checked', () => {
+    expect(exerciseJustDone([set(true), set(false)], [set(true), set(true)])).toBe(true);
+  });
+
+  it('ignores extra sets, both open and checked', () => {
+    expect(exerciseJustDone([set(true), set(false, true)], [set(true), set(true, true)])).toBe(
+      false,
+    );
+    expect(exerciseJustDone([set(false), set(false, true)], [set(true), set(false, true)])).toBe(
+      true,
+    );
+  });
+
+  it('is false when the exercise was already done or still has open sets', () => {
+    expect(exerciseJustDone([set(true)], [set(true)])).toBe(false);
+    expect(exerciseJustDone([set(false), set(false)], [set(true), set(false)])).toBe(false);
+    expect(exerciseJustDone([], [])).toBe(false);
   });
 });

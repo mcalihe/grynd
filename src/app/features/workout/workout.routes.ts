@@ -12,4 +12,9 @@ export const WORKOUT_ROUTES: Routes = [
     canActivate: [activeWorkoutGuard],
     loadComponent: () => import('./workout-page').then((m) => m.WorkoutPage),
   },
+  {
+    // Celebration after finishing; the session is no longer active here (decision 0015).
+    path: 'done/:sessionId',
+    loadComponent: () => import('./workout-complete-page').then((m) => m.WorkoutCompletePage),
+  },
 ];

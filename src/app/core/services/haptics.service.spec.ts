@@ -9,6 +9,7 @@ describe('HapticsService in the browser', () => {
     expect(() => {
       service.tap();
       service.press();
+      service.heavy();
       service.selectionStart();
       service.tick();
       service.selectionEnd();

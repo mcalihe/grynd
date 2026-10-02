@@ -20,6 +20,11 @@ export class HapticsService {
     this.run(() => Haptics.impact({ style: ImpactStyle.Medium }));
   }
 
+  /** Strong thump, e.g. the confetti cannons when a workout is finished. */
+  heavy(): void {
+    this.run(() => Haptics.impact({ style: ImpactStyle.Heavy }));
+  }
+
   /** Start of a value scrub (swipe on a stepper); follow with `tick` and `selectionEnd`. */
   selectionStart(): void {
     this.run(() => Haptics.selectionStart());

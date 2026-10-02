@@ -30,6 +30,11 @@ export function isExerciseDone(sets: readonly SetLog[]): boolean {
   return planned.length > 0 && planned.every((s) => s.completedAt !== null);
 }
 
+/** The change from `before` to `after` finished the exercise (celebrated once, decision 0015). */
+export function exerciseJustDone(before: readonly SetLog[], after: readonly SetLog[]): boolean {
+  return !isExerciseDone(before) && isExerciseDone(after);
+}
+
 /**
  * The running workout (plan.md §7): a copy of the plan made at start, logged set by set.
  * Changes here never touch the plan. At most one session is active.

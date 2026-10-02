@@ -105,6 +105,21 @@
       "save": "Beenden und speichern",
       "discard": "Training verwerfen",
       "continue": "Weiter trainieren"
+    },
+    "praise": {
+      "1": "Stark!",
+      "2": "Sauber!",
+      "3": "Geschafft!",
+      "4": "Weiter so!",
+      "5": "Bärenstark!",
+      "6": "Läuft!"
+    },
+    "exerciseDone": "Übung {{done}} von {{total}} geschafft",
+    "allDone": "Alle Übungen geschafft!",
+    "complete": {
+      "title": "Training geschafft!",
+      "records": "Rekorde",
+      "continue": "Weiter"
     }
   },
   "history": {

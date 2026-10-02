@@ -35,8 +35,12 @@ test('plan → workout → history', async ({ page }) => {
     'true',
   );
 
-  // Finish → history detail
+  // Finish → celebration (figures count up to their final values) → history detail
   await page.getByRole('button', { name: 'Training abschliessen' }).click();
+  await expect(page).toHaveURL(/\/workout\/done\/.+/);
+  await expect(page.getByRole('heading', { name: 'Training geschafft!' })).toBeVisible();
+  await expect(page.locator('[data-stat="volume"] dd')).toHaveText('480 kg');
+  await page.getByRole('button', { name: 'Weiter' }).click();
   await expect(page).toHaveURL(/\/history\/.+/);
   await expect(page.getByRole('heading', { name: 'E2E Brust' })).toBeVisible();
   await expect(page.getByText('60 kg × 8')).toBeVisible();

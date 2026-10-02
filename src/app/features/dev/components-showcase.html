@@ -36,6 +36,28 @@
   </section>
 
   <section class="flex flex-col gap-3">
+    <h2 class="text-sm font-semibold text-muted-foreground">Celebrations · decision 0015</h2>
+    <app-set-row [number]="1" [weight]="82.5" [reps]="8" [state]="demoState()" />
+    <app-segment-progress #demoProgress [segments]="demoSegments()" [current]="1" />
+    <div class="flex flex-wrap gap-2">
+      <button hlmBtn size="sm" variant="secondary" (click)="replaySet('completed')">Satz</button>
+      <button hlmBtn size="sm" variant="secondary" (click)="replaySet('record')">Rekord</button>
+      <button hlmBtn size="sm" variant="secondary" (click)="replayExercise()">Übung</button>
+      <button hlmBtn size="sm" variant="secondary" (click)="replayFinale()">Finale</button>
+      <a hlmBtn size="sm" variant="secondary" routerLink="/dev/celebration/demo">Feier-Screen</a>
+    </div>
+    @if (demoMoment() !== undefined) {
+      <app-exercise-celebration
+        praise="Bärenstark!"
+        subline="Übung 2 von 3 geschafft"
+        [target]="demoMoment() ?? null"
+        (landed)="demoLanded()"
+        (done)="demoMoment.set(undefined)"
+      />
+    }
+  </section>
+
+  <section class="flex flex-col gap-3">
     <h2 class="text-sm font-semibold text-muted-foreground">Timer Bar · Figma 72:2641</h2>
     <app-timer-bar [durationSec]="restSeconds()" (durationChange)="restSeconds.set($event)" />
     <app-timer-bar [running]="true" [remainingMs]="72000" [totalMs]="90000" />

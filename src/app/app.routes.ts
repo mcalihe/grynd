@@ -26,6 +26,11 @@ export const routes: Routes = [
           loadComponent: () =>
             import('./features/dev/components-showcase').then((m) => m.ComponentsShowcase),
         },
+        {
+          path: 'dev/celebration',
+          loadChildren: () =>
+            import('./features/dev/celebration-demo.routes').then((m) => m.CELEBRATION_DEMO_ROUTES),
+        },
       ]
     : []),
   { path: '**', redirectTo: 'plans' },
