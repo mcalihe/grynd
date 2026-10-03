@@ -89,3 +89,11 @@ export function filterExercises(
 export function toggle<T>(values: readonly T[], value: T): T[] {
   return values.includes(value) ? values.filter((v) => v !== value) : [...values, value];
 }
+
+/** Dropdown chip label: the group name, the one selected option, or the first one and «+n». */
+export function filterChipLabel(selected: readonly string[], fallback: string): string {
+  if (selected.length === 0) {
+    return fallback;
+  }
+  return selected.length === 1 ? selected[0] : `${selected[0]} +${selected.length - 1}`;
+}

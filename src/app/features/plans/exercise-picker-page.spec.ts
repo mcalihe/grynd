@@ -102,4 +102,49 @@ describe('ExercisePickerPage', () => {
     expect(confirm).toHaveBeenCalledOnce();
     expect(navigate).not.toHaveBeenCalled();
   });
+
+  it('filters from a chip sheet and resets from the result line', async () => {
+    const { fixture } = await setup();
+    const el: HTMLElement = fixture.nativeElement;
+    const chip = () => el.querySelector<HTMLButtonElement>('app-filter-chip button');
+    const names = () => rows(el).map((r) => r.querySelector('.truncate')?.textContent?.trim());
+
+    chip()?.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    [...document.querySelectorAll<HTMLButtonElement>('hlm-sheet-content button[aria-pressed]')]
+      .find((b) => b.textContent?.includes('muscles.arms'))
+      ?.click();
+    fixture.detectChanges();
+
+    expect(names()).toEqual(['Curls']);
+    expect(chip()?.textContent).toContain('muscles.arms');
+    expect(el.textContent).toContain('picker.countOne');
+
+    [...el.querySelectorAll<HTMLButtonElement>('button')]
+      .find((b) => b.textContent?.includes('picker.reset'))
+      ?.click();
+    fixture.detectChanges();
+
+    expect(names()).toEqual(['Bankdrücken', 'Curls', 'Rudern']);
+    expect(chip()?.textContent).toContain('picker.muscleGroup');
+  });
+
+  it('clears the search with its button', async () => {
+    const { fixture } = await setup();
+    const el: HTMLElement = fixture.nativeElement;
+    const input = el.querySelector<HTMLInputElement>('input[type=search]')!;
+    const clear = () => el.querySelector<HTMLButtonElement>('[aria-label="picker.clearSearch"]');
+    expect(clear()).toBeNull();
+
+    input.value = 'rud';
+    input.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    expect(rows(el)).toHaveLength(1);
+
+    clear()?.click();
+    fixture.detectChanges();
+    expect(input.value).toBe('');
+    expect(rows(el)).toHaveLength(3);
+  });
 });
