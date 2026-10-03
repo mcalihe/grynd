@@ -1,11 +1,18 @@
 import { NgTemplateOutlet } from '@angular/common';
 import {
+  afterNextRender,
   ChangeDetectionStrategy,
   Component,
   computed,
+  DestroyRef,
+  effect,
+  ElementRef,
   inject,
   OnInit,
   signal,
+  untracked,
+  viewChild,
+  WritableSignal,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
@@ -20,17 +27,29 @@ import {
   EQUIPMENT,
   EQUIPMENT_FILTERS,
   EquipmentFilter,
+  filterChipLabel,
   filterExercises,
   ForceFilter,
   FORCES,
   isFilterActive,
   MUSCLE_GROUPS,
   normalize,
-  toggle,
 } from '../../core/exercises/exercise-search';
 import { ConfirmService } from '../../core/services/confirm.service';
+import { FilterChip } from '../../shared/components/filter-chip/filter-chip';
 import { StickyAction } from '../../shared/components/sticky-action/sticky-action';
+import { ExerciseFilterSheet } from './exercise-filter-sheet';
 import { PlanEditorStore } from './plan-editor.store';
+
+/** One dropdown chip and its sheet. */
+interface FilterGroup {
+  id: 'muscles' | 'forces' | 'equipment';
+  /** Translation key of the group name. */
+  title: string;
+  labelPrefix: string;
+  options: readonly string[];
+  value: WritableSignal<readonly string[]>;
+}
 
 interface ListEntry {
   letter?: string;
@@ -45,14 +64,25 @@ function equipmentChip(value: string | null): EquipmentFilter | null {
 }
 
 /**
- * «Übungen hinzufügen» (Figma 63:12824, 63:13440, 63:14032): search, chip filters, recently used,
- * alphabetical list with thumbnails, multi-select. Exercises already in the plan are dimmed.
+ * «Übungen hinzufügen» (Figma 63:12824, 63:13440, 63:14032; filters per decision 0016): search,
+ * dropdown filter chips and the result count stay pinned while only the list scrolls. Recently
+ * used, alphabetical list with thumbnails, multi-select. Exercises already in the plan are dimmed.
  */
 @Component({
   selector: 'app-exercise-picker-page',
-  imports: [StickyAction, HlmButton, HlmInput, HlmBadge, NgIcon, TranslocoPipe, NgTemplateOutlet],
+  imports: [
+    StickyAction,
+    FilterChip,
+    ExerciseFilterSheet,
+    HlmButton,
+    HlmInput,
+    HlmBadge,
+    NgIcon,
+    TranslocoPipe,
+    NgTemplateOutlet,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'flex flex-1 flex-col' },
+  host: { class: 'bg-background pt-safe px-safe fixed inset-0 z-10 flex flex-col' },
   template: `
     <header class="flex h-13 shrink-0 items-center gap-2 px-4">
       <button
@@ -67,7 +97,7 @@ function equipmentChip(value: string | null): EquipmentFilter | null {
       <h1 class="text-xl font-semibold">{{ 'plans.addExercises' | transloco }}</h1>
     </header>
 
-    <div class="flex flex-1 flex-col gap-4 px-4 pb-4">
+    <div class="flex shrink-0 flex-col gap-3 px-4 pb-3" [class.border-b]="scrolled()">
       <label class="relative block">
         <ng-icon
           name="lucideSearch"
@@ -75,9 +105,10 @@ function equipmentChip(value: string | null): EquipmentFilter | null {
           class="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground"
         />
         <input
+          #search
           hlmInput
           type="search"
-          class="pl-11"
+          class="pr-11 pl-11 [&::-webkit-search-cancel-button]:appearance-none"
           autocomplete="off"
           enterkeyhint="search"
           [attr.aria-label]="'picker.search' | transloco"
@@ -85,61 +116,49 @@ function equipmentChip(value: string | null): EquipmentFilter | null {
           [value]="query()"
           (input)="query.set($any($event.target).value)"
         />
-      </label>
-
-      <section class="flex flex-col gap-2">
-        <div class="flex flex-col gap-1">
-          <h2 class="text-xs text-muted-foreground">{{ 'picker.muscleGroup' | transloco }}</h2>
-          <div class="-mx-4 flex [scrollbar-width:none] gap-2 overflow-x-auto px-4">
-            @for (muscle of muscleGroups; track muscle) {
-              <button
-                type="button"
-                [class]="chipClass(muscles().includes(muscle))"
-                [attr.aria-pressed]="muscles().includes(muscle)"
-                (click)="muscles.set(toggle(muscles(), muscle))"
-              >
-                {{ 'muscles.' + muscle | transloco }}
-              </button>
-            }
-          </div>
-        </div>
-        <div class="flex flex-col gap-1">
-          <h2 class="text-xs text-muted-foreground">{{ 'picker.movement' | transloco }}</h2>
-          <div class="flex gap-2">
-            @for (force of forceValues; track force) {
-              <button
-                type="button"
-                [class]="chipClass(forces().includes(force))"
-                [attr.aria-pressed]="forces().includes(force)"
-                (click)="forces.set(toggle(forces(), force))"
-              >
-                {{ 'forces.' + force | transloco }}
-              </button>
-            }
-          </div>
-        </div>
-        <div class="flex flex-col gap-1">
-          <h2 class="text-xs text-muted-foreground">{{ 'picker.equipment' | transloco }}</h2>
-          <div class="-mx-4 flex [scrollbar-width:none] gap-2 overflow-x-auto px-4">
-            @for (item of equipmentValues; track item) {
-              <button
-                type="button"
-                [class]="chipClass(equipment().includes(item))"
-                [attr.aria-pressed]="equipment().includes(item)"
-                (click)="equipment.set(toggle(equipment(), item))"
-              >
-                {{ 'equipment.' + item | transloco }}
-              </button>
-            }
-          </div>
-        </div>
-        @if (filterActive()) {
-          <button hlmBtn variant="ghost" size="sm" class="self-start" (click)="resetFilters()">
-            <ng-icon name="lucideX" />{{ 'picker.resetFilters' | transloco }}
+        @if (query()) {
+          <button
+            type="button"
+            class="absolute top-1/2 right-0 flex size-11 -translate-y-1/2 items-center justify-center text-muted-foreground"
+            [attr.aria-label]="'picker.clearSearch' | transloco"
+            (click)="query.set(''); search.focus()"
+          >
+            <ng-icon name="lucideX" size="20" />
           </button>
         }
-      </section>
+      </label>
 
+      <div class="-mx-4 -my-1.5 flex [scrollbar-width:none] gap-2 overflow-x-auto px-4 py-1.5">
+        @for (group of groups; track group.id) {
+          <app-filter-chip
+            [active]="group.value().length > 0"
+            [expanded]="sheetOpen() && sheetGroup().id === group.id"
+            (click)="openSheet(group)"
+          >
+            {{ chipLabel(group) }}
+          </app-filter-chip>
+        }
+      </div>
+
+      <div class="flex h-8 items-center justify-between">
+        <p class="text-sm text-muted-foreground" aria-live="polite">
+          {{
+            (results().length === 1 ? 'picker.countOne' : 'picker.countMany')
+              | transloco: { count: results().length }
+          }}
+        </p>
+        @if (filterActive() && results().length > 0) {
+          <button hlmBtn variant="ghost" size="sm" class="-mr-3" (click)="resetFilters()">
+            {{ 'picker.reset' | transloco }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <div
+      #scroller
+      class="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-4 pb-4"
+    >
       @if (catalog.exercises() === null) {
         <!-- catalog loading -->
       } @else if (results().length === 0) {
@@ -153,7 +172,7 @@ function equipmentChip(value: string | null): EquipmentFilter | null {
           </button>
         </div>
       } @else {
-        <section class="flex flex-col gap-1">
+        <section class="flex shrink-0 flex-col gap-1">
           @if (!filterActive() && recent().length) {
             <h2 class="text-sm font-medium text-muted-foreground">
               {{ 'picker.recent' | transloco }}
@@ -161,9 +180,6 @@ function equipmentChip(value: string | null): EquipmentFilter | null {
             @for (exercise of recent(); track exercise.id) {
               <ng-container *ngTemplateOutlet="row; context: { $implicit: exercise }" />
             }
-          }
-          @if (filterActive()) {
-            <h2 class="text-sm font-medium text-muted-foreground">{{ summary() }}</h2>
           }
           @for (entry of list(); track entry.exercise?.id ?? entry.letter) {
             @if (entry.letter) {
@@ -175,6 +191,15 @@ function equipmentChip(value: string | null): EquipmentFilter | null {
         </section>
       }
     </div>
+
+    <app-exercise-filter-sheet
+      [title]="sheetGroup().title"
+      [labelPrefix]="sheetGroup().labelPrefix"
+      [options]="sheetGroup().options"
+      [value]="sheetGroup().value()"
+      (valueChange)="sheetGroup().value.set($any($event))"
+      [(open)]="sheetOpen"
+    />
 
     <ng-template #row let-exercise>
       @let inPlan = store.exerciseIds().has(exercise.id);
@@ -249,17 +274,66 @@ export class ExercisePickerPage implements OnInit {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
 
-  protected readonly muscleGroups = MUSCLE_GROUPS;
-  protected readonly forceValues = FORCES;
-  protected readonly equipmentValues = EQUIPMENT;
-  protected readonly toggle = toggle;
-
   protected readonly query = signal('');
-  protected readonly muscles = signal<MuscleGroup[]>([]);
-  protected readonly forces = signal<ForceFilter[]>([]);
-  protected readonly equipment = signal<EquipmentFilter[]>([]);
+  protected readonly muscles = signal<readonly MuscleGroup[]>([]);
+  protected readonly forces = signal<readonly ForceFilter[]>([]);
+  protected readonly equipment = signal<readonly EquipmentFilter[]>([]);
   protected readonly selected = signal<ReadonlySet<string>>(new Set());
   private readonly recentIds = signal<string[]>([]);
+
+  protected readonly groups: readonly FilterGroup[] = [
+    {
+      id: 'muscles',
+      title: 'picker.muscleGroup',
+      labelPrefix: 'muscles.',
+      options: MUSCLE_GROUPS,
+      value: this.muscles as WritableSignal<readonly string[]>,
+    },
+    {
+      id: 'forces',
+      title: 'picker.movement',
+      labelPrefix: 'forces.',
+      options: FORCES,
+      value: this.forces as WritableSignal<readonly string[]>,
+    },
+    {
+      id: 'equipment',
+      title: 'picker.equipment',
+      labelPrefix: 'equipment.',
+      options: EQUIPMENT,
+      value: this.equipment as WritableSignal<readonly string[]>,
+    },
+  ];
+  /** The sheet keeps its last group while closing, so its content doesn't jump. */
+  protected readonly sheetGroup = signal(this.groups[0]);
+  protected readonly sheetOpen = signal(false);
+  /** The list is scrolled: the pinned area gets a bottom border. */
+  protected readonly scrolled = signal(false);
+  private readonly scroller = viewChild<ElementRef<HTMLElement>>('scroller');
+
+  constructor() {
+    // A new search or filter starts at the top of its results.
+    effect(() => {
+      this.filter();
+      untracked(() => {
+        const list = this.scroller()?.nativeElement;
+        if (list) {
+          list.scrollTop = 0;
+        }
+      });
+    });
+    // Passive listener outside the template: scrolling doesn't run change detection per event.
+    const destroyRef = inject(DestroyRef);
+    afterNextRender(() => {
+      const list = this.scroller()?.nativeElement;
+      if (!list) {
+        return;
+      }
+      const onScroll = () => this.scrolled.set(list.scrollTop > 0);
+      list.addEventListener('scroll', onScroll, { passive: true });
+      destroyRef.onDestroy(() => list.removeEventListener('scroll', onScroll));
+    });
+  }
 
   private readonly filter = computed(() => ({
     query: this.query(),
@@ -305,16 +379,6 @@ export class ExercisePickerPage implements OnInit {
     return entries;
   });
 
-  protected readonly summary = computed(() => {
-    const t = (key: string) => this.transloco.translate(key);
-    const parts = [
-      ...this.muscles().map((m) => t(`muscles.${m}`)),
-      ...this.forces().map((f) => t(`forces.${f}`)),
-      ...this.equipment().map((e) => t(`equipment.${e}`)),
-    ];
-    return parts.length ? parts.join(' · ') : t('picker.results');
-  });
-
   async ngOnInit(): Promise<void> {
     // Also covers a reload or deep link straight into the picker: the draft must exist first.
     const planId = this.route.parent?.snapshot.paramMap.get('id') ?? null;
@@ -326,10 +390,17 @@ export class ExercisePickerPage implements OnInit {
     this.recentIds.set(await this.sessionExercises.findRecentExerciseIds(3));
   }
 
-  protected chipClass(active: boolean): string {
-    return `h-8 shrink-0 rounded-full px-2 text-sm font-medium ${
-      active ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'
-    }`;
+  protected chipLabel(group: FilterGroup): string {
+    const t = (key: string) => this.transloco.translate(key);
+    return filterChipLabel(
+      group.value().map((v) => t(group.labelPrefix + v)),
+      t(group.title),
+    );
+  }
+
+  protected openSheet(group: FilterGroup): void {
+    this.sheetGroup.set(group);
+    this.sheetOpen.set(true);
   }
 
   protected meta(exercise: Exercise): string {

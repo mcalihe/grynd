@@ -28,6 +28,7 @@ import { SegmentedControl } from '../../shared/components/segmented-control/segm
 import { SetRow, SetRowState } from '../../shared/components/set-row/set-row';
 import { StickyAction } from '../../shared/components/sticky-action/sticky-action';
 import { TimerBar } from '../../shared/components/timer-bar/timer-bar';
+import { FilterChip } from '../../shared/components/filter-chip/filter-chip';
 import { WeekdayChips } from '../../shared/components/weekday-chips/weekday-chips';
 import { CelebrationService } from '../../shared/motion/celebration.service';
 import { ExerciseCelebration } from '../workout/exercise-celebration';
@@ -59,6 +60,7 @@ import { ExerciseCelebration } from '../workout/exercise-celebration';
     HistoryRow,
     StickyAction,
     WeekdayChips,
+    FilterChip,
     SegmentedControl,
     ExerciseCelebration,
     RouterLink,
