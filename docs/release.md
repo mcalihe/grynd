@@ -54,7 +54,7 @@ Der Link zur Preview erscheint im PR als «View deployment».
 
 ### Wenn der Upload scheitert
 
-- **Zertifikatsfehler:** Der Workflow prüft das TLS-Zertifikat des FTP-Servers. `FTP_HOST` muss ein Name sein, den das Zertifikat abdeckt. Bei Plesk ist das oft der Hostname des Servers, nicht die Domain.
+- **Zertifikatsfehler:** Der Workflow prüft das TLS-Zertifikat des FTP-Servers. `FTP_HOST` muss ein Name sein, den das Zertifikat abdeckt. Bei Plesk ist das oft der Hostname des Servers, nicht die Domain. Die Domains laufen über den Cloudflare-Proxy, der kein FTP weiterleitet. Bei netcup gilt das Zertifikat `*.netcup.net`, deshalb `FTP_HOST=ae954.netcup.net` statt `hosting208427.ae954.netcup.net` (ein Wildcard deckt nur eine Ebene ab, gleicher Server).
 - **Server-Fehler 500 nach dem Deploy:** Der Server erlaubt eine Direktive in der `.htaccess` nicht (`AllowOverride`). Der Webspace muss `mod_rewrite` und `mod_headers` zulassen, mit Apache (oder nginx als Proxy vor Apache, der Plesk-Standard).
 - **Preview-Daten durcheinander:** Alle Previews teilen sich eine Datenbank im Browser. Abhilfe: in den Website-Einstellungen des Browsers die Daten für `preview.fit.michael-isler.com` löschen.
 
