@@ -1,0 +1,175 @@
+name: Deploy
+
+# Web build over FTPS (docs/release.md, «Web-Deployment»):
+# - production: after CI passed on main, or manually from main → httpdocs/ of the production FTP user
+# - preview: every PR from this repo → httpdocs/pr-<n>/ of the preview FTP user, removed when the PR closes
+# Each GitHub environment holds FTP_HOST, FTP_USER, FTP_PASSWORD (secrets) and SITE_URL (variable).
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+
+permissions:
+  contents: read
+
+jobs:
+  # A workflow_run job always runs as main, so the environment's branch rule cannot tell where
+  # head_sha came from (a tag named "main" also matches the branch filter). Only the current tip
+  # of main is deployed; if main has moved on, the newer commit's CI run deploys instead.
+  production-gate:
+    if: >-
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
+      && github.event.workflow_run.event == 'push')
+      || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')
+    runs-on: ubuntu-latest
+    outputs:
+      sha: ${{ steps.check.outputs.sha }}
+    steps:
+      - id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+        run: |
+          main=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq .object.sha)
+          if [ "$SHA" = "$main" ]; then
+            echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::Not deploying $SHA: the tip of main is $main."
+          fi
+
+  production:
+    needs: production-gate
+    if: needs.production-gate.outputs.sha != ''
+    runs-on: ubuntu-latest
+    environment:
+      name: Production
+      url: ${{ vars.SITE_URL }}
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.production-gate.outputs.sha }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+
+      - run: sed 's|__BASE__|/|' deploy/app.htaccess > dist/grynd/browser/.htaccess
+      - run: sudo apt-get update -q && sudo apt-get install -y -q lftp
+
+      - run: bash scripts/deploy-ftp.sh dist/grynd/browser httpdocs
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          LFTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+
+  preview:
+    # Fork PRs get no secrets, so they get no preview.
+    if: >-
+      github.event_name == 'pull_request' && github.event.action != 'closed'
+      && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    environment:
+      name: Preview
+      url: ${{ vars.SITE_URL }}/pr-${{ github.event.pull_request.number }}/
+    concurrency:
+      group: deploy-preview-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
+    env:
+      BASE_HREF: /pr-${{ github.event.pull_request.number }}/
+    outputs:
+      url: ${{ steps.url.outputs.url }}
+    steps:
+      - id: url
+        run: echo "url=$SITE_URL$BASE_HREF" >> "$GITHUB_OUTPUT"
+        env:
+          SITE_URL: ${{ vars.SITE_URL }}
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build --base-href "$BASE_HREF"
+
+      - run: sed "s|__BASE__|$BASE_HREF|" deploy/app.htaccess > dist/grynd/browser/.htaccess
+      - run: sudo apt-get update -q && sudo apt-get install -y -q lftp
+
+      - name: Upload preview root (redirect to production, noindex)
+        run: |
+          mkdir -p preview-root
+          cp deploy/preview-root.htaccess preview-root/.htaccess
+          lftp -c "set ftp:ssl-force true; set ftp:ssl-protect-data true; \
+            open --env-password -u \"$FTP_USER\" \"$FTP_HOST\"; put -O httpdocs preview-root/.htaccess"
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          LFTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+
+      - run: bash scripts/deploy-ftp.sh dist/grynd/browser "httpdocs$BASE_HREF"
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          LFTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+
+  preview-cleanup:
+    if: >-
+      github.event_name == 'pull_request' && github.event.action == 'closed'
+      && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    environment: Preview
+    concurrency:
+      group: deploy-preview-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
+    steps:
+      - run: sudo apt-get update -q && sudo apt-get install -y -q lftp
+      - name: Remove httpdocs/pr-${{ github.event.pull_request.number }}
+        run: |
+          lftp -c "set ftp:ssl-force true; set ftp:ssl-protect-data true; \
+            open --env-password -u \"$FTP_USER\" \"$FTP_HOST\"; rm -r -f httpdocs/pr-$PR_NUMBER"
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          LFTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+
+  # One sticky comment per PR with the preview link, updated on every deploy and on close.
+  # Separate job without checkout: the token that may write comments never sees PR code.
+  preview-comment:
+    needs: [preview, preview-cleanup]
+    if: always() && (needs.preview.result == 'success' || needs.preview-cleanup.result == 'success')
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+          URL: ${{ needs.preview.outputs.url }}
+          CLOSED: ${{ github.event.action == 'closed' }}
+        run: |
+          marker='<!-- grynd-preview -->'
+          if [ "$CLOSED" = true ]; then
+            body="$marker"$'\n'"**Preview removed** (PR closed)."
+          else
+            body="$marker"$'\n'"**Preview:** $URL"$'\n\n'"Commit \`${SHA:0:7}\` · deployed $(date -u '+%Y-%m-%d %H:%M') UTC"
+          fi
+          id=$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" --paginate \
+            --jq ".[] | select(.user.login == \"github-actions[bot]\" and (.body | startswith(\"$marker\"))) | .id" | head -n 1)
+          if [ -n "$id" ]; then
+            gh api -X PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$id" -f body="$body" > /dev/null
+          else
+            gh api "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" -f body="$body" > /dev/null
+          fi

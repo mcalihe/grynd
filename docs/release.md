@@ -28,6 +28,36 @@ Debug-Builds sind mit dem Debug-Schlüssel signiert. Eine spätere Play-Version 
 - Keep-Awake im Training, Android-Zurück im Training öffnet den Beenden-Dialog.
 - Export über das Teilen-Menü, Import über die Dateiauswahl.
 
+## Web-Deployment
+
+Workflow `.github/workflows/deploy.yml` («Deploy»), Hintergrund in `docs/decisions/0015-web-deployment.md`.
+
+| Job | Auslöser | Ziel |
+| --- | --- | --- |
+| `production` | CI auf `main` grün, oder manuell von `main` | `httpdocs/` des Produktions-FTP-Benutzers → `https://fit.michael-isler.com` |
+| `preview` | PR geöffnet oder aktualisiert | `httpdocs/pr-<n>/` des Preview-FTP-Benutzers → `https://fit-preview.michael-isler.com/pr-<n>/` |
+| `preview-cleanup` | PR geschlossen oder gemergt | löscht `httpdocs/pr-<n>/` |
+
+Der Link zur Preview erscheint im PR als «View deployment» und in einem Kommentar des Jobs `preview-comment`, der bei jedem Deploy aktualisiert wird und beim Schliessen «Preview removed» meldet.
+
+### Einmalige Einrichtung
+
+1. **Plesk:** Domain `fit.michael-isler.com` und Subdomain `fit-preview.michael-isler.com` mit je eigenem FTP-Benutzer, beide mit `httpdocs/` in der FTP-Wurzel. Für beide ein Let's-Encrypt-Zertifikat ausstellen. Liegt das DNS nicht bei Plesk, beim DNS-Anbieter A- oder CNAME-Einträge für `fit` und `fit-preview` anlegen. Hinter dem Cloudflare-Proxy bleiben beide Namen eine Ebene tief, sonst deckt das kostenlose Cloudflare-Zertifikat sie nicht ab (`ERR_SSL_VERSION_OR_CIPHER_MISMATCH`).
+2. **GitHub** (Settings → Environments) zwei Environments anlegen. Die Namen lassen sich später nicht ändern.
+
+   | Environment | Secrets | Variable `SITE_URL` |
+   | --- | --- | --- |
+   | `Production` | `FTP_HOST`, `FTP_USER`, `FTP_PASSWORD` | `https://fit.michael-isler.com` |
+   | `Preview` | `FTP_HOST`, `FTP_USER`, `FTP_PASSWORD` | `https://fit-preview.michael-isler.com` |
+
+3. **Empfohlen:** im Environment `Production` unter «Deployment branches and tags» nur `main` erlauben. Dann kommt ein Workflow aus einem PR nicht an die Produktions-Zugangsdaten. Zusätzlich prüft der Job `production-gate`, dass nur der aktuelle Stand von `main` deployt wird.
+
+### Wenn der Upload scheitert
+
+- **Zertifikatsfehler:** Der Workflow prüft das TLS-Zertifikat des FTP-Servers. `FTP_HOST` muss ein Name sein, den das Zertifikat abdeckt. Bei Plesk ist das oft der Hostname des Servers, nicht die Domain. Die Domains laufen über den Cloudflare-Proxy, der kein FTP weiterleitet. Bei netcup gilt das Zertifikat `*.netcup.net`. Ein Wildcard deckt nur eine Ebene ab, deshalb den kurzen Servernamen `<server>.netcup.net` verwenden, nicht `<hosting-id>.<server>.netcup.net` aus dem Kundenpanel (gleicher Server).
+- **Server-Fehler 500 nach dem Deploy:** Der Server erlaubt eine Direktive in der `.htaccess` nicht (`AllowOverride`). Der Webspace muss `mod_rewrite` und `mod_headers` zulassen, mit Apache (oder nginx als Proxy vor Apache, der Plesk-Standard).
+- **Preview-Daten durcheinander:** Alle Previews teilen sich eine Datenbank im Browser. Abhilfe: in den Website-Einstellungen des Browsers die Daten für `fit-preview.michael-isler.com` löschen.
+
 ## Später: signierte Releases (8.5b)
 
 ### Android – interner Test bei Google Play

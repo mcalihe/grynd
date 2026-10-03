@@ -74,6 +74,7 @@ Node 24 (`.nvmrc`), pnpm via `corepack enable` (version pinned in `package.json`
 - Component showcase (dev only): http://localhost:4200/dev/components – every shared component in all states; add new ones there
 - CI (`.github/workflows/ci.yml`) runs format check, lint, test and build, plus the E2E job, on every push and PR.
 - Native builds (`.github/workflows/build-native.yml`): Android debug APK artifact and an unsigned iOS simulator build; manual, on `v*` tags and on PRs touching native files. Release and signing notes: `docs/release.md`.
+- Web deploy (`.github/workflows/deploy.yml`): FTPS via `lftp` (`scripts/deploy-ftp.sh`, Apache config in `deploy/`). Production `https://fit.michael-isler.com` after green CI on `main`; every PR gets a preview at `https://fit-preview.michael-isler.com/pr-<n>/`, removed on close. GitHub environments `Production`/`Preview` each hold `FTP_HOST`, `FTP_USER`, `FTP_PASSWORD` + var `SITE_URL`.
 
 ## Tools
 
