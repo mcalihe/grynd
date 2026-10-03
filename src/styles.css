@@ -1,3 +1,9 @@
+/*
+ * Angular CDK registers its drag-preview resets (background: none, border: none, …) at runtime in
+ * the layer `cdk-resets`. Declared later than Tailwind's layers, it would beat every utility and
+ * strip the card off the dragged element. Declaring it first makes it the lowest layer.
+ */
+@layer cdk-resets;
 @import 'tailwindcss';
 @import '@spartan-ng/brain/hlm-tailwind-preset.css';
 @import '@fontsource-variable/inter';
@@ -57,5 +63,52 @@
 
   * {
     @apply border-border outline-ring/50;
+  }
+}
+
+/*
+ * Drag and drop (Angular CDK): the dragged card lifts off the list and follows the pointer, the
+ * slot it lands in is a dashed primary outline, and the other rows slide aside.
+ * Unlayered so it wins over the utilities on the dragged element (bg-card, border, …).
+ */
+.cdk-drag-preview {
+  @apply cursor-grabbing shadow-xl;
+  scale: 1.03;
+}
+
+.cdk-drag-placeholder {
+  @apply bg-primary/10 outline-2 -outline-offset-2 outline-primary outline-dashed;
+  border-color: transparent;
+}
+
+.cdk-drag-placeholder > * {
+  visibility: hidden;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .cdk-drag-preview {
+    animation: drag-lift 150ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  /* Rows making room for the dragged one. */
+  .cdk-drop-list-dragging .cdk-drag:not(.cdk-drag-placeholder) {
+    transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  /* The dragged card settling into its slot after release (CDK waits for this transition). */
+  .cdk-drag-animating {
+    transition:
+      transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+      scale 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+}
+
+.cdk-drag-animating {
+  scale: 1;
+}
+
+@keyframes drag-lift {
+  from {
+    scale: 1;
   }
 }
