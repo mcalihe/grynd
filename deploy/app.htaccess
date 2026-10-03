@@ -4,12 +4,15 @@
 AddType application/wasm .wasm
 
 # SPA fallback: paths that are not a file or directory go to index.html (path routing).
+# Paths with a file extension are never routes: a missing bundle must be a real 404, not
+# index.html served as JavaScript (and cached by Cloudflare under the bundle's name).
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase __BASE__
   RewriteCond %{REQUEST_FILENAME} -f [OR]
   RewriteCond %{REQUEST_FILENAME} -d
   RewriteRule ^ - [L]
+  RewriteCond %{REQUEST_URI} !\.[A-Za-z0-9]+$
   RewriteRule ^ index.html [L]
 </IfModule>
 

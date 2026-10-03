@@ -12,7 +12,9 @@
 set -euo pipefail
 
 local_dir="${1:?local dir}"
+# No trailing slash: with one, mirror would upload into <remote>/<basename of local>/.
 remote_dir="${2:?remote dir}"
+remote_dir="${remote_dir%/}"
 : "${FTP_HOST:?}" "${FTP_USER:?}" "${LFTP_PASSWORD:?}"
 
 lftp <<EOF
