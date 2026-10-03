@@ -1,0 +1,51 @@
+name: Release
+
+# release-please (docs/release.md, «Versionierung und Releases»): keeps a release PR open that bumps
+# the version and CHANGELOG.md from the Conventional Commits on main. Merging it tags vX.Y.Z and
+# publishes a GitHub Release with the changelog; the debug APK is then attached to that release.
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    outputs:
+      created: ${{ steps.release.outputs.release_created }}
+      tag: ${{ steps.release.outputs.tag_name }}
+    steps:
+      - uses: googleapis/release-please-action@v5
+        id: release
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+  # Tags pushed with GITHUB_TOKEN start no other workflows, so the native builds are called here.
+  native:
+    needs: release-please
+    if: needs.release-please.outputs.created == 'true'
+    permissions:
+      contents: read
+    uses: ./.github/workflows/build-native.yml
+
+  attach-apk:
+    needs: [release-please, native]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: grynd-debug-apk
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.release-please.outputs.tag }}
+        run: |
+          mv app-debug.apk "grynd-$TAG-debug.apk"
+          gh release upload "$TAG" "grynd-$TAG-debug.apk" --repo "$GITHUB_REPOSITORY"

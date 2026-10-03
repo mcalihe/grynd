@@ -2,9 +2,35 @@
 
 Stand: Es gibt noch kein Apple- und kein Google-Entwicklerkonto. Deshalb baut CI vorerst **ohne Signatur** (Roadmap 8.5a). Signatur, TestFlight und Google Play folgen in 8.5b.
 
+## Versionierung und Releases
+
+Semantic Versioning, automatisch aus den Commits auf `main` mit [release-please](https://github.com/googleapis/release-please-action) (Entscheid [0016](decisions/0016-release-please.md)). Die Version steht nur in `package.json`; alles andere leitet sich davon ab.
+
+**Commits:** PRs werden gesquasht, der **PR-Titel** wird zum Commit auf `main` und zur Zeile im Changelog. Er muss deshalb ein Conventional Commit sein (`feat(workout): …`, `fix: …`), der Workflow «PR title» prüft das. Regeln für Typen und Scopes stehen in `CLAUDE.md` («Commits and PRs»).
+
+| Commit | Version (vor 1.0) | Version (ab 1.0) | Im Changelog |
+| --- | --- | --- | --- |
+| `fix:` | Patch | Patch | Bug Fixes |
+| `feat:` | Minor | Minor | Features |
+| `perf:` / `revert:` | Patch | Patch | Performance / Reverts |
+| `feat!:` oder Footer `BREAKING CHANGE:` | Minor | Major | eigener Abschnitt |
+| `docs`, `ci`, `chore`, `refactor`, `test`, `build`, `style` | – | – | nein |
+
+**Ablauf** (`.github/workflows/release.yml`):
+1. Jeder Push auf `main` aktualisiert den Release-PR «chore(main): release X.Y.Z». Er erhöht die Version in `package.json`, `src/app/core/app-info.ts` (Markierung `x-release-please-version`) und `.release-please-manifest.json` und ergänzt `CHANGELOG.md`.
+2. Release = diesen PR mergen. release-please setzt den Tag `vX.Y.Z` und veröffentlicht einen GitHub-Release mit dem Changelog als Text.
+3. Danach baut derselbe Workflow die nativen Builds und hängt `grynd-vX.Y.Z-debug.apk` an den Release.
+
+Native Versionen: Android liest `versionName` aus `package.json` und rechnet `versionCode` = Major · 1 000 000 + Minor · 1 000 + Patch (0.2.0 → 2000), das steigt mit jeder Version. iOS bekommt `MARKETING_VERSION` und `CURRENT_PROJECT_VERSION` nach demselben Schema als Parameter von `xcodebuild` in CI.
+
+- Version und `CHANGELOG.md` nie von Hand ändern. Den Changelog-Text vor dem Release bei Bedarf im Release-PR korrigieren.
+- Version erzwingen (z.B. 1.0.0): Commit mit Footer `Release-As: 1.0.0` auf `main`.
+- Der Release-PR stammt von `GITHUB_TOKEN`, dadurch laufen CI und Previews darauf nicht. Er ändert nur Version und Changelog.
+- Repo-Einstellungen, die das voraussetzt: Squash-Merge mit PR-Titel als Commit-Titel, Merge-Commits und Rebase-Merges aus; Actions → General → «Allow GitHub Actions to create and approve pull requests» an.
+
 ## Was CI heute baut
 
-Workflow `.github/workflows/build-native.yml` («Native builds»). Er läuft manuell (Actions → Native builds → Run workflow), bei Tags `v*` und bei PRs, die `android/`, `ios/`, `capacitor.config.ts`, `package.json` oder den Lockfile ändern.
+Workflow `.github/workflows/build-native.yml` («Native builds»). Er läuft manuell (Actions → Native builds → Run workflow), bei jedem Release (aufgerufen von «Release») und bei PRs, die `android/`, `ios/`, `capacitor.config.ts`, `package.json` oder den Lockfile ändern.
 
 | Job | Ergebnis |
 | --- | --- |
@@ -78,7 +104,7 @@ GitHub-Secrets:
 | `ANDROID_KEY_PASSWORD` | Schlüssel-Passwort |
 | `PLAY_SERVICE_ACCOUNT_JSON` | JSON-Schlüssel des Service-Accounts |
 
-Ablauf im Workflow: `versionCode` aus der Run-Nummer, `versionName` aus `package.json`; `./gradlew bundleRelease` mit Signatur aus den Secrets; Upload des AAB in den Track `internal` (z.B. `r0adkll/upload-google-play`).
+Ablauf im Workflow: `versionCode` und `versionName` aus `package.json` (siehe «Versionierung und Releases»); `./gradlew bundleRelease` mit Signatur aus den Secrets; Upload des AAB in den Track `internal` (z.B. `r0adkll/upload-google-play`).
 
 ### iOS – TestFlight
 
@@ -96,6 +122,6 @@ GitHub-Secrets:
 | `APP_STORE_CONNECT_KEY_BASE64` | `.p8`-Datei als Base64 |
 | `APPLE_TEAM_ID` | Team-ID |
 
-Ablauf im Workflow (macOS-Runner): Build-Nummer aus der Run-Nummer; `xcodebuild archive` mit `-allowProvisioningUpdates` und den Authentifizierungs-Parametern des API-Schlüssels (`-authenticationKeyPath/-authenticationKeyID/-authenticationKeyIssuerID`), dann `xcodebuild -exportArchive` mit `ExportOptions.plist` (`method: app-store-connect`, `destination: upload`). Der Build erscheint nach der Verarbeitung in TestFlight; interne Tester brauchen keine Review.
+Ablauf im Workflow (macOS-Runner): Version und Build-Nummer aus `package.json` wie im Simulator-Build; `xcodebuild archive` mit `-allowProvisioningUpdates` und den Authentifizierungs-Parametern des API-Schlüssels (`-authenticationKeyPath/-authenticationKeyID/-authenticationKeyIssuerID`), dann `xcodebuild -exportArchive` mit `ExportOptions.plist` (`method: app-store-connect`, `destination: upload`). Der Build erscheint nach der Verarbeitung in TestFlight; interne Tester brauchen keine Review.
 
-Sobald die Konten da sind: Secrets anlegen, dann ergänzt ein eigener PR die Release-Jobs (Tag `v*` → beide Stores).
+Sobald die Konten da sind: Secrets anlegen, dann ergänzt ein eigener PR die Store-Uploads im Workflow «Release» (nach `release_created` → beide Stores).
