@@ -8,6 +8,7 @@ import { HlmDropdownMenuImports } from '@spartan-ng/helm/dropdown-menu';
 import { HlmInput } from '@spartan-ng/helm/input';
 import { ExerciseCatalogService } from '../../core/exercises/exercise-catalog.service';
 import { ConfirmService } from '../../core/services/confirm.service';
+import { HapticsService } from '../../core/services/haptics.service';
 import { NumberStepper } from '../../shared/components/number-stepper/number-stepper';
 import { PageHeader } from '../../shared/components/page-header/page-header';
 import { StickyAction } from '../../shared/components/sticky-action/sticky-action';
@@ -119,6 +120,7 @@ import { PlanExerciseRow, targetSummary } from './plan-exercise-row';
               cdkDropList
               cdkDropListLockAxis="y"
               class="flex flex-col gap-2"
+              (cdkDropListSorted)="haptics.tick()"
               (cdkDropListDropped)="drop($event)"
             >
               @for (
@@ -129,6 +131,7 @@ import { PlanExerciseRow, targetSummary } from './plan-exercise-row';
                 <app-plan-exercise-row
                   cdkDrag
                   [draggable]="true"
+                  (cdkDragStarted)="haptics.selectionStart()"
                   [name]="catalog.nameById(exercise.exerciseId)"
                   [summary]="summary(exercise.targetSets, exercise.repMin, exercise.repMax)"
                 >
@@ -200,6 +203,7 @@ import { PlanExerciseRow, targetSummary } from './plan-exercise-row';
 export class PlanEditorPage implements OnInit {
   protected readonly store = inject(PlanEditorStore);
   protected readonly catalog = inject(ExerciseCatalogService);
+  protected readonly haptics = inject(HapticsService);
   private readonly confirm = inject(ConfirmService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
@@ -220,6 +224,7 @@ export class PlanEditorPage implements OnInit {
   }
 
   protected drop(event: CdkDragDrop<unknown>): void {
+    this.haptics.selectionEnd();
     this.store.move(event.previousIndex, event.currentIndex);
   }
 

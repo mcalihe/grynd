@@ -4,6 +4,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
 import { NgIcon } from '@ng-icons/core';
 import { HlmSheetImports } from '@spartan-ng/helm/sheet';
 import { ExerciseCatalogService } from '../../core/exercises/exercise-catalog.service';
+import { HapticsService } from '../../core/services/haptics.service';
 import { WorkoutExercise, WorkoutService } from '../../core/workout/workout.service';
 import { ProgressRing } from '../../shared/components/progress-ring/progress-ring';
 
@@ -39,11 +40,13 @@ export function exerciseProgress(item: WorkoutExercise): number {
           cdkDropList
           cdkDropListLockAxis="y"
           class="flex flex-col gap-2 overflow-y-auto px-4 pb-6"
+          (cdkDropListSorted)="haptics.tick()"
           (cdkDropListDropped)="drop($event)"
         >
           @for (item of workout.workout()?.exercises ?? []; track item.entry.id; let i = $index) {
             <div
               cdkDrag
+              (cdkDragStarted)="haptics.selectionStart()"
               class="flex min-h-14 items-center gap-1 rounded-lg border bg-card"
               [class.border-primary]="i === workout.current()"
               [class.bg-accent]="i === workout.current()"
@@ -86,6 +89,7 @@ export class OverviewSheet {
 
   protected readonly workout = inject(WorkoutService);
   protected readonly catalog = inject(ExerciseCatalogService);
+  protected readonly haptics = inject(HapticsService);
   protected readonly progress = exerciseProgress;
 
   protected done(item: WorkoutExercise): number {
@@ -98,6 +102,7 @@ export class OverviewSheet {
   }
 
   protected async drop(event: CdkDragDrop<unknown>): Promise<void> {
+    this.haptics.selectionEnd();
     if (event.previousIndex !== event.currentIndex) {
       await this.workout.moveExercise(event.previousIndex, event.currentIndex);
     }
