@@ -86,7 +86,14 @@ jobs:
       cancel-in-progress: true
     env:
       BASE_HREF: /pr-${{ github.event.pull_request.number }}/
+    outputs:
+      url: ${{ steps.url.outputs.url }}
     steps:
+      - id: url
+        run: echo "url=$SITE_URL$BASE_HREF" >> "$GITHUB_OUTPUT"
+        env:
+          SITE_URL: ${{ vars.SITE_URL }}
+
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
@@ -136,3 +143,33 @@ jobs:
           FTP_HOST: ${{ secrets.FTP_HOST }}
           FTP_USER: ${{ secrets.FTP_USER }}
           LFTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+
+  # One sticky comment per PR with the preview link, updated on every deploy and on close.
+  # Separate job without checkout: the token that may write comments never sees PR code.
+  preview-comment:
+    needs: [preview, preview-cleanup]
+    if: always() && (needs.preview.result == 'success' || needs.preview-cleanup.result == 'success')
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+          URL: ${{ needs.preview.outputs.url }}
+          CLOSED: ${{ github.event.action == 'closed' }}
+        run: |
+          marker='<!-- grynd-preview -->'
+          if [ "$CLOSED" = true ]; then
+            body="$marker"$'\n'"**Preview removed** (PR closed)."
+          else
+            body="$marker"$'\n'"**Preview:** $URL"$'\n\n'"Commit \`${SHA:0:7}\` · deployed $(date -u '+%Y-%m-%d %H:%M') UTC"
+          fi
+          id=$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" --paginate \
+            --jq ".[] | select(.user.login == \"github-actions[bot]\" and (.body | startswith(\"$marker\"))) | .id" | head -n 1)
+          if [ -n "$id" ]; then
+            gh api -X PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$id" -f body="$body" > /dev/null
+          else
+            gh api "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" -f body="$body" > /dev/null
+          fi

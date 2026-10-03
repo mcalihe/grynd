@@ -38,7 +38,7 @@ Workflow `.github/workflows/deploy.yml` («Deploy»), Hintergrund in `docs/decis
 | `preview` | PR geöffnet oder aktualisiert | `httpdocs/pr-<n>/` des Preview-FTP-Benutzers → `https://fit-preview.michael-isler.com/pr-<n>/` |
 | `preview-cleanup` | PR geschlossen oder gemergt | löscht `httpdocs/pr-<n>/` |
 
-Der Link zur Preview erscheint im PR als «View deployment».
+Der Link zur Preview erscheint im PR als «View deployment» und in einem Kommentar des Jobs `preview-comment`, der bei jedem Deploy aktualisiert wird und beim Schliessen «Preview removed» meldet.
 
 ### Einmalige Einrichtung
 
