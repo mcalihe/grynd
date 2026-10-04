@@ -64,7 +64,7 @@ Ein **Plan ist genau ein Training**: eine feste Abfolge von Übungen mit Sätzen
 Figma ist die Quelle für Tokens. Die Variablen tragen bereits ihren CSS-Namen als Code-Syntax (`var(--primary)` usw.) und können über den Figma-MCP-Server ausgelesen werden.
 
 - **Markenfarbe:** Volt Lime (Skala `brand/50–950`), dazu `neutral/50–950` sowie Statusfarben `green`, `amber`, `red`.
-- **Semantische Tokens** (Light und Dark, Namen wie shadcn/Spartan): `background`, `foreground`, `card`, `card-foreground`, `popover`, `popover-foreground`, `primary`, `primary-foreground`, `secondary`, `secondary-foreground`, `muted`, `muted-foreground`, `accent`, `accent-foreground`, `destructive`, `border`, `input`, `ring`, `chart-1` bis `chart-5` sowie eigene: `success`, `warning`, `highlight`, `surface-elevated`. Radien: `--radius` (12), `--radius-lg` (16), `--radius-xl` (20), `--radius-full` (Pill).
+- **Semantische Tokens** (Light und Dark, Namen wie shadcn/Spartan): `background`, `foreground`, `card`, `card-foreground`, `popover`, `popover-foreground`, `primary`, `primary-foreground`, `secondary`, `secondary-foreground`, `muted`, `muted-foreground`, `accent`, `accent-foreground`, `destructive`, `border`, `input`, `ring`, `chart-1` bis `chart-5` sowie eigene: `success`, `warning`, `highlight`, `surface-elevated`, `muscle-chest` … `muscle-core` (feste Farbe pro Muskelgruppe für Diagramme, [0016](decisions/0016-history-statistics.md)). Radien: `--radius` (12), `--radius-lg` (16), `--radius-xl` (20), `--radius-full` (Pill).
 - **Farbregeln:** Fortschritt immer in `primary`. `success` nur für Status-Meldungen (Badges, Toasts, Trends). Icons übernehmen die Vordergrundfarbe ihrer Fläche (auf `primary` → `primary-foreground`).
 - **Theme:** Automatisch (`prefers-color-scheme`, reagiert live), Hell oder Dunkel; Wahl in den Einstellungen gespeichert. Ein `ThemeService` setzt `.dark` am `html`-Element (Tailwind v4: `@custom-variant dark`) und passt die Statusleiste an. Light und Dark zeigen nur auf verschiedene Stufen derselben Palette.
 - **Schrift:** Inter (Platzhalter, finale Wahl offen), lokal gebündelt, Tabellenziffern für alle Zahlen.
@@ -140,11 +140,13 @@ Alle Tabellen haben `id` (UUIDv7), `createdAt`, `updatedAt`, `deletedAt`. Dazu k
 - «Training starten» bei laufendem Training fragt «Laufendes Training fortsetzen?» und führt zu `/workout`.
 - Bildschirm bleibt an, solange `/workout` offen ist (`@capacitor-community/keep-awake`).
 
-### Verlauf (`/history`, `/history/:sessionId`)
+### Verlauf (`/history`, `/history/:sessionId`, `/history/plans/:planId`)
+- Drei Ansichten über ein Segmented Control: **Liste** (Standard, wie unten), **Kalender** (Monat mit Trainingstagen, Monatszahlen, Serie) und **Statistik** (Woche/Monat/Jahr mit Kennzahlen und Diagramm, Kraft, Muskelgruppen als Ring, Konstanz, Pläne). Details in [0016](decisions/0016-history-statistics.md).
 - Wochenübersicht der laufenden Woche (Montag bis Sonntag) als einfarbiges Balkendiagramm (`chart-1`): Höhe = Trainingsdauer des Tages relativ zum längsten Tag, Tage ohne Training als niedrige graue Balken. Kopf mit Anzahl Trainings, Gesamtdauer und Differenz zur Vorwoche (positiv in `success`).
 - Liste vergangener Trainings, gruppiert nach Woche («Diese Woche», «Vorwoche», danach Datumsbereich): Planname, Tag, Dauer, Anzahl Übungen. Nur abgeschlossene, nicht gelöschte Trainings; verworfene erscheinen nie.
 - Leerer Verlauf: Diagramm mit «0 Trainings» und Empty State «Noch keine Trainings».
-- **Detail:** Planname, Tag und Startzeit; Kennzahlen Dauer, Volumen (Σ kg × Wdh. abgehakter Sätze, Körpergewicht zählt 0) und Sätze; pro Übung Zeit (Summe der Intervalle) und die abgehakten Sätze mit Badges «Rekord» (`success`) und «Extra». Rekorde zählen gegen früher begonnene Trainings.
+- **Detail:** Planname, Tag und Startzeit; Kennzahlen Dauer, Volumen (Σ kg × Wdh. abgehakter Sätze, Körpergewicht zählt 0), Sätze und Rekorde, jeweils mit Differenz zum letzten Training desselben Plans; Link «Alle Trainings mit {Plan}»; pro Übung Zeit (Summe der Intervalle), Volumen mit Differenz zum letzten Mal und die abgehakten Sätze mit Badges «Rekord» (`success`) und «Extra». Rekorde zählen gegen früher begonnene Trainings.
+- **Planverlauf:** alle Trainings eines Plans mit Durchschnitten, Diagramm der letzten 12 Trainings und geschätztem 1RM pro Übung als Sparkline; erreichbar aus Detail, Statistik und Plan-Detail.
 - **Löschen** über das Drei-Punkte-Menü im Detail mit Bestätigung (Soft Delete); gelöschte Trainings zählen nicht mehr für Vorbefüllung und Rekorde ([0012](decisions/0012-history.md)).
 
 ### Einstellungen (`/settings`)

@@ -6,7 +6,7 @@ Figma-Datei: [grynd](https://www.figma.com/design/iCoAOIvfyeCFYFU4Og7rVf/grynd).
 
 Vor dem Bau von UI hier nachsehen. Neue eigene Komponenten hier ergänzen.
 
-## Figma-Bestand (Stand 2026-09-30)
+## Figma-Bestand (Stand 2026-10-04)
 
 | Seite | ID | Inhalt |
 | --- | --- | --- |
@@ -16,7 +16,7 @@ Vor dem Bau von UI hier nachsehen. Neue eigene Komponenten hier ergänzen.
 | Components | `9:5` | Alle Komponenten im Frame `9:6` |
 | Screens | `25:1442` | 44 Frames à 393×852, jeweils Light und Dark. Neue Frames ab y=16184 |
 
-**Variablen** (alle Semantic- und Radius-Variablen haben Web-Code-Syntax, siehe [Entscheid](../decisions/0004-token-names.md)): `Primitives` (31: brand/50–950, neutral/50–950, green/amber/red, white), `Semantic` (27, Modi Light/Dark, Code-Syntax `var(--…)`), `Layout` (spacing 4/8/12/16/24/32/48, radius base/lg/xl/pill).
+**Variablen** (alle Semantic- und Radius-Variablen haben Web-Code-Syntax, siehe [Entscheid](../decisions/0004-token-names.md)): `Primitives` (43: brand/50–950, neutral/50–950, green/amber/red, white, blue/orange/aqua/violet/yellow/magenta für die Muskelgruppen), `Semantic` (34, inkl. `muscle-*`, Modi Light/Dark, Code-Syntax `var(--…)`), `Layout` (spacing 4/8/12/16/24/32/48, radius base/lg/xl/pill).
 
 ## Komponenten
 
@@ -66,9 +66,17 @@ Klassen folgen dem Angular-Styleguide 2025 (ohne `Component`-Suffix), Selektor-P
 | Übungszeile im Plan (Detail/Editor, ≡-Handle, Chevron) | `37:27708`, `37:28096` | `PlanExerciseRow` (`app-plan-exercise-row`, features/plans) |
 | Übungs-Listeneintrag + Filter-Chips im Picker | `63:13440` | im `ExercisePickerPage` (features/plans) |
 | «Änderungen verwerfen» / Bestätigungen | `66:1123` | `ConfirmService` + `ConfirmDialogHost` (App-Shell, `@defer`) |
-| Wochenübersicht (Balkendiagramm) | `37:29739` | `WeekChart` (`app-week-chart`) |
+| Wochenübersicht (Balkendiagramm) | `37:29739` | `WeekChart` (`app-week-chart`), Balken über `BarChart` |
+| Balkendiagramm (Statistik, Plan-Verlauf) | `120:1844`, `122:1931` | `BarChart` (`app-bar-chart`, optional antippbar) |
 | Trainingseintrag im Verlauf | `37:29769` | `HistoryRow` (`app-history-row`) |
-| Kennzahlen, Übungskarte im Verlauf-Detail | `84:3425`, `84:3501` | im `HistoryDetailPage` (features/history) |
+| Kennzahlen (auch als wählbare Kacheln) | `84:3425`, `121:1946`, `120:1844` | `KeyFigures` (`app-key-figures`, `selectable`) |
+| Übungskarte im Verlauf-Detail | `84:3501` | im `HistoryDetailPage` (features/history) |
+| Zeitraum ‹ September 2026 › | `119:1818`, `120:1844` | `PeriodPager` (`app-period-pager`) |
+| Monatskalender | `119:1818` | `MonthCalendar` (`app-month-calendar`) |
+| Muskelgruppen (Ring mit Legende) | `121:1841` | `DonutChart` (`app-donut-chart`) |
+| Kraft-Trend pro Übung | `122:3253` | `Sparkline` (`app-sparkline`) |
+| Kraft, Konstanz, Pläne (Statistik) | `121:1796`, `121:1880`, `121:1896` | im `HistoryStatsView` (features/history) |
+| Planverlauf-Link (Detail, Plan-Detail) | `121:2022`, `122:3374` | im `HistoryDetailPage` / `PlanDetailPage` |
 
 ## Screens
 
@@ -98,9 +106,15 @@ Klassen folgen dem Angular-Styleguide 2025 (ohne `Component`-Suffix), Selektor-P
 | Verlauf | `/history` | `37:29734` | `37:29861` |
 | Verlauf · Leer | `/history` | `106:1654` | `106:1764` |
 | Verlauf-Detail | `/history/:sessionId` | `84:3364` (Menü `106:1648`) | `84:4001` (Menü `106:1651`) |
+| Verlauf · Liste (`HistoryListView`) | `/history` | `118:1692` | `122:3429` |
+| Verlauf · Kalender (`HistoryCalendarView`) | `/history?view=calendar` | `119:1728` | `122:3501` |
+| Verlauf · Statistik (`HistoryStatsView`) | `/history?view=stats` | `120:1760` | `122:3651` |
+| Verlauf-Detail · Vergleich | `/history/:sessionId` | `121:1935` | `122:3846` |
+| Plan-Verlauf (`PlanHistoryPage`) | `/history/plans/:planId` | `122:1825` | `122:3939` |
+| Plan-Detail · Verlauf | `/plans/:id` | `122:3315` | `122:4037` |
 | Einstellungen | `/settings` (`SettingsPage`, features/settings) | `84:2796` | `84:3950` |
 
-Hinweis: «Training · Timer-Dauer» lag über «Verlauf» und liegt jetzt bei y=19992. «Verlauf · Leer» liegt bei y=20944.
+Hinweis: «Training · Timer-Dauer» lag über «Verlauf» und liegt jetzt bei y=19992. «Verlauf · Leer» liegt bei y=20944. Die Statistik-Frames ([0016](../decisions/0016-history-statistics.md)) beginnen bei y=21896; «Verlauf · Statistik» und «Plan-Verlauf» sind höher als 852 px (scrollende Inhalte).
 
 ## App-Icon und Splash
 

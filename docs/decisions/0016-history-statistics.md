@@ -1,0 +1,23 @@
+# 0016 – Verlauf: Ansichten, Statistik, Vergleich, Planverlauf
+
+**Datum:** 2026-10-04 · **Status:** entschieden
+
+## Kontext
+Der Verlauf zeigte nur die laufende Woche als Diagramm und eine Liste, das Detail drei Kennzahlen. Gewünscht sind mehr Statistiken im Verlauf, im Detail eines Trainings und pro Plan. Der Einstieg soll einfach bleiben, weitere Ansichten und Infos aber klar erreichbar sein. Entwürfe in Figma (Seite Screens, ab y = 21896), siehe [component-map](../design/component-map.md).
+
+## Entscheid
+- **Drei Ansichten im Verlauf:** Segmented Control `Liste | Kalender | Statistik` unter dem Titel. «Liste» ist der Standard und unverändert. Die Wahl steht im Query-Parameter `view` (`/history?view=stats`, Liste ohne Parameter, `replaceUrl`), «Zurück» aus einem Training führt in die zuletzt gewählte Ansicht. Ein Tipp auf «Verlauf» in der Navigation öffnet wieder die Liste.
+- **Kalender:** Monatsraster Mo–So mit ‹ Monat ›, nicht über den aktuellen Monat hinaus und nicht vor das erste Training. Trainingstage in `chart-1`, heute mit Ring, der gewählte Tag gefüllt in `foreground`; nur Trainingstage sind antippbar. Darunter Trainings (mit Differenz zum Vormonat) und Dauer des Monats, aktuelle und längste Serie, dann die Trainings des gewählten Tags (Standard: heute oder der letzte Trainingstag).
+- **Serie:** Wochen in Folge mit mindestens einem Training. Die laufende Woche ohne Training bricht die Serie erst, wenn sie vorbei ist.
+- **Statistik:** `Woche | Monat | Jahr` (Standard Monat) mit ‹ Zeitraum ›. Vier Kennzahlen (Trainings, Dauer, Volumen, Sätze) mit Differenz zum Vorzeitraum; ein Tipp auf eine Kennzahl wählt, was das Balkendiagramm zeigt (Standard Volumen). Balken pro Tag (Woche, Monat) bzw. pro Monat (Jahr); ein Tipp auf einen Balken zeigt Tag und Wert. Darunter die Karten Kraft, Muskelgruppen, Konstanz und Pläne.
+- **Fairer Vergleich:** Ein laufender Zeitraum wird mit demselben Stück des Vorzeitraums verglichen (1.–4. Okt. gegen 1.–4. Sep.), abgeschlossene Zeiträume ganz. Die Wochenübersicht der Liste bleibt wie in [0012](0012-history.md).
+- **Farben der Differenzen:** besser = `success`, schlechter = `muted-foreground`, keine Änderung = nicht angezeigt (wie 0012). Dauer ist weder gut noch schlecht und bleibt immer `muted-foreground`.
+- **Kraft:** bestes geschätztes 1RM (Epley, wie bei Rekorden) pro Übung im Zeitraum, Differenz zum Bestwert davor; Übungen ohne Gewicht in Wiederholungen. Sortiert nach Sätzen, 5 sichtbar, «Alle anzeigen» klappt den Rest auf. Badge mit der Zahl der Rekorde im Zeitraum.
+- **Muskelgruppen als Ring (Donut):** Sätze pro Muskelgruppe (`muscleGroup` des Katalogs, Übungen ohne Gruppe zählen nicht), Summe in der Mitte, Legende sortiert mit Anzahl und Anteil; Gruppen mit 0 Sätzen erscheinen grau in der Legende. Die Segmente liegen immer in derselben Reihenfolge (Brust, Rücken, Schultern, Beine, Po, Arme, Core) mit 2 px Lücke. Jede Gruppe hat eine feste Farbe aus neuen Tokens `--muscle-chest` … `--muscle-core` (Hell/Dunkel); Nachbarn in dieser Reihenfolge sind auch bei Farbsehschwäche unterscheidbar (geprüft mit dem Palette-Validator, ΔE ≥ 9). Die Legende ist die Tabellenansicht, Identität hängt nie nur an der Farbe.
+- **Dauern ab 10 Stunden** werden auf ganze Stunden gerundet («11 Std.»), damit sie in die Kennzahlen passen.
+- **Training-Detail:** Dauer, Volumen, Sätze und Rekorde (2 × 2) mit Differenz zum letzten früher begonnenen Training desselben Plans, darunter «Verglichen mit dem letzten Mal: …». Ohne Vorgänger keine Differenzen. Pro Übung das Volumen und die Differenz zum letzten Mal, als diese Übung trainiert wurde (egal in welchem Plan). Eine Zeile «Alle Trainings mit {Plan}» führt zum Planverlauf.
+- **Planverlauf** `/history/plans/:planId` (ohne Navigation): Anzahl, Ø Dauer, Ø Volumen; Balken der letzten 12 Trainings (Volumen, Dauer oder Sätze) mit Veränderung in Prozent seit dem ersten davon; pro Übung das 1RM des letzten Trainings, die Veränderung und eine Sparkline; alle Trainings. Funktioniert auch für gelöschte Pläne. Erreichbar aus dem Detail, der Statistik («Pläne») und dem Plan-Detail («Verlauf», nur wenn es Trainings gibt). «Zurück» geht dahin, wo man herkam.
+
+## Umsetzungshinweise
+- Alles wird im Speicher berechnet: `HistoryService.loadFacts()` lädt jeden abgehakten Satz abgeschlossener Trainings (bei Bedarf), die reinen Funktionen stehen in `core/history/history-insights.ts` (getestet). Rekorde zählt `recordsBySession` nach derselben Regel wie das Detail; ein Test vergleicht beide.
+- Neue Bausteine in `shared/components`: `BarChart` (auch in `WeekChart`), `KeyFigures`, `PeriodPager`, `MonthCalendar`, `DonutChart`, `Sparkline`; alle unter `/dev/components`.

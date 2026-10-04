@@ -157,6 +157,20 @@ Umgesetzt in `claude/training-motivation-animations-i5cxg2`, Entscheide in [0015
 | A.3 | ✅ Übung fertig: Badge-Overlay, Flug ins Segment, Weiter-Button pulsiert; alle Übungen erledigt → «Training abschliessen» pulsiert |
 | A.4 | ✅ Feier-Screen `/workout/done/:id` nach dem Abschliessen, E2E angepasst |
 
+## M9 – Statistik im Verlauf ✅
+
+Umgesetzt in `claude/history-statistics-views-066be4`, Entscheide in [0016](decisions/0016-history-statistics.md). Figma-Entwürfe ab y = 21896 (Light/Dark), neue Tokens `--muscle-*`.
+
+| # | Aufgabe | Figma Light | Figma Dark |
+| --- | --- | --- | --- |
+| 9.1 | ✅ `history-insights.ts` (Zeiträume, Kalender, Serie, Rekorde, Muskelgruppen, Kraft, Vergleich, Planverlauf) und `HistoryService.loadFacts()` (test-first) | – | – |
+| 9.2 | ✅ Bausteine `BarChart`, `KeyFigures`, `PeriodPager`, `MonthCalendar`, `DonutChart`, `Sparkline` | – | – |
+| 9.3 | ✅ **Verlauf · Liste** mit den Ansichten Liste, Kalender, Statistik (Query-Parameter `view`) | `118:1692` | `122:3429` |
+| 9.4 | ✅ **Verlauf · Kalender** | `119:1728` | `122:3501` |
+| 9.5 | ✅ **Verlauf · Statistik** | `120:1760` | `122:3651` |
+| 9.6 | ✅ **Verlauf-Detail · Vergleich** | `121:1935` | `122:3846` |
+| 9.7 | ✅ **Plan-Verlauf** `/history/plans/:planId` und Einstieg im Plan-Detail | `122:1825`, `122:3315` | `122:3939`, `122:4037` |
+
 ---
 
 ## Entscheide aus M0
