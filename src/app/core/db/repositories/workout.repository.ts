@@ -79,6 +79,17 @@ export class SetLogRepository extends BaseRepository<SetLog> {
     );
   }
 
+  /** The most recently deleted planned (non-extra) set of the session exercise. */
+  async findDeletedPlanned(sessionExerciseId: string): Promise<SetLog | undefined> {
+    const [row] = await this.findWhere(
+      'sessionExerciseId = ? AND isExtra = 0 AND deletedAt IS NOT NULL',
+      [sessionExerciseId],
+      'deletedAt DESC',
+      1,
+    );
+    return row;
+  }
+
   /**
    * Best estimated 1RM (Epley) of the exercise over completed sets of finished, not deleted
    * sessions started before `before`: the baseline for records (plan.md §7).

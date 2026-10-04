@@ -66,9 +66,8 @@
       "kg": "KG",
       "reps": "REPS",
       "extra": "Extra",
-      "number": "Set {{number}}",
       "complete": "Complete set",
-      "menu": "Set menu",
+      "menu": "Menu for set {{number}}",
       "record": "PR",
       "lb": "LB"
     },

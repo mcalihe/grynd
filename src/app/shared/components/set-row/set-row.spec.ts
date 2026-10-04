@@ -38,11 +38,11 @@ describe('SetRow', () => {
   });
 
   const buttons = () => host.querySelectorAll<HTMLButtonElement>('button');
-  const checkButton = () => buttons()[buttons().length - 2];
-  const menuButton = () => buttons()[buttons().length - 1];
+  const menuButton = () => buttons()[0];
+  const checkButton = () => buttons()[buttons().length - 1];
 
   it('steps the weight by 2.5 kg and reps by 1', () => {
-    const [, , weightPlus, , , repsPlus] = buttons();
+    const [, , , weightPlus, , , repsPlus] = buttons();
     weightPlus.click();
     repsPlus.click();
 
@@ -56,14 +56,14 @@ describe('SetRow', () => {
     fixture.detectChanges();
     expect(host.textContent).toContain('132.3');
 
-    const [, , weightPlus] = buttons();
+    const [, , , weightPlus] = buttons();
     weightPlus.click();
     fixture.detectChanges();
     expect(host.textContent).toContain('134.8');
     expect(fixture.componentInstance.weight()).toBeCloseTo(61.1443, 3);
   });
 
-  it('emits complete and menu', () => {
+  it('emits complete from the check on the right and menu from the set number', () => {
     const complete = vi.fn();
     const menu = vi.fn();
     fixture.componentInstance.complete.subscribe(complete);
@@ -111,6 +111,65 @@ describe('SetRow', () => {
 
     expect(menu).toHaveBeenCalledOnce();
     expect(complete).not.toHaveBeenCalled();
+  });
+
+  it('also swallows that click when it lands on the menu backdrop outside the row', () => {
+    vi.useFakeTimers();
+    const backdrop = document.body.appendChild(document.createElement('button'));
+    const dismiss = vi.fn();
+    backdrop.addEventListener('click', dismiss);
+
+    host.dispatchEvent(new PointerEvent('pointerdown', { button: 0, pointerType: 'touch' }));
+    vi.advanceTimersByTime(LONG_PRESS_MS);
+    host.dispatchEvent(new PointerEvent('pointerup'));
+    backdrop.click();
+    expect(dismiss).not.toHaveBeenCalled();
+
+    // The next tap is a real one again.
+    backdrop.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+    backdrop.click();
+    expect(dismiss).toHaveBeenCalledOnce();
+    backdrop.remove();
+  });
+
+  it('stops guarding once a new press starts without a click in between', () => {
+    vi.useFakeTimers();
+    const item = document.body.appendChild(document.createElement('button'));
+    const remove = vi.fn();
+    item.addEventListener('click', remove);
+
+    host.dispatchEvent(new PointerEvent('pointerdown', { button: 0, pointerType: 'touch' }));
+    vi.advanceTimersByTime(LONG_PRESS_MS);
+    item.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+    item.click();
+
+    expect(remove).toHaveBeenCalledOnce();
+    item.remove();
+  });
+
+  it('opens the menu on right click instead of the browser menu', () => {
+    const menu = vi.fn();
+    fixture.componentInstance.menu.subscribe(menu);
+
+    host.dispatchEvent(new PointerEvent('pointerdown', { button: 2, pointerType: 'mouse' }));
+    const event = new MouseEvent('contextmenu', { cancelable: true });
+    host.dispatchEvent(event);
+
+    expect(menu).toHaveBeenCalledOnce();
+    expect(event.defaultPrevented).toBe(true);
+  });
+
+  it('leaves the touch long press to the timer when Android also fires contextmenu', () => {
+    vi.useFakeTimers();
+    const menu = vi.fn();
+    fixture.componentInstance.menu.subscribe(menu);
+
+    host.dispatchEvent(new PointerEvent('pointerdown', { button: 0, pointerType: 'touch' }));
+    host.dispatchEvent(new MouseEvent('contextmenu', { cancelable: true }));
+    expect(menu).not.toHaveBeenCalled();
+    vi.advanceTimersByTime(LONG_PRESS_MS);
+
+    expect(menu).toHaveBeenCalledOnce();
   });
 
   it('does not open the menu on a short press', () => {

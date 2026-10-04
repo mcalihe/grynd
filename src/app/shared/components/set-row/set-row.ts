@@ -3,6 +3,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  DOCUMENT,
   effect,
   ElementRef,
   inject,
@@ -30,7 +31,8 @@ const LONG_PRESS_SLOP_PX = 8;
 
 /**
  * One set in a workout (Figma Grynd/Set Row 96:3055, decision 0009): number, weight and reps
- * steppers, check, menu. `weight` is always kg; `unit` only changes what is shown and typed. Long-press (500 ms) or the ⋯ button opens the set menu.
+ * steppers, check. `weight` is always kg; `unit` only changes what is shown and typed. Long-press
+ * (500 ms), right-click or a tap on the set number opens the set menu.
  * Checking a set celebrates it (decision 0015): the check pops with a shockwave and sparks and a light
  * sweeps over the row; a new record adds a star burst and pops the «PR» badge.
  */
@@ -45,7 +47,7 @@ const LONG_PRESS_SLOP_PX = 8;
     '(pointerup)': 'cancelPress()',
     '(pointercancel)': 'cancelPress()',
     '(pointerleave)': 'cancelPress()',
-    '(contextmenu)': '$event.preventDefault()',
+    '(contextmenu)': 'openContextMenu($event)',
   },
   template: `
     @if (extra()) {
@@ -70,12 +72,16 @@ const LONG_PRESS_SLOP_PX = 8;
           class="absolute inset-0 bg-linear-to-r from-transparent via-primary/30 to-transparent opacity-0"
         ></span>
       </span>
-      <span
-        class="flex size-6 shrink-0 items-center justify-center rounded-full bg-muted text-xs"
-        [attr.aria-label]="'workout.set.number' | transloco: { number: number() }"
+      <button
+        type="button"
+        class="relative flex size-6 shrink-0 items-center justify-center rounded-full bg-muted text-xs after:absolute after:-inset-y-3 after:right-0 after:-left-1"
+        aria-haspopup="menu"
+        [attr.aria-expanded]="state() === 'menu-open'"
+        [attr.aria-label]="'workout.set.menu' | transloco: { number: number() }"
+        (click)="menu.emit()"
       >
         {{ number() }}
-      </span>
+      </button>
 
       <app-number-stepper
         [label]="'workout.set.' + unit() | transloco"
@@ -90,7 +96,7 @@ const LONG_PRESS_SLOP_PX = 8;
       <button
         #check
         type="button"
-        class="relative flex size-11 shrink-0 items-center justify-center rounded-full border"
+        class="relative ml-auto flex size-11 shrink-0 items-center justify-center rounded-full border"
         [class]="
           done() ? 'border-primary bg-primary text-primary-foreground' : 'bg-muted text-foreground'
         "
@@ -104,15 +110,6 @@ const LONG_PRESS_SLOP_PX = 8;
           class="pointer-events-none absolute -inset-px rounded-full border-2 border-primary opacity-0"
           aria-hidden="true"
         ></span>
-      </button>
-
-      <button
-        type="button"
-        class="relative flex size-8 shrink-0 items-center justify-center rounded-md bg-background text-muted-foreground after:absolute after:-inset-1.5"
-        [attr.aria-label]="'workout.set.menu' | transloco"
-        (click)="menu.emit()"
-      >
-        <ng-icon name="lucideEllipsis" size="16" />
       </button>
 
       @if (state() === 'record') {
@@ -140,22 +137,17 @@ export class SetRow implements OnDestroy {
   protected readonly haptics = inject(HapticsService);
   private readonly celebration = inject(CelebrationService);
   private readonly injector = inject(Injector);
+  private readonly document = inject(DOCUMENT);
   private readonly checkButton = viewChild<ElementRef<HTMLElement>>('check');
   private readonly ring = viewChild<ElementRef<HTMLElement>>('ring');
   private readonly sweep = viewChild<ElementRef<HTMLElement>>('sweep');
   private readonly badge = viewChild<ElementRef<HTMLElement>>('badge');
   private pressTimer?: ReturnType<typeof setTimeout>;
-  private longPressFired = false;
   private pressStart?: { x: number; y: number };
+  private lastPointerType = '';
+  private disarmClickGuard?: () => void;
 
   constructor() {
-    // Capture phase: runs before the button under the finger handles the click.
-    inject<ElementRef<HTMLElement>>(ElementRef).nativeElement.addEventListener(
-      'click',
-      (event) => this.swallowClickAfterLongPress(event),
-      true,
-    );
-
     // Celebrate transitions only: rows rendered on load or restore stay quiet. «menu-open» hides
     // the real state, so it is skipped (closing the menu on a record is not a new record).
     let last: SetRowState | undefined;
@@ -195,15 +187,28 @@ export class SetRow implements OnDestroy {
     return this.state() === 'completed' || this.state() === 'record';
   }
 
+  /**
+   * Right-click (or the context-menu key) opens the menu on the web. Android also fires
+   * `contextmenu` on a touch long press, which the press timer already handles.
+   */
+  protected openContextMenu(event: MouseEvent): void {
+    event.preventDefault();
+    if (this.lastPointerType === 'touch' || this.lastPointerType === 'pen') {
+      return;
+    }
+    this.cancelPress();
+    this.menu.emit();
+  }
+
   protected startPress(event: PointerEvent): void {
+    this.lastPointerType = event.pointerType;
     if (event.button !== 0) {
       return;
     }
-    this.longPressFired = false;
     this.cancelPress();
     this.pressStart = { x: event.clientX, y: event.clientY };
     this.pressTimer = setTimeout(() => {
-      this.longPressFired = true;
+      this.guardNextClick();
       this.haptics.press();
       this.menu.emit();
     }, LONG_PRESS_MS);
@@ -225,16 +230,32 @@ export class SetRow implements OnDestroy {
     this.pressTimer = undefined;
   }
 
-  /** The click that ends a long press must not also press the button under the finger. */
-  private swallowClickAfterLongPress(event: MouseEvent): void {
-    if (this.longPressFired) {
+  /**
+   * The click that ends a long press must not also press what is under the finger: a button in
+   * the row, or the backdrop of the menu that just opened there, which would close it at once.
+   * Listens on the document in the capture phase; the next press or key means no click is coming.
+   */
+  private guardNextClick(): void {
+    this.disarmClickGuard?.();
+    const swallow = (event: Event) => {
       event.stopPropagation();
       event.preventDefault();
-      this.longPressFired = false;
-    }
+      disarm();
+    };
+    const disarm = () => {
+      this.document.removeEventListener('click', swallow, true);
+      this.document.removeEventListener('pointerdown', disarm, true);
+      this.document.removeEventListener('keydown', disarm, true);
+      this.disarmClickGuard = undefined;
+    };
+    this.document.addEventListener('click', swallow, true);
+    this.document.addEventListener('pointerdown', disarm, true);
+    this.document.addEventListener('keydown', disarm, true);
+    this.disarmClickGuard = disarm;
   }
 
   ngOnDestroy(): void {
     this.cancelPress();
+    this.disarmClickGuard?.();
   }
 }
