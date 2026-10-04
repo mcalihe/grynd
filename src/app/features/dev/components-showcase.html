@@ -104,6 +104,44 @@
   </section>
 
   <section class="flex flex-col gap-3">
+    <h2 class="text-sm font-semibold text-muted-foreground">
+      Statistics · Verlauf · Statistik / Kalender, Plan-Verlauf
+    </h2>
+    <div class="flex flex-col gap-3 rounded-xl border bg-surface-elevated p-4">
+      <app-period-pager label="September 2026" [canNext]="false" />
+      <app-key-figures
+        [figures]="figures"
+        [columns]="2"
+        [selectable]="true"
+        [(selected)]="figure"
+      />
+      <app-bar-chart [bars]="monthBars" [emptyHeight]="4" [interactive]="true" />
+    </div>
+    <app-key-figures class="rounded-xl border bg-card p-4" [figures]="figures" [columns]="2">
+      <p class="mt-3 text-xs text-muted-foreground">
+        Verglichen mit dem letzten Mal: Do., 24. Sep.
+      </p>
+    </app-key-figures>
+    <div class="rounded-xl border bg-surface-elevated p-4">
+      <app-month-calendar
+        [weeks]="calendar"
+        [weekdays]="['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So']"
+        [today]="today"
+        [(selected)]="calendarDay"
+      />
+    </div>
+    <div class="rounded-xl border bg-card p-4">
+      <app-donut-chart [segments]="muscles" totalLabel="Sätze" />
+    </div>
+    <div class="flex flex-wrap items-center gap-4 rounded-xl border bg-card p-4">
+      <app-sparkline [values]="[95, 96, 97.5, 97, 99, 100, 102.5]" label="Bankdrücken" />
+      <app-sparkline [values]="[75, 76, null, 75, 74, 74]" label="Latzug" />
+      <app-sparkline [values]="[80, 80, 80]" label="Flach" />
+      <app-sparkline [values]="[60]" label="Einzeln" />
+    </div>
+  </section>
+
+  <section class="flex flex-col gap-3">
     <h2 class="text-sm font-semibold text-muted-foreground">Weekday chips · Segmented 84:2788</h2>
     <app-weekday-chips [(value)]="weekdays" />
     <app-segmented-control

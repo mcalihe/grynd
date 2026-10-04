@@ -68,7 +68,7 @@ describe('HistoryPage', () => {
     expect(headings[1]).toBe('Vorwoche');
     expect(headings).toHaveLength(3);
     expect(el.querySelectorAll('app-history-row')).toHaveLength(4);
-    expect(el.querySelectorAll('[data-trained]')).toHaveLength(2);
+    expect(el.querySelectorAll('[data-filled]')).toHaveLength(2);
   });
 
   it('shows the empty state without workouts', () => {
