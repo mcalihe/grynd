@@ -1,6 +1,7 @@
 {
   "name": "grynd",
   "version": "0.2.0",
+  "license": "SEE LICENSE IN LICENSE",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
