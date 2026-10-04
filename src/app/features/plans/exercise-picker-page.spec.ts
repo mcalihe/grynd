@@ -103,31 +103,31 @@ describe('ExercisePickerPage', () => {
     expect(navigate).not.toHaveBeenCalled();
   });
 
-  it('filters from a chip sheet and resets from the result line', async () => {
+  it('filters with one tap per chip and clears the chips with ✕', async () => {
     const { fixture } = await setup();
     const el: HTMLElement = fixture.nativeElement;
-    const chip = () => el.querySelector<HTMLButtonElement>('app-filter-chip button');
     const names = () => rows(el).map((r) => r.querySelector('.truncate')?.textContent?.trim());
+    const chip = (label: string) =>
+      [...el.querySelectorAll<HTMLButtonElement>('[role=group] button')].find(
+        (b) => b.textContent?.trim() === label,
+      );
+    const clear = () =>
+      el.querySelector<HTMLButtonElement>('[role=group] [aria-label="picker.resetFilters"]');
+    expect(clear()).toBeNull();
 
-    chip()?.click();
-    fixture.detectChanges();
-    await fixture.whenStable();
-    [...document.querySelectorAll<HTMLButtonElement>('hlm-sheet-content button[aria-pressed]')]
-      .find((b) => b.textContent?.includes('muscles.arms'))
-      ?.click();
+    chip('muscles.arms')?.click();
     fixture.detectChanges();
 
     expect(names()).toEqual(['Curls']);
-    expect(chip()?.textContent).toContain('muscles.arms');
+    expect(chip('muscles.arms')?.getAttribute('aria-pressed')).toBe('true');
     expect(el.textContent).toContain('picker.countOne');
+    expect(el.querySelector('[aria-live]')?.textContent).toContain('· muscles.arms');
 
-    [...el.querySelectorAll<HTMLButtonElement>('button')]
-      .find((b) => b.textContent?.includes('picker.reset'))
-      ?.click();
+    clear()?.click();
     fixture.detectChanges();
 
     expect(names()).toEqual(['Bankdrücken', 'Curls', 'Rudern']);
-    expect(chip()?.textContent).toContain('picker.muscleGroup');
+    expect(clear()).toBeNull();
   });
 
   it('clears the search with its button', async () => {

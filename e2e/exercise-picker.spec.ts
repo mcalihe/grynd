@@ -12,13 +12,11 @@ test('search and filters stay visible while scrolling', async ({ page }) => {
   await expect(page.getByText('Abduktorenmaschine')).not.toBeInViewport();
   await expect(search).toBeInViewport();
 
-  // Filter via the chip sheet, then reset from the result line
-  await page.getByRole('button', { name: 'Muskelgruppe' }).click();
-  await page.getByRole('button', { name: 'Brust' }).click();
-  await page.keyboard.press('Escape');
-  const muscleChip = page.locator('app-filter-chip').first();
-  await expect(muscleChip).toHaveText('Brust');
+  // One tap filters, ✕ at the start of the row clears the chips
+  const chest = page.getByRole('button', { name: 'Brust', exact: true });
+  await chest.click();
+  await expect(chest).toHaveAttribute('aria-pressed', 'true');
   await expect(page.getByText(/\d+ Übungen/)).toBeVisible();
-  await page.getByRole('button', { name: 'Zurücksetzen' }).click();
-  await expect(muscleChip).toHaveText('Muskelgruppe');
+  await page.getByRole('button', { name: 'Filter zurücksetzen' }).click();
+  await expect(chest).toHaveAttribute('aria-pressed', 'false');
 });

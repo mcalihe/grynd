@@ -27,25 +27,21 @@ import {
   EQUIPMENT,
   EQUIPMENT_FILTERS,
   EquipmentFilter,
-  filterChipLabel,
   filterExercises,
   ForceFilter,
   FORCES,
   isFilterActive,
   MUSCLE_GROUPS,
   normalize,
+  toggle,
 } from '../../core/exercises/exercise-search';
 import { ConfirmService } from '../../core/services/confirm.service';
-import { FilterChip } from '../../shared/components/filter-chip/filter-chip';
 import { StickyAction } from '../../shared/components/sticky-action/sticky-action';
-import { ExerciseFilterSheet } from './exercise-filter-sheet';
 import { PlanEditorStore } from './plan-editor.store';
 
-/** One dropdown chip and its sheet. */
+/** One chip group in the filter row. */
 interface FilterGroup {
-  id: 'muscles' | 'forces' | 'equipment';
-  /** Translation key of the group name. */
-  title: string;
+  id: 'muscles' | 'equipment' | 'forces';
   labelPrefix: string;
   options: readonly string[];
   value: WritableSignal<readonly string[]>;
@@ -65,22 +61,12 @@ function equipmentChip(value: string | null): EquipmentFilter | null {
 
 /**
  * «Übungen hinzufügen» (Figma 63:12824, 63:13440, 63:14032; filters per decision 0016): search,
- * dropdown filter chips and the result count stay pinned while only the list scrolls. Recently
+ * one row of filter chips and the result count stay pinned while only the list scrolls. Recently
  * used, alphabetical list with thumbnails, multi-select. Exercises already in the plan are dimmed.
  */
 @Component({
   selector: 'app-exercise-picker-page',
-  imports: [
-    StickyAction,
-    FilterChip,
-    ExerciseFilterSheet,
-    HlmButton,
-    HlmInput,
-    HlmBadge,
-    NgIcon,
-    TranslocoPipe,
-    NgTemplateOutlet,
-  ],
+  imports: [StickyAction, HlmButton, HlmInput, HlmBadge, NgIcon, TranslocoPipe, NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'bg-background pt-safe px-safe fixed inset-0 z-10 flex flex-col' },
   template: `
@@ -128,31 +114,47 @@ function equipmentChip(value: string | null): EquipmentFilter | null {
         }
       </label>
 
-      <div class="-mx-4 -my-1.5 flex [scrollbar-width:none] gap-2 overflow-x-auto px-4 py-1.5">
-        @for (group of groups; track group.id) {
-          <app-filter-chip
-            [active]="group.value().length > 0"
-            [expanded]="sheetOpen() && sheetGroup().id === group.id"
-            (click)="openSheet(group)"
+      <div
+        class="-mx-4 -my-1.5 flex [scrollbar-width:none] items-center gap-2 overflow-x-auto px-4 py-1.5"
+        role="group"
+        [attr.aria-label]="'picker.filters' | transloco"
+      >
+        @if (chipsActive()) {
+          <button
+            type="button"
+            class="relative flex size-8 shrink-0 items-center justify-center rounded-full bg-secondary text-secondary-foreground after:absolute after:-inset-1.5"
+            [attr.aria-label]="'picker.resetFilters' | transloco"
+            (click)="clearChips()"
           >
-            {{ chipLabel(group) }}
-          </app-filter-chip>
+            <ng-icon name="lucideX" size="16" />
+          </button>
+        }
+        @for (group of groups; track group.id; let first = $first) {
+          @if (!first) {
+            <span class="h-5 w-px shrink-0 bg-border" aria-hidden="true"></span>
+          }
+          @for (option of group.options; track option) {
+            <button
+              type="button"
+              [class]="chipClass(group.value().includes(option))"
+              [attr.aria-pressed]="group.value().includes(option)"
+              (click)="group.value.set(toggle(group.value(), option))"
+            >
+              {{ group.labelPrefix + option | transloco }}
+            </button>
+          }
         }
       </div>
 
-      <div class="flex h-8 items-center justify-between">
-        <p class="text-sm text-muted-foreground" aria-live="polite">
-          {{
-            (results().length === 1 ? 'picker.countOne' : 'picker.countMany')
-              | transloco: { count: results().length }
-          }}
-        </p>
-        @if (filterActive() && results().length > 0) {
-          <button hlmBtn variant="ghost" size="sm" class="-mr-3" (click)="resetFilters()">
-            {{ 'picker.reset' | transloco }}
-          </button>
+      <p class="h-5 truncate text-sm text-muted-foreground" aria-live="polite">
+        {{
+          (results().length === 1 ? 'picker.countOne' : 'picker.countMany')
+            | transloco: { count: results().length }
+        }}
+        @if (chipsActive()) {
+          · {{ activeLabels() }}
         }
-      </div>
+      </p>
     </div>
 
     <div
@@ -191,15 +193,6 @@ function equipmentChip(value: string | null): EquipmentFilter | null {
         </section>
       }
     </div>
-
-    <app-exercise-filter-sheet
-      [title]="sheetGroup().title"
-      [labelPrefix]="sheetGroup().labelPrefix"
-      [options]="sheetGroup().options"
-      [value]="sheetGroup().value()"
-      (valueChange)="sheetGroup().value.set($any($event))"
-      [(open)]="sheetOpen"
-    />
 
     <ng-template #row let-exercise>
       @let inPlan = store.exerciseIds().has(exercise.id);
@@ -284,29 +277,24 @@ export class ExercisePickerPage implements OnInit {
   protected readonly groups: readonly FilterGroup[] = [
     {
       id: 'muscles',
-      title: 'picker.muscleGroup',
       labelPrefix: 'muscles.',
       options: MUSCLE_GROUPS,
       value: this.muscles as WritableSignal<readonly string[]>,
     },
     {
-      id: 'forces',
-      title: 'picker.movement',
-      labelPrefix: 'forces.',
-      options: FORCES,
-      value: this.forces as WritableSignal<readonly string[]>,
-    },
-    {
       id: 'equipment',
-      title: 'picker.equipment',
       labelPrefix: 'equipment.',
       options: EQUIPMENT,
       value: this.equipment as WritableSignal<readonly string[]>,
     },
+    {
+      id: 'forces',
+      labelPrefix: 'forces.',
+      options: FORCES,
+      value: this.forces as WritableSignal<readonly string[]>,
+    },
   ];
-  /** The sheet keeps its last group while closing, so its content doesn't jump. */
-  protected readonly sheetGroup = signal(this.groups[0]);
-  protected readonly sheetOpen = signal(false);
+  protected readonly toggle = toggle;
   /** The list is scrolled: the pinned area gets a bottom border. */
   protected readonly scrolled = signal(false);
   private readonly scroller = viewChild<ElementRef<HTMLElement>>('scroller');
@@ -342,6 +330,15 @@ export class ExercisePickerPage implements OnInit {
     equipment: this.equipment(),
   }));
   protected readonly filterActive = computed(() => isFilterActive(this.filter()));
+  /** Active chips in row order, so they stay visible when the row is swiped. */
+  protected readonly activeLabels = computed(() =>
+    this.groups
+      .flatMap((group) =>
+        group.value().map((value) => this.transloco.translate(group.labelPrefix + value)),
+      )
+      .join(', '),
+  );
+  protected readonly chipsActive = computed(() => this.activeLabels() !== '');
 
   /** Sorted by display name in the UI language. */
   private readonly sorted = computed(() => {
@@ -390,17 +387,17 @@ export class ExercisePickerPage implements OnInit {
     this.recentIds.set(await this.sessionExercises.findRecentExerciseIds(3));
   }
 
-  protected chipLabel(group: FilterGroup): string {
-    const t = (key: string) => this.transloco.translate(key);
-    return filterChipLabel(
-      group.value().map((v) => t(group.labelPrefix + v)),
-      t(group.title),
-    );
+  protected chipClass(active: boolean): string {
+    return `relative flex h-8 shrink-0 items-center rounded-full px-3 text-sm font-medium after:absolute after:inset-x-0 after:-inset-y-1.5 ${
+      active ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'
+    }`;
   }
 
-  protected openSheet(group: FilterGroup): void {
-    this.sheetGroup.set(group);
-    this.sheetOpen.set(true);
+  /** Clears the chips; the search stays. */
+  protected clearChips(): void {
+    this.muscles.set([]);
+    this.forces.set([]);
+    this.equipment.set([]);
   }
 
   protected meta(exercise: Exercise): string {

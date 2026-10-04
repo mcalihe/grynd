@@ -206,11 +206,8 @@
   "picker": {
     "search": "Search exercises",
     "clearSearch": "Clear search",
-    "muscleGroup": "Muscle group",
-    "movement": "Movement",
-    "equipment": "Equipment",
+    "filters": "Filters",
     "resetFilters": "Reset filters",
-    "reset": "Reset",
     "noResults": "No exercise found",
     "recent": "Recently used",
     "countOne": "1 exercise",

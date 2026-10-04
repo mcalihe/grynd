@@ -64,8 +64,7 @@ Klassen folgen dem Angular-Styleguide 2025 (ohne `Component`-Suffix), Selektor-P
 | Wochentage | `37:28125` | `WeekdayChips` (`app-weekday-chips`) |
 | Satz-Stepper | `56:48064` | `NumberStepper` (`app-number-stepper`) |
 | Übungszeile im Plan (Detail/Editor, ≡-Handle, Chevron) | `37:27708`, `37:28096` | `PlanExerciseRow` (`app-plan-exercise-row`, features/plans) |
-| Übungs-Listeneintrag + Filter-Chips im Picker | `63:13440` | im `ExercisePickerPage` (features/plans) |
-| Filter-Dropdown-Chip + Filter-Sheet im Picker | – (nur Code, [0016](../decisions/0016-exercise-picker-filters.md)) | `FilterChip` (`app-filter-chip`), `ExerciseFilterSheet` (`app-exercise-filter-sheet`, features/plans) |
+| Übungs-Listeneintrag + Filter-Chips im Picker | `63:13440` (Chip-Zeile nach [0016](../decisions/0016-exercise-picker-filters.md)) | im `ExercisePickerPage` (features/plans) |
 | «Änderungen verwerfen» / Bestätigungen | `66:1123` | `ConfirmService` + `ConfirmDialogHost` (App-Shell, `@defer`) |
 | Wochenübersicht (Balkendiagramm) | `37:29739` | `WeekChart` (`app-week-chart`) |
 | Trainingseintrag im Verlauf | `37:29769` | `HistoryRow` (`app-history-row`) |

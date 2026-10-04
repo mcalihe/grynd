@@ -206,11 +206,8 @@
   "picker": {
     "search": "Übungen durchsuchen",
     "clearSearch": "Suche löschen",
-    "muscleGroup": "Muskelgruppe",
-    "movement": "Bewegung",
-    "equipment": "Equipment",
+    "filters": "Filter",
     "resetFilters": "Filter zurücksetzen",
-    "reset": "Zurücksetzen",
     "noResults": "Keine Übung gefunden",
     "recent": "Zuletzt verwendet",
     "countOne": "1 Übung",

@@ -2,7 +2,6 @@ import { catalogEntry } from '../../../testing/catalog';
 import { Exercise } from '../db/models';
 import {
   EMPTY_FILTER,
-  filterChipLabel,
   filterExercises,
   isFilterActive,
   matchesQuery,
@@ -93,11 +92,5 @@ describe('exercise search', () => {
     expect(isFilterActive({ ...EMPTY_FILTER, query: ' x ' })).toBe(true);
     expect(toggle(['a'], 'b')).toEqual(['a', 'b']);
     expect(toggle(['a', 'b'], 'a')).toEqual(['b']);
-  });
-
-  it('labels a filter chip by its selection', () => {
-    expect(filterChipLabel([], 'Muskelgruppe')).toBe('Muskelgruppe');
-    expect(filterChipLabel(['Brust'], 'Muskelgruppe')).toBe('Brust');
-    expect(filterChipLabel(['Brust', 'Beine', 'Po'], 'Muskelgruppe')).toBe('Brust +2');
   });
 });
