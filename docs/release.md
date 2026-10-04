@@ -20,6 +20,7 @@ Semantic Versioning, automatisch aus den Commits auf `main` mit [release-please]
 1. Jeder Push auf `main` aktualisiert den Release-PR «chore(main): release X.Y.Z». Er erhöht die Version in `package.json`, `src/app/core/app-info.ts` (Markierung `x-release-please-version`) und `.release-please-manifest.json` und ergänzt `CHANGELOG.md`.
 2. Release = diesen PR mergen. release-please setzt den Tag `vX.Y.Z` und veröffentlicht einen GitHub-Release mit dem Changelog als Text.
 3. Danach baut derselbe Workflow die nativen Builds und hängt `grynd-vX.Y.Z-debug.apk` an den Release.
+4. Sobald CI für den Release-Commit grün ist, deployt «Deploy» die Web-App in die Produktion. Nur Releases gehen in die Produktion; der Stand von `main` dazwischen läuft auf Staging (`/main/` des Preview-Hosts).
 
 Native Versionen: Android liest `versionName` aus `package.json` und rechnet `versionCode` = Major · 1 000 000 + Minor · 1 000 + Patch (0.2.0 → 2000), das steigt mit jeder Version. iOS bekommt `MARKETING_VERSION` und `CURRENT_PROJECT_VERSION` nach demselben Schema als Parameter von `xcodebuild` in CI.
 
@@ -60,7 +61,8 @@ Workflow `.github/workflows/deploy.yml` («Deploy»), Hintergrund in `docs/decis
 
 | Job | Auslöser | Ziel |
 | --- | --- | --- |
-| `production` | CI auf `main` grün, oder manuell von `main` | `httpdocs/` des Produktions-FTP-Benutzers → `https://fit.michael-isler.com` |
+| `production` | nur Releases: CI auf `main` grün für den Release-Commit (gemergter Release-PR); manuell von `main` deployt den letzten Release erneut | `httpdocs/` des Produktions-FTP-Benutzers → `https://fit.michael-isler.com` |
+| `staging` | CI auf `main` grün (jeder Merge) | `httpdocs/main/` des Preview-FTP-Benutzers → `https://fit-preview.michael-isler.com/main/` |
 | `preview` | PR geöffnet oder aktualisiert | `httpdocs/pr-<n>/` des Preview-FTP-Benutzers → `https://fit-preview.michael-isler.com/pr-<n>/` |
 | `preview-cleanup` | PR geschlossen oder gemergt | löscht `httpdocs/pr-<n>/` |
 
@@ -76,7 +78,7 @@ Der Link zur Preview erscheint im PR als «View deployment» und in einem Kommen
    | `Production` | `FTP_HOST`, `FTP_USER`, `FTP_PASSWORD` | `https://fit.michael-isler.com` |
    | `Preview` | `FTP_HOST`, `FTP_USER`, `FTP_PASSWORD` | `https://fit-preview.michael-isler.com` |
 
-3. **Empfohlen:** im Environment `Production` unter «Deployment branches and tags» nur `main` erlauben. Dann kommt ein Workflow aus einem PR nicht an die Produktions-Zugangsdaten. Zusätzlich prüft der Job `production-gate`, dass nur der aktuelle Stand von `main` deployt wird.
+3. **Empfohlen:** im Environment `Production` unter «Deployment branches and tags» nur `main` erlauben. Dann kommt ein Workflow aus einem PR nicht an die Produktions-Zugangsdaten. Zusätzlich prüft der Job `main-gate`, dass der Commit auf `main` liegt, und gibt die Produktion nur für den neusten Release frei.
 
 ### Wenn der Upload scheitert
 
