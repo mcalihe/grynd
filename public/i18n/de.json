@@ -66,9 +66,8 @@
       "kg": "KG",
       "reps": "WDH",
       "extra": "Extra",
-      "number": "Satz {{number}}",
       "complete": "Satz abhaken",
-      "menu": "Satzmenü",
+      "menu": "Menü für Satz {{number}}",
       "record": "PR",
       "lb": "LB"
     },

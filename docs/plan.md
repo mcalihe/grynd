@@ -130,7 +130,7 @@ Alle Tabellen haben `id` (UUIDv7), `createdAt`, `updatedAt`, `deletedAt`. Dazu k
 - **Übersicht:** Pill «2 / 6» mit Listen-Icon und Chevron öffnet ein Sheet mit allen Übungen. Umsortieren per Angular CDK Drag and Drop, alle Zeilen immer verschiebbar. Status als Fortschrittsring in `primary` (voll = Haken), aktuelle Übung über Hintergrund und Rahmen markiert, kein Text. Tippen springt zur Übung.
 - **Übungsmenü (drei Punkte):** «1 nach hinten verschieben», «Ans Ende verschieben».
 - **Satz-Zeile** (80 px): Nummer, Vorwert, Stepper für kg und Wdh., Haken. Werte lassen sich auch durch waagrechtes Wischen über das Zahlenfeld ändern (schneller = grössere Sprünge). Zustände: offen, erledigt, Rekord, Menü offen. Kein «aktiv»-Zustand.
-- **Satz-Kontextmenü:** Long-Press (ca. 500 ms, mit Haptik) oder kleines Drei-Punkte-Icon; «Satz duplizieren», «Satz löschen». Kein Swipe-to-Delete.
+- **Satz-Kontextmenü:** Long-Press (ca. 500 ms, mit Haptik) oder Tippen auf die Satznummer, öffnet unter der Zeile; «Satz duplizieren», «Satz löschen». Kein Swipe-to-Delete.
 - **«+ Satz»** unter den Sätzen; Extra-Sätze mit Label «Extra».
 - **Timer:** neutraler Timer als feste Leiste über dem Weiter-Button (kein Sheet). Bereit: Standarddauer + Chevron + Play. Läuft: Restzeit, Fortschrittslinie, −15 / +15, Stopp. Letzte 10 s in `warning`. Tippen auf die Zeit öffnet ein Popover mit 0:30, 1:00, 1:30, 2:00, 3:00. Startet automatisch nach dem Abhaken eines Satzes (abschaltbar). Speichert die Endzeit, nicht einen Zähler. Bei Ablauf: Haptik und eine lokale Benachrichtigung mit Standardton (auch im Hintergrund, [0014](decisions/0014-native-polish.md)).
 - **Weiter-Button:** «Weiter zu {Übungsname}», einzeilig mit Ellipsis; bei der letzten Übung «Training abschliessen».

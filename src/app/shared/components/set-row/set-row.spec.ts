@@ -38,11 +38,11 @@ describe('SetRow', () => {
   });
 
   const buttons = () => host.querySelectorAll<HTMLButtonElement>('button');
-  const checkButton = () => buttons()[buttons().length - 2];
-  const menuButton = () => buttons()[buttons().length - 1];
+  const menuButton = () => buttons()[0];
+  const checkButton = () => buttons()[buttons().length - 1];
 
   it('steps the weight by 2.5 kg and reps by 1', () => {
-    const [, , weightPlus, , , repsPlus] = buttons();
+    const [, , , weightPlus, , , repsPlus] = buttons();
     weightPlus.click();
     repsPlus.click();
 
@@ -56,14 +56,14 @@ describe('SetRow', () => {
     fixture.detectChanges();
     expect(host.textContent).toContain('132.3');
 
-    const [, , weightPlus] = buttons();
+    const [, , , weightPlus] = buttons();
     weightPlus.click();
     fixture.detectChanges();
     expect(host.textContent).toContain('134.8');
     expect(fixture.componentInstance.weight()).toBeCloseTo(61.1443, 3);
   });
 
-  it('emits complete and menu', () => {
+  it('emits complete from the check on the right and menu from the set number', () => {
     const complete = vi.fn();
     const menu = vi.fn();
     fixture.componentInstance.complete.subscribe(complete);

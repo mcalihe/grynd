@@ -30,7 +30,8 @@ const LONG_PRESS_SLOP_PX = 8;
 
 /**
  * One set in a workout (Figma Grynd/Set Row 96:3055, decision 0009): number, weight and reps
- * steppers, check, menu. `weight` is always kg; `unit` only changes what is shown and typed. Long-press (500 ms) or the ⋯ button opens the set menu.
+ * steppers, check. `weight` is always kg; `unit` only changes what is shown and typed. Long-press
+ * (500 ms) or a tap on the set number opens the set menu.
  * Checking a set celebrates it (decision 0015): the check pops with a shockwave and sparks and a light
  * sweeps over the row; a new record adds a star burst and pops the «PR» badge.
  */
@@ -70,12 +71,16 @@ const LONG_PRESS_SLOP_PX = 8;
           class="absolute inset-0 bg-linear-to-r from-transparent via-primary/30 to-transparent opacity-0"
         ></span>
       </span>
-      <span
-        class="flex size-6 shrink-0 items-center justify-center rounded-full bg-muted text-xs"
-        [attr.aria-label]="'workout.set.number' | transloco: { number: number() }"
+      <button
+        type="button"
+        class="relative flex size-6 shrink-0 items-center justify-center rounded-full bg-muted text-xs after:absolute after:-inset-y-3 after:right-0 after:-left-1"
+        aria-haspopup="menu"
+        [attr.aria-expanded]="state() === 'menu-open'"
+        [attr.aria-label]="'workout.set.menu' | transloco: { number: number() }"
+        (click)="menu.emit()"
       >
         {{ number() }}
-      </span>
+      </button>
 
       <app-number-stepper
         [label]="'workout.set.' + unit() | transloco"
@@ -90,7 +95,7 @@ const LONG_PRESS_SLOP_PX = 8;
       <button
         #check
         type="button"
-        class="relative flex size-11 shrink-0 items-center justify-center rounded-full border"
+        class="relative ml-auto flex size-11 shrink-0 items-center justify-center rounded-full border"
         [class]="
           done() ? 'border-primary bg-primary text-primary-foreground' : 'bg-muted text-foreground'
         "
@@ -104,15 +109,6 @@ const LONG_PRESS_SLOP_PX = 8;
           class="pointer-events-none absolute -inset-px rounded-full border-2 border-primary opacity-0"
           aria-hidden="true"
         ></span>
-      </button>
-
-      <button
-        type="button"
-        class="relative flex size-8 shrink-0 items-center justify-center rounded-md bg-background text-muted-foreground after:absolute after:-inset-1.5"
-        [attr.aria-label]="'workout.set.menu' | transloco"
-        (click)="menu.emit()"
-      >
-        <ng-icon name="lucideEllipsis" size="16" />
       </button>
 
       @if (state() === 'record') {

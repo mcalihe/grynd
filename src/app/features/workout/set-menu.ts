@@ -22,7 +22,7 @@ import { NgIcon } from '@ng-icons/core';
     ></button>
     <div
       role="menu"
-      class="absolute top-1 right-0 z-30 flex w-max flex-col rounded-lg border bg-popover p-1 text-popover-foreground shadow-md"
+      class="absolute top-1 left-0 z-30 flex w-max flex-col rounded-lg border bg-popover p-1 text-popover-foreground shadow-md"
     >
       <button
         type="button"
