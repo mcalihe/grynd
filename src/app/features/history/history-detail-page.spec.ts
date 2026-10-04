@@ -1,7 +1,10 @@
+import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { TranslocoTestingModule } from '@jsverse/transloco';
 import { ExerciseCatalogService } from '../../core/exercises/exercise-catalog.service';
+import { HistorySetFact } from '../../core/history/history-insights';
+import { HistorySummary } from '../../core/history/history-stats';
 import { HistoryDetail, HistoryService } from '../../core/history/history.service';
 import { ConfirmService } from '../../core/services/confirm.service';
 import { HistoryDetailPage } from './history-detail-page';
@@ -30,15 +33,61 @@ describe('HistoryDetailPage', () => {
     ],
   };
 
+  /** The same plan two days earlier: 50 minutes, 1200 kg, 3 sets. */
+  const earlier: HistorySummary = {
+    ...detail.summary,
+    id: 's0',
+    startedAt: '2026-09-29T12:00:00.000Z',
+    finishedAt: '2026-09-29T12:50:00.000Z',
+    setCount: 3,
+    volumeKg: 1200,
+  };
+  const fact = (id: string, sessionId: string, startedAt: string, weightKg: number) =>
+    ({
+      id,
+      sessionId,
+      exerciseId: 'e1',
+      startedAt,
+      completedAt: startedAt,
+      weightKg,
+      reps: 8,
+    }) satisfies HistorySetFact;
+
   async function setup(found: boolean, confirmed = true) {
     const remove = vi.fn().mockResolvedValue(undefined);
     TestBed.configureTestingModule({
-      imports: [HistoryDetailPage, TranslocoTestingModule.forRoot({ langs: { de: {} } })],
+      imports: [
+        HistoryDetailPage,
+        TranslocoTestingModule.forRoot({
+          langs: {
+            de: {
+              history: {
+                volume: '{{volume}} {{unit}}',
+                minutes: '{{minutes}} Min.',
+                compare: 'Verglichen mit {{day}}',
+                exerciseVolume: 'Volumen {{volume}}',
+              },
+            },
+          },
+          translocoConfig: { defaultLang: 'de', availableLangs: ['de'] },
+        }),
+      ],
       providers: [
         provideRouter([]),
         {
           provide: HistoryService,
-          useValue: { detail: async () => (found ? detail : undefined), delete: remove },
+          useValue: {
+            detail: async () => (found ? detail : undefined),
+            delete: remove,
+            summaries: signal([detail.summary, earlier]),
+            facts: signal([
+              fact('x', 's0', earlier.startedAt, 75),
+              fact('a', 's1', detail.summary.startedAt, 80),
+              fact('b', 's1', detail.summary.startedAt, 82.5),
+            ]),
+            load: async () => undefined,
+            loadFacts: async () => undefined,
+          },
         },
         { provide: ConfirmService, useValue: { confirm: async () => confirmed } },
         {
@@ -72,10 +121,36 @@ describe('HistoryDetailPage', () => {
     expect(rows[1].querySelector('[hlmBadge]')?.getAttribute('data-variant')).toBe('success');
   });
 
-  it('deletes after confirmation and returns to the list', async () => {
+  it('compares with the last workout of the plan and links to the plan history', async () => {
+    const { el, navigate } = await setup(true);
+    const figures = el.querySelector('app-key-figures')!;
+    const deltas = [...figures.querySelectorAll('dd.order-3')].map((dd) => [
+      dd.textContent?.trim(),
+      dd.classList.contains('text-success'),
+    ]);
+    // Duration is never good or bad; more volume is, fewer sets are not.
+    expect(deltas).toEqual([
+      ['+4 Min.', false],
+      ['+100 kg', true],
+      ['−1', false],
+    ]);
+    expect(figures.textContent).toContain('Verglichen mit');
+    // The exercise moved 1300 kg against 600 kg last time.
+    expect(el.querySelector('section header p')?.textContent).toMatch(
+      /Volumen 1.?300 kg\s*\+700 kg/,
+    );
+
+    el.querySelector<HTMLButtonElement>('app-key-figures + button')!.click();
+    expect(navigate).toHaveBeenCalledWith(['/history/plans', 'p1']);
+  });
+
+  it('deletes after confirmation and returns to the history', async () => {
     const { fixture, navigate, remove } = await setup(true);
     await (fixture.componentInstance as unknown as { delete(): Promise<void> }).delete();
     expect(remove).toHaveBeenCalledWith('s1');
-    expect(navigate).toHaveBeenCalledWith(['/history'], { replaceUrl: true });
+    expect(navigate).toHaveBeenCalledWith(['/history'], {
+      queryParams: { view: null },
+      replaceUrl: true,
+    });
   });
 });

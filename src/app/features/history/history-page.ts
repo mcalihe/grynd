@@ -8,9 +8,7 @@ import { HistoryCalendarView } from './history-calendar-view';
 import { HistoryFormat } from './history-format';
 import { HistoryListView } from './history-list-view';
 import { HistoryStatsView } from './history-stats-view';
-
-export type HistoryView = 'list' | 'calendar' | 'stats';
-const VIEWS: readonly HistoryView[] = ['list', 'calendar', 'stats'];
+import { HISTORY_VIEWS, HistoryView, HistoryViewState } from './history-view';
 
 /**
  * Verlauf with three views (Figma Verlauf · Liste/Kalender/Statistik, decision 0016). The list is
@@ -63,22 +61,22 @@ export class HistoryPage implements OnInit {
   protected readonly history = inject(HistoryService);
   private readonly format = inject(HistoryFormat);
   private readonly router = inject(Router);
+  private readonly state = inject(HistoryViewState);
 
   protected readonly current = computed<HistoryView>(() =>
-    VIEWS.includes(this.view() as HistoryView) ? (this.view() as HistoryView) : 'list',
+    HISTORY_VIEWS.includes(this.view() as HistoryView) ? (this.view() as HistoryView) : 'list',
   );
   protected readonly options = computed(() =>
-    VIEWS.map((value) => ({ value, label: this.format.t(`history.views.${value}`) })),
+    HISTORY_VIEWS.map((value) => ({ value, label: this.format.t(`history.views.${value}`) })),
   );
 
   ngOnInit(): void {
+    this.state.view.set(this.current());
     void this.history.load();
   }
 
   protected select(view: HistoryView): void {
-    void this.router.navigate([], {
-      queryParams: { view: view === 'list' ? null : view },
-      replaceUrl: true,
-    });
+    this.state.view.set(view);
+    void this.router.navigate([], { queryParams: this.state.queryParams(), replaceUrl: true });
   }
 }
