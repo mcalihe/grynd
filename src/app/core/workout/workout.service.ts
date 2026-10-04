@@ -213,25 +213,23 @@ export class WorkoutService {
     return completing;
   }
 
-  /** «+ Satz»: copies the last set's values and marks it as extra. */
-  async addExtraSet(exerciseIndex: number): Promise<void> {
+  /** «+ Satz»: copies the last set's values (extra unless it replaces a deleted planned set). */
+  async addSet(exerciseIndex: number): Promise<void> {
     const exercise = this.state()?.exercises[exerciseIndex];
     if (!exercise) {
       return;
     }
     const last = exercise.sets.at(-1);
-    await this.sets.insert({
-      sessionExerciseId: exercise.entry.id,
-      position: exercise.sets.length,
-      weightKg: last?.weightKg ?? null,
-      reps: last?.reps ?? exercise.entry.repMin,
-      completedAt: null,
-      isExtra: true,
-    });
+    await this.database.driver.transaction(() =>
+      this.insertSet(exercise.entry.id, exercise.sets.length, {
+        weightKg: last?.weightKg ?? null,
+        reps: last?.reps ?? exercise.entry.repMin,
+      }),
+    );
     await this.reloadSets(exerciseIndex);
   }
 
-  /** Inserts an open copy right after the set (counts as an extra set). */
+  /** Inserts an open copy right after the set (extra unless it replaces a deleted planned set). */
   async duplicateSet(setId: string): Promise<void> {
     const found = this.findSet(setId);
     if (!found) {
@@ -243,13 +241,9 @@ export class WorkoutService {
       for (const later of siblings.filter((s) => s.position > set.position)) {
         await this.sets.update(later.id, { position: later.position + 1 });
       }
-      await this.sets.insert({
-        sessionExerciseId: set.sessionExerciseId,
-        position: set.position + 1,
+      await this.insertSet(set.sessionExerciseId, set.position + 1, {
         weightKg: set.weightKg,
         reps: set.reps,
-        completedAt: null,
-        isExtra: true,
       });
     });
     await this.reloadSets(index);
@@ -363,6 +357,30 @@ export class WorkoutService {
         }
       }
     }
+  }
+
+  /**
+   * Adds an open set. A planned set deleted earlier in the session comes back instead of a new
+   * extra one, so deleting and re-adding keeps the plan's set count.
+   */
+  private async insertSet(
+    sessionExerciseId: string,
+    position: number,
+    values: SetValues,
+  ): Promise<void> {
+    const deleted = await this.sets.findDeletedPlanned(sessionExerciseId);
+    if (deleted) {
+      await this.sets.restore(deleted.id);
+      await this.sets.update(deleted.id, { ...values, position, completedAt: null });
+      return;
+    }
+    await this.sets.insert({
+      sessionExerciseId,
+      position,
+      ...values,
+      completedAt: null,
+      isExtra: true,
+    });
   }
 
   private findSet(setId: string): { set: SetLog; index: number } | undefined {

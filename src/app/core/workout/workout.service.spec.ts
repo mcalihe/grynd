@@ -68,7 +68,7 @@ describe('WorkoutService', () => {
 
   it('never changes the plan', async () => {
     await service.start(planId);
-    await service.addExtraSet(0);
+    await service.addSet(0);
     await service.deleteSet(setsOf(1)[0].id);
     await service.moveExercise(0, 1);
     await service.setRestSeconds(0, 120);
@@ -82,7 +82,7 @@ describe('WorkoutService', () => {
 
   it('completes sets, marks the exercise done and ignores extra sets for that', async () => {
     await service.start(planId);
-    await service.addExtraSet(1);
+    await service.addSet(1);
     expect(setsOf(1).at(-1)).toMatchObject({ isExtra: true, position: 2 });
 
     expect(await service.toggleComplete(setsOf(1)[0].id)).toBe(true);
@@ -108,6 +108,38 @@ describe('WorkoutService', () => {
 
     await service.deleteSet(setsOf(0)[1].id);
     expect(setsOf(0).map((s) => s.position)).toEqual([0, 1, 2]);
+  });
+
+  it('brings a deleted planned set back before adding extra sets', async () => {
+    await service.start(planId);
+    const [first, second] = setsOf(1);
+    await service.updateSet(first.id, { weightKg: 50 });
+    await service.toggleComplete(first.id);
+    await service.toggleComplete(second.id);
+    await service.deleteSet(second.id);
+    expect(workout().exercises[1].entry.status).toBe('done');
+
+    await service.addSet(1);
+    expect(setsOf(1).map((s) => [s.id, s.position, s.weightKg, s.isExtra, s.completedAt])).toEqual([
+      [first.id, 0, 50, false, expect.any(String)],
+      [second.id, 1, 50, false, null],
+    ]);
+    expect(workout().exercises[1].entry.status).toBe('open');
+
+    await service.addSet(1);
+    expect(setsOf(1).map((s) => s.isExtra)).toEqual([false, false, true]);
+  });
+
+  it('duplicating also brings a deleted planned set back', async () => {
+    await service.start(planId);
+    const [first, second] = setsOf(1);
+    await service.deleteSet(second.id);
+
+    await service.duplicateSet(first.id);
+    expect(setsOf(1).map((s) => [s.id, s.isExtra])).toEqual([
+      [first.id, false],
+      [second.id, false],
+    ]);
   });
 
   it('prefills the next session from the last finished one and detects records', async () => {

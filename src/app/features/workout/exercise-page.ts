@@ -94,13 +94,7 @@ export function repTarget(repMin: number | null, repMax: number | null): string 
       }
     </div>
 
-    <button
-      hlmBtn
-      variant="ghost"
-      size="sm"
-      class="self-start"
-      (click)="workout.addExtraSet(index())"
-    >
+    <button hlmBtn variant="ghost" size="sm" class="self-start" (click)="workout.addSet(index())">
       <ng-icon name="lucidePlus" />{{ 'workout.addSet' | transloco }}
     </button>
   `,

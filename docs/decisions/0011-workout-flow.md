@@ -25,3 +25,4 @@ Figma zeigt «Beenden» als Ghost-Button im Trainingskopf und «Training abschli
 - Screens können den Android-Zurück-Button über `BackButtonService.setHandler()` übernehmen und müssen ihn beim Zerstören wieder freigeben.
 - `@capacitor-community/keep-awake` hält den Bildschirm an, solange `/workout` offen ist (im Browser über die Wake Lock API, falls vorhanden).
 - Duplizierte Sätze werden direkt nach dem Original eingefügt und sind Extra-Sätze. Das Label «Extra» steht über dem ersten Extra-Satz einer Folge.
+- Gelöschte geplante Sätze bleiben als Soft Delete mit `isExtra = false` erhalten. «+ Satz» und «Satz duplizieren» stellen zuerst den zuletzt gelöschten davon wieder her (`deletedAt = NULL`, neue Position und Werte, offen) und legen erst danach Extra-Sätze an. So bleibt die Satzzahl des Plans ohne eigene Spalte erhalten: Anzahl der Zeilen mit `isExtra = false` inkl. gelöschter = geplante Sätze.

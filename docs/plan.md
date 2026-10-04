@@ -88,7 +88,7 @@ Alle Tabellen haben `id` (UUIDv7), `createdAt`, `updatedAt`, `deletedAt`. Dazu k
 
 - **Session als Kopie:** Beim Start werden Übungen und Soll-Sätze des Plans in `session_exercise` und `set_log` kopiert. Änderungen im Training (Reihenfolge, Extra-Sätze, Sätze löschen/duplizieren) betreffen nur die Session, nie den Plan.
 - **Vorbefüllung:** Gewicht und Wiederholungen pro Satzposition aus der letzten abgeschlossenen Session mit derselben Übung; fehlt eine Position, gelten die Werte des letzten Vorsatzes; sonst Gewicht leer und Wdh. = Plan-Minimum. Verworfene Trainings zählen nicht.
-- **Extra-Satz:** «+ Satz» übernimmt die Werte des letzten Satzes und setzt `isExtra = true`.
+- **Extra-Satz:** «+ Satz» übernimmt die Werte des letzten Satzes und setzt `isExtra = true`. Wurde in dieser Session ein geplanter Satz gelöscht, kommt stattdessen dieser zurück (offen, mit den neuen Werten), bis die Satzzahl des Plans wieder erreicht ist; das gilt auch für «Satz duplizieren».
 - **Heute:** alle Pläne, deren `weekdays` den aktuellen Wochentag enthalten (mehrere möglich).
 - **Fortsetzen:** Eine aktive Session überlebt App-Neustarts; die App öffnet sie beim Start wieder.
 - **Rekord:** Ein Satz ist ein PR, wenn sein geschätztes 1RM (Epley: kg × (1 + reps / 30)) über allen bisherigen abgehakten Sätzen dieser Übung liegt (abgeschlossene Sessions und frühere Sätze der laufenden). Ohne Basis und bei Gleichstand kein PR. Wird zur Laufzeit berechnet, nicht gespeichert.
