@@ -31,7 +31,7 @@ const LONG_PRESS_SLOP_PX = 8;
 /**
  * One set in a workout (Figma Grynd/Set Row 96:3055, decision 0009): number, weight and reps
  * steppers, check. `weight` is always kg; `unit` only changes what is shown and typed. Long-press
- * (500 ms) or a tap on the set number opens the set menu.
+ * (500 ms), right-click or a tap on the set number opens the set menu.
  * Checking a set celebrates it (decision 0015): the check pops with a shockwave and sparks and a light
  * sweeps over the row; a new record adds a star burst and pops the «PR» badge.
  */
@@ -46,7 +46,7 @@ const LONG_PRESS_SLOP_PX = 8;
     '(pointerup)': 'cancelPress()',
     '(pointercancel)': 'cancelPress()',
     '(pointerleave)': 'cancelPress()',
-    '(contextmenu)': '$event.preventDefault()',
+    '(contextmenu)': 'openContextMenu($event)',
   },
   template: `
     @if (extra()) {
@@ -143,6 +143,7 @@ export class SetRow implements OnDestroy {
   private pressTimer?: ReturnType<typeof setTimeout>;
   private longPressFired = false;
   private pressStart?: { x: number; y: number };
+  private lastPointerType = '';
 
   constructor() {
     // Capture phase: runs before the button under the finger handles the click.
@@ -191,7 +192,21 @@ export class SetRow implements OnDestroy {
     return this.state() === 'completed' || this.state() === 'record';
   }
 
+  /**
+   * Right-click (or the context-menu key) opens the menu on the web. Android also fires
+   * `contextmenu` on a touch long press, which the press timer already handles.
+   */
+  protected openContextMenu(event: MouseEvent): void {
+    event.preventDefault();
+    if (this.lastPointerType === 'touch' || this.lastPointerType === 'pen') {
+      return;
+    }
+    this.cancelPress();
+    this.menu.emit();
+  }
+
   protected startPress(event: PointerEvent): void {
+    this.lastPointerType = event.pointerType;
     if (event.button !== 0) {
       return;
     }

@@ -113,6 +113,31 @@ describe('SetRow', () => {
     expect(complete).not.toHaveBeenCalled();
   });
 
+  it('opens the menu on right click instead of the browser menu', () => {
+    const menu = vi.fn();
+    fixture.componentInstance.menu.subscribe(menu);
+
+    host.dispatchEvent(new PointerEvent('pointerdown', { button: 2, pointerType: 'mouse' }));
+    const event = new MouseEvent('contextmenu', { cancelable: true });
+    host.dispatchEvent(event);
+
+    expect(menu).toHaveBeenCalledOnce();
+    expect(event.defaultPrevented).toBe(true);
+  });
+
+  it('leaves the touch long press to the timer when Android also fires contextmenu', () => {
+    vi.useFakeTimers();
+    const menu = vi.fn();
+    fixture.componentInstance.menu.subscribe(menu);
+
+    host.dispatchEvent(new PointerEvent('pointerdown', { button: 0, pointerType: 'touch' }));
+    host.dispatchEvent(new MouseEvent('contextmenu', { cancelable: true }));
+    expect(menu).not.toHaveBeenCalled();
+    vi.advanceTimersByTime(LONG_PRESS_MS);
+
+    expect(menu).toHaveBeenCalledOnce();
+  });
+
   it('does not open the menu on a short press', () => {
     vi.useFakeTimers();
     const menu = vi.fn();

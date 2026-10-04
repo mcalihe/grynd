@@ -7,7 +7,7 @@ Die Figma-Komponente `Grynd/Set Row` war zweizeilig und zeigte «Vorher · 80 kg
 
 ## Entscheid
 - **Layout wie in den Screens:** 80 px hoch, Satznummer, Stepper KG, Stepper REPS, Haken (44 px). **Kein Vorwert.** Die Werte sind ohnehin aus der letzten Session vorausgefüllt.
-- **Kein Drei-Punkte-Button** (2026-10-04): Der Haken ist ganz rechts, das Satzmenü wird selten gebraucht. Es öffnet per Long-Press oder Tippen auf die Satznummer (die Nummer ist ein Button, damit das Menü auch ohne Long-Press erreichbar ist, z.B. mit Screenreader). Die Figma-Komponente zeigt noch das alte Menü-Icon.
+- **Kein Drei-Punkte-Button** (2026-10-04): Der Haken ist ganz rechts, das Satzmenü wird selten gebraucht. Es öffnet per Long-Press, Rechtsklick (Web) oder Tippen auf die Satznummer (die Nummer ist ein Button, damit das Menü auch ohne Long-Press erreichbar ist, z.B. mit Screenreader). Die Figma-Komponente zeigt noch das alte Menü-Icon.
 - **Zustände:**
   - `open`: grauer Haken
   - `completed`: gefüllter `primary`-Haken, die Zeile bleibt sonst normal

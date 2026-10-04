@@ -19,6 +19,7 @@ import { NgIcon } from '@ng-icons/core';
       tabindex="-1"
       [attr.aria-label]="'common.close' | transloco"
       (click)="dismiss.emit()"
+      (contextmenu)="$event.preventDefault(); dismiss.emit()"
     ></button>
     <div
       role="menu"
