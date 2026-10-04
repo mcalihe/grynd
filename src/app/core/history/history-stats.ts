@@ -5,6 +5,8 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 /** One finished workout as shown in the history list. */
 export interface HistorySummary {
   id: string;
+  /** Null only for sessions without a plan; the plan itself may be deleted. */
+  planId: string | null;
   planName: string;
   startedAt: UtcTimestamp;
   finishedAt: UtcTimestamp;

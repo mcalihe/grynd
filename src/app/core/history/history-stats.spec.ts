@@ -15,6 +15,7 @@ const local = (y: number, m: number, d: number, h = 12, min = 0) => new Date(y, 
 
 const session = (id: string, start: Date, minutes: number): HistorySummary => ({
   id,
+  planId: 'p1',
   planName: id,
   startedAt: start.toISOString(),
   finishedAt: new Date(start.getTime() + minutes * 60_000).toISOString(),

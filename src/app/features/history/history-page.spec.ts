@@ -11,6 +11,7 @@ import { HistoryPage } from './history-page';
 describe('HistoryPage', () => {
   const summary = (id: string, startedAt: string): HistorySummary => ({
     id,
+    planId: 'p1',
     planName: id,
     startedAt,
     finishedAt: new Date(Date.parse(startedAt) + 54 * 60_000).toISOString(),
