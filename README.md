@@ -12,6 +12,7 @@ Free and offline-first. No ads, no subscription, no account.
 [![CI](https://img.shields.io/github/actions/workflow/status/mcalihe/grynd/ci.yml?branch=main&label=CI&logo=githubactions&logoColor=white)](https://github.com/mcalihe/grynd/actions/workflows/ci.yml)
 [![Latest release](https://img.shields.io/github/v/release/mcalihe/grynd?sort=semver&label=release&color=6d3df5)](https://github.com/mcalihe/grynd/releases/latest)
 [![Platforms](https://img.shields.io/badge/platforms-Android%20%7C%20iOS%20%7C%20Web-a3e635)](#get-grynd)
+[![License: PolyForm Strict 1.0.0](https://img.shields.io/badge/license-PolyForm%20Strict%201.0.0-71717a)](LICENSE)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-fe5196?logo=conventionalcommits&logoColor=white)](https://www.conventionalcommits.org)
 
 [**Try it in your browser**](https://fit.michael-isler.com) ·
@@ -272,18 +273,20 @@ an end-to-end test.
 ## Contributing
 
 Grynd is a personal project, but issues and ideas are welcome. Before you start on a pull request,
-please open an issue so we can agree on the approach. [`CLAUDE.md`](CLAUDE.md) holds the full
-working agreement; the short version:
+please open an issue so we can agree on the approach. [CONTRIBUTING.md](CONTRIBUTING.md) explains
+the workflow and the **contribution terms** you accept by submitting a pull request; the short
+version:
 
 1. Read [`docs/plan.md`](docs/plan.md) for the product decisions behind a feature.
-2. Create a branch per change and keep commits small.
+2. Fork the repository, create a branch per change and keep commits small.
 3. Use only Spartan helm components, design tokens and Transloco keys (no hardcoded colors or text).
 4. Make sure `pnpm format:check`, `pnpm lint`, `pnpm test` and `pnpm e2e` pass.
 5. Give the pull request a [Conventional Commits](https://www.conventionalcommits.org) title, for
    example `feat(workout): show the previous set while logging`. PRs are squash-merged and the title
    becomes the changelog entry, so CI checks it.
 
-Every pull request gets its own preview deployment, linked in the PR.
+Pull requests from branches of this repository get their own preview deployment, linked in the PR.
+Pull requests from forks don't, because they have no access to the deployment secrets.
 
 <details>
 <summary><strong>Updating the README screenshots</strong></summary>
@@ -345,8 +348,16 @@ policy draft is in [docs/store/privacy.md](docs/store/privacy.md).
 
 ## License
 
-No license has been chosen yet, so all rights are reserved for now. Please open an issue if you
-would like to use the code.
+Grynd is **source-available, not open source**. The code is public so you can read it, learn from it
+and contribute to it, under the [PolyForm Strict License 1.0.0](LICENSE).
+
+- **You may** read the code, use it for personal and other noncommercial purposes and contribute
+  through pull requests ([contribution terms](CONTRIBUTING.md#contribution-terms)).
+- **You may not** distribute copies, publish changed versions, sell the app or its code, or use the
+  name Grynd or the app icon for other apps.
+
+Third-party components, such as the dependencies, fonts and exercise catalog, keep their own
+licenses. For any other use, please open an issue.
 
 <div align="center">
 <br>

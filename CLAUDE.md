@@ -17,7 +17,7 @@ App id: `com.michaelisler.grynd`. The developer has no Mac: iOS builds run in CI
 - Never hardcode colors, spacing or radii. Use Tailwind classes backed by the design tokens (`--primary`, `--muted-foreground`, …).
 - Progress is always `primary`. `success` is only for status messages (badges, toasts, trends).
 - Never hardcode user-facing text; everything goes through Transloco (de and en).
-- State with signals in services. No new dependencies without asking first.
+- State with signals in services. No new dependencies without asking first, and only with permissive licenses (MIT, Apache, BSD, ISC, …; no GPL/AGPL): Grynd is source-available under PolyForm Strict (`LICENSE`, decision 0017).
 - Max one primary button per screen, fixed at the bottom, full width (exception: Plans screen has none).
 - Every table: UUIDv7 `id` generated in the app, `createdAt`, `updatedAt`, `deletedAt` (soft delete).
 - Weights are stored in kg only; lb is display-only.
