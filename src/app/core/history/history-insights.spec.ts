@@ -2,6 +2,7 @@ import { MuscleGroup } from '../db/models';
 import {
   bucketSeries,
   calendarMonth,
+  comparableRange,
   exerciseComparison,
   exerciseProgress,
   HistorySetFact,
@@ -95,6 +96,25 @@ describe('periods', () => {
     const year = periodBuckets('year', periodRange('year', 0, now));
     expect(year).toHaveLength(12);
     expect(year[11]).toEqual({ start: local(2026, 12, 1, 0), end: local(2027, 1, 1, 0) });
+  });
+
+  it('compares a running period with the same part of the one before', () => {
+    const early = local(2026, 10, 4, 20);
+    const october = periodRange('month', 0, early);
+    const september = periodRange('month', 1, early);
+    expect(comparableRange(september, october, early)).toEqual({
+      start: local(2026, 9, 1, 0),
+      end: local(2026, 9, 4, 20),
+    });
+    // Past periods are compared in full.
+    expect(comparableRange(periodRange('month', 2, early), september, early)).toEqual(
+      periodRange('month', 2, early),
+    );
+    // Never beyond the end of the shorter previous period (31 Oct vs. September).
+    const late = local(2026, 10, 31, 12);
+    expect(comparableRange(september, periodRange('month', 0, late), late).end).toEqual(
+      local(2026, 10, 1, 0),
+    );
   });
 
   it('sums sessions and records within a range', () => {

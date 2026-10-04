@@ -1,125 +1,84 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  inject,
-  OnInit,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { NgIcon } from '@ng-icons/core';
-import {
-  groupByWeek,
-  HistorySummary,
-  sessionDurationMs,
-  weekBars,
-  weekTotals,
-} from '../../core/history/history-stats';
 import { HistoryService } from '../../core/history/history.service';
-import { Clock } from '../../core/utils/time';
-import { HistoryRow } from '../../shared/components/history-row/history-row';
 import { PageHeader } from '../../shared/components/page-header/page-header';
-import { WeekChart } from '../../shared/components/week-chart/week-chart';
-import { weekdayShort } from '../../shared/utils/weekdays';
+import { SegmentedControl } from '../../shared/components/segmented-control/segmented-control';
+import { HistoryCalendarView } from './history-calendar-view';
 import { HistoryFormat } from './history-format';
+import { HistoryListView } from './history-list-view';
+import { HistoryStatsView } from './history-stats-view';
 
-/** Verlauf (Figma 37:29734, empty 106:1654): this week as a chart, then all workouts by week. */
+export type HistoryView = 'list' | 'calendar' | 'stats';
+const VIEWS: readonly HistoryView[] = ['list', 'calendar', 'stats'];
+
+/**
+ * Verlauf with three views (Figma Verlauf · Liste/Kalender/Statistik, decision 0016). The list is
+ * the default; the chosen view lives in the query parameter `view`, so going back returns to it.
+ */
 @Component({
   selector: 'app-history-page',
-  imports: [PageHeader, WeekChart, HistoryRow, NgIcon, TranslocoPipe],
+  imports: [
+    PageHeader,
+    SegmentedControl,
+    HistoryListView,
+    HistoryCalendarView,
+    HistoryStatsView,
+    TranslocoPipe,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'flex flex-1 flex-col' },
   template: `
     <app-page-header [title]="'history.title' | transloco" />
 
-    @if (history.loaded()) {
-      <div class="flex flex-1 flex-col gap-4 px-4 pb-4">
-        <app-week-chart
-          [title]="chartTitle()"
-          [subtitle]="chartSubtitle()"
-          [trend]="trend()"
-          [trendLabel]="trendLabel()"
-          [chartLabel]="chartSubtitle()"
-          [bars]="bars()"
-        />
+    <app-segmented-control
+      class="mx-4 mb-4"
+      [attr.aria-label]="'history.views.label' | transloco"
+      [options]="options()"
+      [value]="current()"
+      (valueChange)="select($event)"
+    />
 
-        @for (week of weeks(); track week.offset) {
-          <section class="flex flex-col gap-1" [attr.data-week]="week.offset">
-            <h2
-              [class]="
-                week.offset === 0
-                  ? 'text-xl font-semibold'
-                  : 'pt-2 text-sm font-medium text-muted-foreground'
-              "
-            >
-              {{ format.week(week) }}
-            </h2>
-            @for (session of week.sessions; track session.id) {
-              <app-history-row
-                [name]="session.planName || ('history.untitled' | transloco)"
-                [details]="details(session)"
-                (open)="open(session.id)"
-              />
-            }
-          </section>
-        } @empty {
-          <section class="flex flex-1 flex-col items-center justify-center gap-3 text-center">
-            <span class="flex size-14 items-center justify-center rounded-md bg-muted">
-              <ng-icon name="lucideChartLine" size="24" />
-            </span>
-            <h2 class="text-xl font-semibold">{{ 'history.empty.title' | transloco }}</h2>
-            <p class="w-64 text-sm text-muted-foreground">
-              {{ 'history.empty.text' | transloco }}
-            </p>
-          </section>
+    @if (history.loaded()) {
+      <div class="flex flex-1 flex-col px-4 pb-4">
+        @switch (current()) {
+          @case ('calendar') {
+            <app-history-calendar-view />
+          }
+          @case ('stats') {
+            <app-history-stats-view />
+          }
+          @default {
+            <app-history-list-view />
+          }
         }
       </div>
     }
   `,
 })
 export class HistoryPage implements OnInit {
+  /** Query parameter `view`. */
+  readonly view = input<string>();
+
   protected readonly history = inject(HistoryService);
-  protected readonly format = inject(HistoryFormat);
+  private readonly format = inject(HistoryFormat);
   private readonly router = inject(Router);
-  private readonly clock = inject(Clock);
 
-  private readonly now = signal(this.clock.now());
-
-  protected readonly weeks = computed(() => groupByWeek(this.history.summaries(), this.now()));
-  private readonly totals = computed(() => weekTotals(this.history.summaries(), this.now()));
-  protected readonly trend = computed(() => this.totals().count - this.totals().previousCount);
-  protected readonly trendLabel = computed(() =>
-    this.format.t('history.trend', { count: this.trend() }),
+  protected readonly current = computed<HistoryView>(() =>
+    VIEWS.includes(this.view() as HistoryView) ? (this.view() as HistoryView) : 'list',
   );
-  protected readonly chartTitle = computed(() =>
-    this.format.count(this.totals().count, 'history.trainingOne', 'history.trainings'),
-  );
-  protected readonly chartSubtitle = computed(
-    () =>
-      `${this.format.t('history.thisWeek')} · ${this.format.duration(this.totals().durationMs)}`,
-  );
-  protected readonly bars = computed(() =>
-    weekBars(this.history.summaries(), this.now()).map((bar) => ({
-      ...bar,
-      label: weekdayShort(bar.day.getDay(), this.format.locale()),
-    })),
+  protected readonly options = computed(() =>
+    VIEWS.map((value) => ({ value, label: this.format.t(`history.views.${value}`) })),
   );
 
   ngOnInit(): void {
-    this.now.set(this.clock.now());
     void this.history.load();
   }
 
-  protected details(session: HistorySummary): string {
-    return [
-      this.format.day(new Date(session.startedAt), this.now()),
-      this.format.duration(sessionDurationMs(session)),
-      this.format.count(session.exerciseCount, 'plans.exerciseCountOne', 'plans.exerciseCount'),
-    ].join(' · ');
-  }
-
-  protected open(id: string): void {
-    void this.router.navigate(['/history', id]);
+  protected select(view: HistoryView): void {
+    void this.router.navigate([], {
+      queryParams: { view: view === 'list' ? null : view },
+      replaceUrl: true,
+    });
   }
 }

@@ -13,7 +13,7 @@ import { HlmButton } from '@spartan-ng/helm/button';
       hlmBtn
       variant="ghost"
       size="icon"
-      class="data-disabled:bg-transparent"
+      class="data-disabled:bg-transparent data-disabled:opacity-30"
       [disabled]="!canPrevious()"
       [attr.aria-label]="previousLabel()"
       (click)="previous.emit()"
@@ -27,7 +27,7 @@ import { HlmButton } from '@spartan-ng/helm/button';
       hlmBtn
       variant="ghost"
       size="icon"
-      class="data-disabled:bg-transparent"
+      class="data-disabled:bg-transparent data-disabled:opacity-30"
       [disabled]="!canNext()"
       [attr.aria-label]="nextLabel()"
       (click)="next.emit()"

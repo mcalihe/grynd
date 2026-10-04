@@ -54,6 +54,18 @@ export function periodRange(period: StatsPeriod, offset: number, now: Date): Dat
   return { start: new Date(year, 0, 1), end: new Date(year + 1, 0, 1) };
 }
 
+/**
+ * What `current` is compared with: the period before, cut to the part of `current` that has
+ * passed by `now` (1–4 October against 1–4 September). Finished periods compare in full.
+ */
+export function comparableRange(previous: DateRange, current: DateRange, now: Date): DateRange {
+  if (now < current.start || now >= current.end) {
+    return previous;
+  }
+  const end = new Date(previous.start.getTime() + (now.getTime() - current.start.getTime()));
+  return { start: previous.start, end: end < previous.end ? end : previous.end };
+}
+
 export function inRange(timestamp: UtcTimestamp, range: DateRange): boolean {
   const time = Date.parse(timestamp);
   return time >= range.start.getTime() && time < range.end.getTime();

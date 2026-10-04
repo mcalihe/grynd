@@ -1,8 +1,9 @@
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
 import { TranslocoTestingModule } from '@jsverse/transloco';
 import { FakeClock } from '../../../testing/test-database';
+import { ExerciseCatalogService } from '../../core/exercises/exercise-catalog.service';
 import { HistorySummary } from '../../core/history/history-stats';
 import { HistoryService } from '../../core/history/history.service';
 import { Clock } from '../../core/utils/time';
@@ -20,7 +21,7 @@ describe('HistoryPage', () => {
     volumeKg: 8420,
   });
 
-  function render(summaries: HistorySummary[]) {
+  function render(summaries: HistorySummary[], view?: string) {
     TestBed.configureTestingModule({
       imports: [
         HistoryPage,
@@ -47,11 +48,21 @@ describe('HistoryPage', () => {
             summaries: signal(summaries),
             loaded: signal(true),
             load: () => Promise.resolve(),
+            facts: signal([]),
+            factsLoaded: signal(true),
+            loadFacts: () => Promise.resolve(),
           },
+        },
+        {
+          provide: ExerciseCatalogService,
+          useValue: { byId: signal(new Map()), load: () => Promise.resolve(), nameById: () => '' },
         },
       ],
     });
     const fixture = TestBed.createComponent(HistoryPage);
+    if (view) {
+      fixture.componentRef.setInput('view', view);
+    }
     fixture.detectChanges();
     return fixture.nativeElement as HTMLElement;
   }
@@ -69,6 +80,29 @@ describe('HistoryPage', () => {
     expect(headings).toHaveLength(3);
     expect(el.querySelectorAll('app-history-row')).toHaveLength(4);
     expect(el.querySelectorAll('[data-filled]')).toHaveLength(2);
+  });
+
+  it('switches the view through the query parameter', () => {
+    const el = render([summary('today', new Date(2026, 9, 1, 9).toISOString())]);
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    el.querySelectorAll<HTMLButtonElement>('[role="radio"]')[1].click();
+    expect(navigate).toHaveBeenCalledWith([], {
+      queryParams: { view: 'calendar' },
+      replaceUrl: true,
+    });
+  });
+
+  it('shows the calendar and the statistics', () => {
+    const sessions = [summary('today', new Date(2026, 9, 1, 9).toISOString())];
+    const calendar = render(sessions, 'calendar');
+    expect(calendar.querySelector('app-history-calendar-view')).not.toBeNull();
+    expect(calendar.querySelectorAll('app-month-calendar [data-trained]')).toHaveLength(1);
+    TestBed.resetTestingModule();
+
+    const stats = render(sessions, 'stats');
+    expect(stats.querySelector('app-history-stats-view')).not.toBeNull();
+    // One workout this month, shown in the first tile.
+    expect(stats.querySelector('app-key-figures button span')?.textContent?.trim()).toBe('1');
   });
 
   it('shows the empty state without workouts', () => {
