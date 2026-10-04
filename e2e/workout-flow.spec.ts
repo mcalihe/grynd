@@ -25,8 +25,22 @@ test('plan → workout → history', async ({ page }) => {
   await expect(page).toHaveURL(/\/workout$/);
   await expect(page.getByRole('heading', { name: 'Bankdrücken (mittlerer Griff)' })).toBeVisible();
 
-  // First set: 60 kg × 8 (reps are prefilled with the plan minimum)
+  // Very small phones (280 px, e.g. Galaxy Fold): the set row stays inside its card, the stepper
+  // buttons inside their steppers, and the pager page does not scroll
   const firstSet = page.locator('app-set-row').first();
+  await page.setViewportSize({ width: 280, height: 653 });
+  const steppers = await firstSet.locator('app-number-stepper').all();
+  const boxes = [
+    firstSet.locator(':scope > div'),
+    ...steppers,
+    page.locator('section[data-index="0"]'),
+  ];
+  for (const box of boxes) {
+    expect(await box.evaluate((el) => el.scrollWidth - el.clientWidth)).toBe(0);
+  }
+  await page.setViewportSize({ width: 393, height: 852 });
+
+  // First set: 60 kg × 8 (reps are prefilled with the plan minimum)
   await firstSet.getByRole('spinbutton', { name: 'KG' }).click();
   await firstSet.getByRole('textbox', { name: 'KG' }).fill('60');
   await firstSet.getByRole('textbox', { name: 'KG' }).press('Enter');

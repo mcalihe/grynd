@@ -26,7 +26,7 @@ Klassen folgen dem Angular-Styleguide 2025 (ohne `Component`-Suffix), Selektor-P
 | --- | --- | --- | --- | --- |
 | Button | `9:206` | default/secondary/outline/ghost/destructive × sm/default/lg × default/pressed/disabled | helm `hlmBtn`, Größen 44/48/56, Icon `icon`/`icon-lg` | shared/ui/button |
 | Input | `9:219` | default/focus/error | helm `hlmInput` (48 px, Radius 16) | shared/ui/input |
-| Number Input | `9:244` | default/focus/error | im Set-Row-Layout: `NumberStepper` (`app-number-stepper`, 121×44) | shared/components/number-stepper |
+| Number Input | `9:244` | default/focus/error | im Set-Row-Layout: `NumberStepper` (`app-number-stepper`, 121×44, auf schmalen Phones schmaler, Entscheid [0009](../decisions/0009-set-row.md)) | shared/components/number-stepper |
 | Badge | `9:265` | default/secondary/success/warning/destructive | helm `hlmBadge` (32 px Pill) | shared/ui/badge |
 | Switch | `9:284` | checked × default/disabled | helm `hlm-switch` (52×32) | shared/ui/switch |
 | Checkbox | `9:295` | checked × default/disabled | noch nicht generiert (bei Bedarf) | – |

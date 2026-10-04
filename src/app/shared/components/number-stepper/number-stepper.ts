@@ -69,13 +69,16 @@ interface Scrub {
  * sideways anywhere on the stepper to scrub (decision 0018): a full-screen ruler appears, every
  * tick is one step, right increases, and resting the finger at a screen edge keeps it scrolling.
  * The value is a spinbutton for keyboards and screen readers.
+ * In a narrower slot (set row on phones below ~364 px) the −/+ buttons give up width first, down to
+ * 24 px, so the row still fits a 280 px Galaxy Fold; they stay 44 px tall and the value keeps at
+ * least 32 px for «WDH» and «82,5» (decision 0009).
  */
 @Component({
   selector: 'app-number-stepper',
   imports: [NgIcon, TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    class: 'bg-muted flex h-11 shrink-0 touch-pan-y items-center rounded-md',
+    class: 'bg-muted flex h-11 min-w-0 touch-pan-y items-center rounded-md',
     '[class.w-[121px]]': '!stretch()',
     '[class.w-full]': 'stretch()',
     '(pointerdown)': 'scrubStart($event)',
@@ -83,7 +86,7 @@ interface Scrub {
   template: `
     <button
       type="button"
-      class="flex size-11 shrink-0 items-center justify-center rounded-md active:bg-accent"
+      class="flex h-11 w-11 min-w-6 items-center justify-center rounded-md active:bg-accent"
       [attr.aria-label]="'common.decrease' | transloco: { label: label() }"
       [disabled]="disabled()"
       (click)="step(-1)"
@@ -92,7 +95,7 @@ interface Scrub {
     </button>
 
     <div
-      class="flex h-full min-w-0 flex-1 flex-col items-center justify-center rounded-md leading-none outline-none select-none focus-visible:ring-2 focus-visible:ring-ring"
+      class="flex h-full min-w-8 flex-1 flex-col items-center justify-center rounded-md leading-none outline-none select-none focus-visible:ring-2 focus-visible:ring-ring"
       [class.cursor-ew-resize]="!disabled() && !editing()"
       [attr.role]="editing() ? null : 'spinbutton'"
       [attr.tabindex]="editing() || disabled() ? null : 0"
@@ -124,7 +127,7 @@ interface Scrub {
 
     <button
       type="button"
-      class="flex size-11 shrink-0 items-center justify-center rounded-md active:bg-accent"
+      class="flex h-11 w-11 min-w-6 items-center justify-center rounded-md active:bg-accent"
       [attr.aria-label]="'common.increase' | transloco: { label: label() }"
       [disabled]="disabled()"
       (click)="step(1)"
