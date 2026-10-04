@@ -3,6 +3,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  DOCUMENT,
   effect,
   ElementRef,
   inject,
@@ -136,23 +137,17 @@ export class SetRow implements OnDestroy {
   protected readonly haptics = inject(HapticsService);
   private readonly celebration = inject(CelebrationService);
   private readonly injector = inject(Injector);
+  private readonly document = inject(DOCUMENT);
   private readonly checkButton = viewChild<ElementRef<HTMLElement>>('check');
   private readonly ring = viewChild<ElementRef<HTMLElement>>('ring');
   private readonly sweep = viewChild<ElementRef<HTMLElement>>('sweep');
   private readonly badge = viewChild<ElementRef<HTMLElement>>('badge');
   private pressTimer?: ReturnType<typeof setTimeout>;
-  private longPressFired = false;
   private pressStart?: { x: number; y: number };
   private lastPointerType = '';
+  private disarmClickGuard?: () => void;
 
   constructor() {
-    // Capture phase: runs before the button under the finger handles the click.
-    inject<ElementRef<HTMLElement>>(ElementRef).nativeElement.addEventListener(
-      'click',
-      (event) => this.swallowClickAfterLongPress(event),
-      true,
-    );
-
     // Celebrate transitions only: rows rendered on load or restore stay quiet. «menu-open» hides
     // the real state, so it is skipped (closing the menu on a record is not a new record).
     let last: SetRowState | undefined;
@@ -210,11 +205,10 @@ export class SetRow implements OnDestroy {
     if (event.button !== 0) {
       return;
     }
-    this.longPressFired = false;
     this.cancelPress();
     this.pressStart = { x: event.clientX, y: event.clientY };
     this.pressTimer = setTimeout(() => {
-      this.longPressFired = true;
+      this.guardNextClick();
       this.haptics.press();
       this.menu.emit();
     }, LONG_PRESS_MS);
@@ -236,16 +230,32 @@ export class SetRow implements OnDestroy {
     this.pressTimer = undefined;
   }
 
-  /** The click that ends a long press must not also press the button under the finger. */
-  private swallowClickAfterLongPress(event: MouseEvent): void {
-    if (this.longPressFired) {
+  /**
+   * The click that ends a long press must not also press what is under the finger: a button in
+   * the row, or the backdrop of the menu that just opened there, which would close it at once.
+   * Listens on the document in the capture phase; the next press or key means no click is coming.
+   */
+  private guardNextClick(): void {
+    this.disarmClickGuard?.();
+    const swallow = (event: Event) => {
       event.stopPropagation();
       event.preventDefault();
-      this.longPressFired = false;
-    }
+      disarm();
+    };
+    const disarm = () => {
+      this.document.removeEventListener('click', swallow, true);
+      this.document.removeEventListener('pointerdown', disarm, true);
+      this.document.removeEventListener('keydown', disarm, true);
+      this.disarmClickGuard = undefined;
+    };
+    this.document.addEventListener('click', swallow, true);
+    this.document.addEventListener('pointerdown', disarm, true);
+    this.document.addEventListener('keydown', disarm, true);
+    this.disarmClickGuard = disarm;
   }
 
   ngOnDestroy(): void {
     this.cancelPress();
+    this.disarmClickGuard?.();
   }
 }

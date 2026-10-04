@@ -113,6 +113,40 @@ describe('SetRow', () => {
     expect(complete).not.toHaveBeenCalled();
   });
 
+  it('also swallows that click when it lands on the menu backdrop outside the row', () => {
+    vi.useFakeTimers();
+    const backdrop = document.body.appendChild(document.createElement('button'));
+    const dismiss = vi.fn();
+    backdrop.addEventListener('click', dismiss);
+
+    host.dispatchEvent(new PointerEvent('pointerdown', { button: 0, pointerType: 'touch' }));
+    vi.advanceTimersByTime(LONG_PRESS_MS);
+    host.dispatchEvent(new PointerEvent('pointerup'));
+    backdrop.click();
+    expect(dismiss).not.toHaveBeenCalled();
+
+    // The next tap is a real one again.
+    backdrop.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+    backdrop.click();
+    expect(dismiss).toHaveBeenCalledOnce();
+    backdrop.remove();
+  });
+
+  it('stops guarding once a new press starts without a click in between', () => {
+    vi.useFakeTimers();
+    const item = document.body.appendChild(document.createElement('button'));
+    const remove = vi.fn();
+    item.addEventListener('click', remove);
+
+    host.dispatchEvent(new PointerEvent('pointerdown', { button: 0, pointerType: 'touch' }));
+    vi.advanceTimersByTime(LONG_PRESS_MS);
+    item.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+    item.click();
+
+    expect(remove).toHaveBeenCalledOnce();
+    item.remove();
+  });
+
   it('opens the menu on right click instead of the browser menu', () => {
     const menu = vi.fn();
     fixture.componentInstance.menu.subscribe(menu);
