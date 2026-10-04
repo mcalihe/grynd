@@ -46,9 +46,22 @@ docs/
 
 ## Conventions
 
-- Code, comments and commits in English; Conventional Commits (`feat:`, `fix:`, …).
+- Code, comments and commits in English; Conventional Commits, see «Commits and PRs».
 - Component names mirror Figma (e.g. Figma `Grynd/Set Row` with `State=open|completed|record|menu-open` → `SetRow` (`app-set-row`) with `state: 'open' | 'completed' | 'record' | 'menu-open'`).
 - Write unit tests for business logic (session copy, prefill, PR detection, intervals, unsaved-changes detection).
+
+## Commits and PRs
+
+Releases are automatic (release-please, `docs/release.md`): the commits on `main` decide the next version and become the changelog in the GitHub release. PRs are squash-merged with the **PR title** as the commit subject, so the PR title matters most and is checked in CI.
+
+- Format: `type(scope): subject`, e.g. `feat(workout): show the previous set while logging`.
+- Types: `feat` (new user-facing behavior → minor), `fix` (user-facing bug fix → patch), `perf` (→ patch), `revert`; no release and not in the changelog: `refactor`, `docs`, `style`, `test`, `build`, `ci`, `chore`. Pick the type by what the user notices: a fix to code that was never released is not a `fix`.
+- Scope (optional, one): `plans`, `workout`, `history`, `settings`, `timer`, `db`, `ui`, `native`, `i18n`, `catalog`, `ci`, `deps`.
+- Subject: imperative, lowercase start, no final period, at most 72 characters for the whole header. For `feat`, `fix` and `perf` write it for users, it is a line in the release notes.
+- Body (wrapped at 72): why the change was made and anything non-obvious; not a file list.
+- Breaking change (e.g. backup format or DB migration without upgrade path): `feat!:` plus a `BREAKING CHANGE: …` footer.
+- One logical change per commit; on a branch every commit follows these rules too. The PR title summarizes the whole PR in the same format.
+- Never edit the version (`package.json`, `app-info.ts`, `.release-please-manifest.json`) or `CHANGELOG.md` by hand. To force a version, add a `Release-As: x.y.z` footer.
 
 ## Workflow
 
@@ -73,6 +86,7 @@ Node 24 (`.nvmrc`), pnpm via `corepack enable` (version pinned in `package.json`
 - Add a Spartan helm component: `pnpm ng g @spartan-ng/cli:ui <name>` (goes to `src/app/shared/ui`, then align it with the Figma component)
 - Component showcase (dev only): http://localhost:4200/dev/components – every shared component in all states; add new ones there
 - CI (`.github/workflows/ci.yml`) runs format check, lint, test and build, plus the E2E job, on every push and PR.
+- Release (`.github/workflows/release.yml`): release-please keeps a release PR open on `main`; merging it tags `vX.Y.Z`, publishes the GitHub release with the changelog and attaches the debug APK. PR titles are checked by `.github/workflows/pr-title.yml`.
 - Native builds (`.github/workflows/build-native.yml`): Android debug APK artifact and an unsigned iOS simulator build; manual, on `v*` tags and on PRs touching native files. Release and signing notes: `docs/release.md`.
 - Web deploy (`.github/workflows/deploy.yml`): FTPS via `lftp` (`scripts/deploy-ftp.sh`, Apache config in `deploy/`). Production `https://fit.michael-isler.com` after green CI on `main`; every PR gets a preview at `https://fit-preview.michael-isler.com/pr-<n>/`, removed on close. GitHub environments `Production`/`Preview` each hold `FTP_HOST`, `FTP_USER`, `FTP_PASSWORD` + var `SITE_URL`.
 
