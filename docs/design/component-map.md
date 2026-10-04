@@ -63,7 +63,8 @@ Klassen folgen dem Angular-Styleguide 2025 (ohne `Component`-Suffix), Selektor-P
 | Trainingsuhr (Beenden) | – (nur Code; Figma-Frames zeigen noch den Ghost-Button «Beenden») | `WorkoutClock` (`app-workout-clock`) |
 | Beenden-Dialog | – | `ConfirmDialogHost` über `ConfirmService.choose()` (drei Aktionen) |
 | Wochentage | `37:28125` | `WeekdayChips` (`app-weekday-chips`) |
-| Satz-Stepper | `56:48064` | `NumberStepper` (`app-number-stepper`) |
+| Satz-Stepper | `56:48064` | `NumberStepper` (`app-number-stepper`, Wert als Spinbutton) |
+| Lineal beim Ziehen über einen Stepper | – (nur Code, [0018](../decisions/0018-value-scrubber.md)) | `ValueScrubber` (`app-value-scrubber`, per CDK Overlay aus `NumberStepper`) |
 | Übungszeile im Plan (Detail/Editor, ≡-Handle, Chevron) | `37:27708`, `37:28096` | `PlanExerciseRow` (`app-plan-exercise-row`, features/plans) |
 | Übungs-Listeneintrag + Filter-Chips im Picker | `63:13440` | im `ExercisePickerPage` (features/plans) |
 | «Änderungen verwerfen» / Bestätigungen | `66:1123` | `ConfirmService` + `ConfirmDialogHost` (App-Shell, `@defer`) |
