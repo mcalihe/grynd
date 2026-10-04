@@ -82,7 +82,7 @@
       "doneText": "Weiter mit dem nächsten Satz."
     },
     "overview": "Übersicht",
-    "end": "Beenden",
+    "end": "Training beenden ({{time}})",
     "next": "Weiter zu {{name}}",
     "finish": "Training abschliessen",
     "addSet": "Satz",

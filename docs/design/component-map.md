@@ -60,6 +60,7 @@ Klassen folgen dem Angular-Styleguide 2025 (ohne `Component`-Suffix), Selektor-P
 | Satzmenü-Popover | `56:49683` | `SetMenu` (`app-set-menu`, `features/workout`) |
 | Übungsmenü | `56:48305` | helm Dropdown-Menü in `ExercisePage` (`app-exercise-page`) |
 | Übersicht-Sheet | `56:48605` | `OverviewSheet` (`app-overview-sheet`, helm Sheet + CDK Drag) |
+| Trainingsuhr (Beenden) | – (nur Code; Figma-Frames zeigen noch den Ghost-Button «Beenden») | `WorkoutClock` (`app-workout-clock`) |
 | Beenden-Dialog | – | `ConfirmDialogHost` über `ConfirmService.choose()` (drei Aktionen) |
 | Wochentage | `37:28125` | `WeekdayChips` (`app-weekday-chips`) |
 | Satz-Stepper | `56:48064` | `NumberStepper` (`app-number-stepper`) |
