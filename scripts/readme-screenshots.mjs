@@ -260,6 +260,8 @@ try {
     await shot('plan-detail');
     await start.click();
     await page.waitForURL(/\/workout$/);
+    // A few minutes into the workout, so the workout clock does not show 0:00.
+    await context.clock.setFixedTime(NOW.getTime() + 14 * 60_000 + 32_000);
     const sets = page.locator('app-set-row');
     await sets.nth(0).getByRole('button', { name: 'Complete set' }).click();
     await page.waitForTimeout(600);

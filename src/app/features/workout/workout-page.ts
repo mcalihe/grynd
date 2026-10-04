@@ -21,9 +21,11 @@ import { ConfirmService } from '../../core/services/confirm.service';
 import { ExerciseCatalogService } from '../../core/exercises/exercise-catalog.service';
 import { RestTimerService } from '../../core/workout/rest-timer.service';
 import { isExerciseDone, WorkoutService } from '../../core/workout/workout.service';
+import { Clock } from '../../core/utils/time';
 import { SegmentProgress } from '../../shared/components/segment-progress/segment-progress';
 import { StickyAction } from '../../shared/components/sticky-action/sticky-action';
 import { TimerBar } from '../../shared/components/timer-bar/timer-bar';
+import { WorkoutClock } from '../../shared/components/workout-clock/workout-clock';
 import { CelebrationService } from '../../shared/motion/celebration.service';
 import { play } from '../../shared/motion/motion';
 import { ExerciseCelebration } from './exercise-celebration';
@@ -57,6 +59,7 @@ interface ExerciseMoment {
     SegmentProgress,
     StickyAction,
     TimerBar,
+    WorkoutClock,
     HlmButton,
     NgIcon,
     TranslocoPipe,
@@ -76,9 +79,7 @@ interface ExerciseMoment {
           {{ current() + 1 }} / {{ w.exercises.length }}
           <ng-icon name="lucideChevronDown" size="16" />
         </button>
-        <button hlmBtn variant="ghost" size="sm" (click)="end()">
-          <ng-icon name="lucideX" />{{ 'workout.end' | transloco }}
-        </button>
+        <app-workout-clock [elapsedMs]="elapsedMs()" (stop)="end()" />
       </header>
 
       <app-segment-progress
@@ -168,6 +169,7 @@ export class WorkoutPage {
   private readonly router = inject(Router);
   private readonly confirm = inject(ConfirmService);
   private readonly celebration = inject(CelebrationService);
+  private readonly clock = inject(Clock);
   private readonly pager = viewChild<ElementRef<HTMLElement>>('pager');
   private readonly progress = viewChild(SegmentProgress);
   private readonly nextButton = viewChild<ElementRef<HTMLElement>>('nextButton');
@@ -179,6 +181,13 @@ export class WorkoutPage {
   protected readonly overviewOpen = signal(false);
   protected readonly busy = signal(false);
   protected readonly moment = signal<ExerciseMoment | null>(null);
+  /** Refreshed every second for the workout clock; the time itself comes from `startedAt`. */
+  private readonly now = signal(this.clock.now().getTime());
+
+  protected readonly elapsedMs = computed(() => {
+    const startedAt = this.workout.workout()?.session.startedAt;
+    return startedAt ? this.now() - Date.parse(startedAt) : 0;
+  });
 
   protected readonly segments = computed(() =>
     (this.workout.workout()?.exercises ?? []).map(({ sets }) => ({
@@ -209,6 +218,9 @@ export class WorkoutPage {
     // Keep the screen on while training (Wake Lock API in the browser, if supported).
     void keepAwake(true);
     destroyRef.onDestroy(() => void keepAwake(false));
+
+    const tick = setInterval(() => this.now.set(this.clock.now().getTime()), 1000);
+    destroyRef.onDestroy(() => clearInterval(tick));
 
     afterNextRender(() => {
       const pager = this.pager()?.nativeElement;

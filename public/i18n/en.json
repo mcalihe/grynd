@@ -82,7 +82,7 @@
       "doneText": "Time for the next set."
     },
     "overview": "Overview",
-    "end": "End",
+    "end": "End workout ({{time}})",
     "next": "Next: {{name}}",
     "finish": "Finish workout",
     "addSet": "Set",
