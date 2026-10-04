@@ -13,7 +13,7 @@ describe('ValueScrubber', () => {
   };
 
   it('shows the value and the change since the start', () => {
-    const host = render({ value: 87.5, start: 80, pointerX: 148, pointerY: 500 });
+    const host = render({ value: 87.5, start: 80, pointerX: 148, anchorY: 500 });
     expect(host.getAttribute('aria-hidden')).toBe('true');
     expect(host.textContent).toContain('KG');
     expect(host.textContent).toContain('87,5');
@@ -21,20 +21,20 @@ describe('ValueScrubber', () => {
   });
 
   it('shows no change while the value is the start value', () => {
-    const host = render({ value: 80, start: 80, pointerY: 500 });
+    const host = render({ value: 80, start: 80, anchorY: 500 });
     expect(host.textContent).not.toContain('+');
     expect(host.textContent).not.toContain('−');
   });
 
   it('labels the ruler every 10 kg', () => {
-    const host = render({ value: 80, start: 80, pointerY: 500 });
-    const labels = [...host.querySelectorAll('.top-2')].map((el) => el.textContent?.trim());
+    const host = render({ value: 80, start: 80, anchorY: 500 });
+    const labels = [...host.querySelectorAll('.top-1')].map((el) => el.textContent?.trim());
     expect(labels).toEqual(['60', '70', '80', '90', '100', '110', '120', '130']);
   });
 
-  it('puts the big value below the finger when there is no room above', () => {
-    const top = render({ value: 80, start: 80, pointerY: 60 });
-    const middle = render({ value: 80, start: 80, pointerY: 500 });
+  it('puts the big value below the band when there is no room above', () => {
+    const top = render({ value: 80, start: 80, anchorY: 60 });
+    const middle = render({ value: 80, start: 80, anchorY: 500 });
     const hud = (host: HTMLElement) => host.children[1] as HTMLElement;
     expect(hud(top).classList).not.toContain('-translate-y-full');
     expect(hud(middle).classList).toContain('-translate-y-full');

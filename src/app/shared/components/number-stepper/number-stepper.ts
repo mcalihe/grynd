@@ -389,8 +389,10 @@ export class NumberStepper {
       panelClass: 'pointer-events-none',
     });
     this.ruler.set({ x: scrub.x, scrollPx: scrub.scrollPx });
-    const { start, originX, startY } = scrub;
+    const { start, originX } = scrub;
     const width = this.view?.innerWidth ?? 0;
+    const rect = this.host.nativeElement.getBoundingClientRect();
+    const anchorY = rect.top + rect.height / 2;
     // Bound at creation, so the first frame already shows the right ruler.
     const bindings = [
       inputBinding('label', this.label),
@@ -404,7 +406,7 @@ export class NumberStepper {
       inputBinding('originX', () => originX),
       inputBinding('scrollPx', () => this.ruler().scrollPx),
       inputBinding('pointerX', () => this.ruler().x),
-      inputBinding('pointerY', () => startY),
+      inputBinding('anchorY', () => anchorY),
       inputBinding('width', () => width),
     ];
     const portal = new ComponentPortal(ValueScrubber, null, this.injector, null, bindings);

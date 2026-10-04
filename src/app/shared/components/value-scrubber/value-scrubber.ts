@@ -19,13 +19,11 @@ import {
   SCRUB_STEP_PX,
 } from '../number-stepper/number-stepper.logic';
 
-/** Height of the ruler band. */
-const BAND_PX = 72;
+/** Height of the ruler band, as tall as a set row so the band lies right on it. */
+const BAND_PX = 80;
 /** Height of the label row at the top of the band. */
-const LABELS_PX = 26;
-/** Gap between the bottom of the band and the finger (room for the touch ring). */
-const FINGER_GAP_PX = 32;
-/** Gap between the band and the big value above it. */
+const LABELS_PX = 24;
+/** Gap between the band and the big value. */
 const HUD_GAP_PX = 16;
 /** Room the big value (label + 60 px digits) needs above the band; with less, it goes below. */
 const HUD_ROOM_PX = 80 + HUD_GAP_PX + 8;
@@ -33,8 +31,9 @@ const HUD_ROOM_PX = 80 + HUD_GAP_PX + 8;
 /**
  * Full-screen ruler shown while scrubbing a NumberStepper (decision 0018). Purely visual and
  * `aria-hidden`: the stepper owns the gesture and the value, and screen readers follow its
- * spinbutton. One tick is one step; the needle sits on the selected tick under the finger, a dot
- * marks the start value, and the « » zones at the edges show where the ruler keeps scrolling.
+ * spinbutton. The band lies on the pressed control; one tick is one step, the needle sits on the
+ * selected tick under the finger, a dot marks the start value, and the « » zones at the edges show
+ * where the ruler keeps scrolling. The big value sits above the band (below without room).
  */
 @Component({
   selector: 'app-value-scrubber',
@@ -81,7 +80,7 @@ const HUD_ROOM_PX = 80 + HUD_GAP_PX + 8;
         ></span>
         @if (tick.major) {
           <span
-            class="absolute top-2 -translate-x-1/2 text-xs font-medium tabular-nums"
+            class="absolute top-1 -translate-x-1/2 text-xs font-medium tabular-nums"
             [class]="tick.value === value() ? 'text-foreground' : 'text-muted-foreground'"
             [style.left.px]="tick.x"
             >{{ tickLabel(tick.value) }}</span
@@ -129,8 +128,8 @@ const HUD_ROOM_PX = 80 + HUD_GAP_PX + 8;
         [style.height.px]="needleLine().height"
       ></span>
       <span
-        class="absolute size-12 -translate-1/2 rounded-full border-2 border-primary bg-primary/15"
-        [style.top.px]="pointerY()"
+        class="absolute size-10 -translate-1/2 rounded-full border-2 border-primary bg-primary/15"
+        [style.top.px]="anchorY()"
       ></span>
     </div>
   `,
@@ -151,7 +150,8 @@ export class ValueScrubber {
   readonly scrollPx = input(0);
   /** Current finger position. */
   readonly pointerX = input(0);
-  readonly pointerY = input(0);
+  /** Vertical centre of the pressed control; the band is centred on it. */
+  readonly anchorY = input(0);
   readonly width = input(393);
 
   protected readonly bandHeight = BAND_PX;
@@ -206,29 +206,19 @@ export class ValueScrubber {
     return sign + formatNumber(Math.abs(diff), this.locale(), this.decimals());
   });
 
-  /** The band sits above the finger, where the thumb does not cover it; below only without room. */
-  private readonly bandBelow = computed(() => this.pointerY() - FINGER_GAP_PX - BAND_PX < 8);
+  protected readonly bandTop = computed(() => this.anchorY() - BAND_PX / 2);
 
-  protected readonly bandTop = computed(() =>
-    this.bandBelow() ? this.pointerY() + FINGER_GAP_PX : this.pointerY() - FINGER_GAP_PX - BAND_PX,
+  /** Line across the band below the labels, through the touch ring. */
+  protected readonly needleLine = computed(() => ({
+    top: this.bandTop() + LABELS_PX,
+    height: BAND_PX - LABELS_PX,
+  }));
+
+  protected readonly hudBelow = computed(() => this.bandTop() < HUD_ROOM_PX);
+
+  protected readonly hudTop = computed(() =>
+    this.hudBelow() ? this.bandTop() + BAND_PX + HUD_GAP_PX : this.bandTop() - HUD_GAP_PX,
   );
-
-  /** Line from the touch ring (radius 24) across the ticks; it stops below the labels. */
-  protected readonly needleLine = computed(() => {
-    const [ring, top] = [this.pointerY(), this.bandTop()];
-    return this.bandBelow()
-      ? { top: ring + 22, height: top + BAND_PX - 8 - (ring + 22) }
-      : { top: top + LABELS_PX, height: ring - 22 - (top + LABELS_PX) };
-  });
-
-  protected readonly hudBelow = computed(() => this.bandBelow() || this.bandTop() < HUD_ROOM_PX);
-
-  protected readonly hudTop = computed(() => {
-    if (!this.hudBelow()) {
-      return this.bandTop() - HUD_GAP_PX;
-    }
-    return this.bandBelow() ? this.bandTop() + BAND_PX + 20 : this.pointerY() + 40;
-  });
 
   constructor() {
     afterNextRender(() => void this.enter());
