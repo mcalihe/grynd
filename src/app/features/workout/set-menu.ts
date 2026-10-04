@@ -3,8 +3,9 @@ import { TranslocoPipe } from '@jsverse/transloco';
 import { NgIcon } from '@ng-icons/core';
 
 /**
- * Set context menu under the row (Figma «Satzmenü-Popover» 56:49827, 208 px): duplicate or delete.
- * A transparent backdrop closes it on any outside tap. No swipe-to-delete (plan.md §8).
+ * Set context menu under the row (Figma «Satzmenü-Popover» 56:49827): duplicate or delete. Only as
+ * wide as its items, it is rarely used. A transparent backdrop closes it on any outside tap. No
+ * swipe-to-delete (plan.md §8).
  */
 @Component({
   selector: 'app-set-menu',
@@ -21,7 +22,7 @@ import { NgIcon } from '@ng-icons/core';
     ></button>
     <div
       role="menu"
-      class="absolute top-1 right-0 z-30 flex w-52 flex-col rounded-lg border bg-popover p-1 text-popover-foreground shadow-md"
+      class="absolute top-1 right-0 z-30 flex w-max flex-col rounded-lg border bg-popover p-1 text-popover-foreground shadow-md"
     >
       <button
         type="button"

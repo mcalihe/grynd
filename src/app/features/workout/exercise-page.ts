@@ -70,27 +70,30 @@ export function repTarget(repMin: number | null, repMax: number | null): string 
       {{ 'workout.targetLine' | transloco: { sets: plannedCount(), reps: target() } }}
     </p>
 
-    <div class="flex flex-col">
+    <div class="flex flex-col gap-1.5">
       @for (set of item().sets; track set.id; let i = $index) {
-        <app-set-row
-          [number]="i + 1"
-          [weight]="set.weightKg"
-          [reps]="set.reps"
-          [state]="stateOf(set)"
-          [extra]="set.isExtra && !item().sets[i - 1]?.isExtra"
-          [unit]="unit()"
-          (weightChange)="workout.updateSet(set.id, { weightKg: $event })"
-          (repsChange)="workout.updateSet(set.id, { reps: $event })"
-          (complete)="complete(set)"
-          (menu)="setMenu.emit(set)"
-        />
-        @if (set.id === menuSetId()) {
-          <app-set-menu
-            (duplicate)="duplicate(set)"
-            (remove)="remove(set)"
-            (dismiss)="setMenu.emit(null)"
+        <!-- The menu sits in the row's wrapper so opening it does not add a gap. -->
+        <div>
+          <app-set-row
+            [number]="i + 1"
+            [weight]="set.weightKg"
+            [reps]="set.reps"
+            [state]="stateOf(set)"
+            [extra]="set.isExtra && !item().sets[i - 1]?.isExtra"
+            [unit]="unit()"
+            (weightChange)="workout.updateSet(set.id, { weightKg: $event })"
+            (repsChange)="workout.updateSet(set.id, { reps: $event })"
+            (complete)="complete(set)"
+            (menu)="setMenu.emit(set)"
           />
-        }
+          @if (set.id === menuSetId()) {
+            <app-set-menu
+              (duplicate)="duplicate(set)"
+              (remove)="remove(set)"
+              (dismiss)="setMenu.emit(null)"
+            />
+          }
+        </div>
       }
     </div>
 
