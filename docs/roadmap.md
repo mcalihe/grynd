@@ -173,6 +173,12 @@ Umgesetzt in `claude/history-statistics-views-066be4`, Entscheide in [0016](deci
 
 ---
 
+## Wert-Scrubber ✅
+
+Umgesetzt in `claude/weight-reps-slider-ux-98fc52`, Entscheide in [0018](decisions/0018-value-scrubber.md). Ziehen über einen Stepper zeigt ein Lineal über den ganzen Bildschirm (ein Strich = ein Schritt, am Rand scrollt es weiter); der Wert ist ein Spinbutton für Tastatur und Screenreader. Ohne Figma-Entwurf, Vorschau unter `/dev/components`.
+
+---
+
 ## Entscheide aus M0
 
 | # | Entscheid |
