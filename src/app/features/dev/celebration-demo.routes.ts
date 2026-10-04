@@ -5,6 +5,7 @@ import { HistoryDetail, HistoryService } from '../../core/history/history.servic
 const DEMO: HistoryDetail = {
   summary: {
     id: 'demo',
+    planId: null,
     planName: 'Oberkörper',
     startedAt: '2026-10-02T17:00:00.000Z',
     finishedAt: '2026-10-02T18:07:00.000Z',

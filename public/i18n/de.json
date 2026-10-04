@@ -54,6 +54,10 @@
       "text": "Deine Änderungen an diesem Plan gehen verloren.",
       "confirm": "Verwerfen",
       "cancel": "Weiter bearbeiten"
+    },
+    "history": {
+      "title": "Verlauf",
+      "summary": "Zuletzt: {{day}} · Ø {{duration}}"
     }
   },
   "workout": {
@@ -146,7 +150,37 @@
     "stats": {
       "duration": "Dauer",
       "volume": "Volumen",
-      "sets": "Sätze"
+      "sets": "Sätze",
+      "trainings": "Trainings",
+      "records": "Rekorde",
+      "avgDuration": "Ø Dauer",
+      "avgVolume": "Ø Volumen",
+      "chart": "{{metric}} · {{period}}",
+      "barDay": "{{day}}: {{value}}",
+      "empty": "Keine Trainings in diesem Zeitraum",
+      "strength": {
+        "title": "Kraft",
+        "subtitle": "Bestes geschätztes 1RM im Zeitraum",
+        "recordOne": "1 Rekord",
+        "records": "{{count}} Rekorde",
+        "showAll": "Alle {{count}} Übungen anzeigen",
+        "showLess": "Weniger anzeigen"
+      },
+      "muscles": {
+        "title": "Muskelgruppen",
+        "subtitle": "Sätze · {{period}}",
+        "total": "Sätze"
+      },
+      "consistency": {
+        "title": "Konstanz",
+        "current": "Aktuelle Serie",
+        "longest": "Längste Serie",
+        "perWeek": "Trainings pro Woche"
+      },
+      "plans": {
+        "title": "Pläne",
+        "details": "{{workouts}} · Ø {{duration}}"
+      }
     },
     "record": "Rekord",
     "extra": "Extra",
@@ -156,6 +190,50 @@
       "title": "Training löschen?",
       "text": "Das Training verschwindet aus dem Verlauf und zählt nicht mehr für Vorbefüllung und Rekorde.",
       "confirm": "Löschen"
+    },
+    "views": {
+      "label": "Ansicht",
+      "list": "Liste",
+      "calendar": "Kalender",
+      "stats": "Statistik"
+    },
+    "weekOne": "1 Woche",
+    "weeks": "{{count}} Wochen",
+    "setOne": "1 Satz",
+    "setCount": "{{count}} Sätze",
+    "period": {
+      "label": "Zeitraum",
+      "week": "Woche",
+      "month": "Monat",
+      "year": "Jahr",
+      "previous": "Vorheriger Zeitraum",
+      "next": "Nächster Zeitraum"
+    },
+    "calendar": {
+      "previous": "Vorheriger Monat",
+      "next": "Nächster Monat",
+      "vsLastMonth": "{{delta}} zum Vormonat",
+      "streak": "Serie",
+      "longestStreak": "Längste Serie",
+      "empty": "Keine Trainings in diesem Monat",
+      "day": "{{day}}: {{workouts}}"
+    },
+    "compare": "Verglichen mit dem letzten Mal: {{day}}",
+    "exerciseVolume": "Volumen {{volume}}",
+    "planLink": {
+      "title": "Alle Trainings mit {{plan}}",
+      "details": "{{workouts}} · Fortschritt pro Übung"
+    },
+    "plan": {
+      "subtitle": "{{workouts}} · seit {{since}}",
+      "lastWorkout": "Letztes Training",
+      "trend": "{{delta}} seit {{since}}",
+      "strength": "Kraft pro Übung",
+      "strengthSubtitle": "Geschätztes 1RM pro Training",
+      "oneRepMax": "1RM {{value}}",
+      "best": "Bestwert {{value}}",
+      "all": "Alle Trainings",
+      "chart": "{{metric}} der letzten Trainings"
     }
   },
   "settings": {

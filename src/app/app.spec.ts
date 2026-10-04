@@ -24,8 +24,18 @@ describe('App', () => {
           provide: PlansService,
           useValue: { plans: signal([]), todayPlans: signal([]), load: async () => undefined },
         },
-        // The history detail page loads from the database; keep it pending in this shell test.
-        { provide: HistoryService, useValue: { detail: () => new Promise(() => undefined) } },
+        // The history pages load from the database; keep them pending in this shell test.
+        {
+          provide: HistoryService,
+          useValue: {
+            detail: () => new Promise(() => undefined),
+            load: () => new Promise(() => undefined),
+            loadFacts: () => new Promise(() => undefined),
+            summaries: signal([]),
+            facts: signal([]),
+            loaded: signal(false),
+          },
+        },
         {
           provide: ExerciseCatalogService,
           useValue: { load: () => new Promise(() => undefined), nameById: () => '' },

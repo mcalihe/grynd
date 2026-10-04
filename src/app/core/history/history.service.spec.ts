@@ -5,6 +5,7 @@ import { createTestDatabase, FakeClock } from '../../../testing/test-database';
 import { addExercises } from '../plans/plan-draft';
 import { PlansService } from '../plans/plans.service';
 import { WorkoutService } from '../workout/workout.service';
+import { recordsBySession } from './history-insights';
 import { HistoryService } from './history.service';
 
 describe('HistoryService', () => {
@@ -90,6 +91,50 @@ describe('HistoryService', () => {
     const third = await train([[87.5, 8]]);
     expect((await history.detail(third))!.exercises[0].sets[0].record).toBe(false);
     expect((await history.detail(second))!.exercises[0].sets[1].record).toBe(true);
+  });
+
+  it('loads every completed set of finished sessions for the statistics', async () => {
+    const first = await train([
+      [80, 8],
+      [null, 10],
+    ]);
+    await train([[100, 5]], 'abort');
+    const second = await train([[82.5, 8]]);
+
+    await history.loadFacts();
+    expect(history.facts().map((f) => [f.sessionId, f.exerciseId, f.weightKg, f.reps])).toEqual([
+      [first, 'e0', 80, 8],
+      [first, 'e0', null, 10],
+      [second, 'e0', 82.5, 8],
+    ]);
+    await history.load();
+    expect(history.summaries()[0].planId).toBe(planId);
+  });
+
+  it('counts the same records in the statistics as in the detail', async () => {
+    const ids = [
+      await train([
+        [80, 8],
+        [85, 8],
+      ]),
+      await train([
+        [85, 8],
+        [90, 6],
+        [92.5, 6],
+      ]),
+      await train([[70, 10]]),
+      await train([
+        [95, 5],
+        [100, 3],
+      ]),
+    ];
+    await history.loadFacts();
+    const records = recordsBySession(history.facts());
+    for (const id of ids) {
+      const detail = await history.detail(id);
+      const fromDetail = detail!.exercises.flatMap((e) => e.sets).filter((s) => s.record).length;
+      expect(records.get(id) ?? 0).toBe(fromDetail);
+    }
   });
 
   it('deletes a session from the history, prefill and records', async () => {

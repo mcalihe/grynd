@@ -2,7 +2,8 @@ import { expect, test } from '@playwright/test';
 
 /**
  * Main flow (roadmap 8.4): create a plan → start a workout → log a set → finish → the history
- * shows it. Each test gets a fresh browser context, so the database starts empty.
+ * shows it in the list, the calendar, the statistics and the plan history. Each test gets a fresh
+ * browser context, so the database starts empty.
  */
 test('plan → workout → history', async ({ page }) => {
   await page.goto('/');
@@ -44,11 +45,27 @@ test('plan → workout → history', async ({ page }) => {
   await expect(page).toHaveURL(/\/history\/.+/);
   await expect(page.getByRole('heading', { name: 'E2E Brust' })).toBeVisible();
   await expect(page.getByText('60 kg × 8')).toBeVisible();
-  await expect(page.getByText('480 kg')).toBeVisible();
+  await expect(page.locator('app-key-figures').getByText('480 kg', { exact: true })).toBeVisible();
 
   // Back to the list: the workout is listed under this week
   await page.getByRole('button', { name: 'Zurück' }).click();
   await expect(page).toHaveURL(/\/history$/);
   await expect(page.getByText('1 Training', { exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: /E2E Brust/ })).toBeVisible();
+
+  // Calendar: today is a training day
+  await page.getByRole('radio', { name: 'Kalender' }).click();
+  await expect(page).toHaveURL(/view=calendar/);
+  await expect(page.locator('app-month-calendar [data-trained]')).toHaveCount(1);
+
+  // Statistics: one workout this month, and the plan leads to its history
+  await page.getByRole('radio', { name: 'Statistik' }).click();
+  await expect(page).toHaveURL(/view=stats/);
+  const workouts = page.locator('app-history-stats-view app-key-figures button').first();
+  await expect(workouts).toContainText('1');
+  await expect(workouts).toContainText('Trainings');
+  await page.getByRole('button', { name: /E2E Brust/ }).click();
+  await expect(page).toHaveURL(/\/history\/plans\/.+/);
+  await expect(page.getByRole('heading', { name: 'E2E Brust' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Alle Trainings' })).toBeVisible();
 });
