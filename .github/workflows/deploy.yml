@@ -1,7 +1,9 @@
 name: Deploy
 
 # Web build over FTPS (docs/release.md, «Web-Deployment»):
-# - production: after CI passed on main, or manually from main → httpdocs/ of the production FTP user
+# - production: releases only. After CI passed on main for a release commit (the merged release PR),
+#   or manually from main to redeploy the latest release → httpdocs/ of the production FTP user
+# - staging: every push to main after CI passed → httpdocs/main/ of the preview FTP user
 # - preview: every PR from this repo → httpdocs/pr-<n>/ of the preview FTP user, removed when the PR closes
 # Each GitHub environment holds FTP_HOST, FTP_USER, FTP_PASSWORD (secrets) and SITE_URL (variable).
 on:
@@ -17,33 +19,60 @@ permissions:
   contents: read
 
 jobs:
-  # A workflow_run job always runs as main, so the environment's branch rule cannot tell where
-  # head_sha came from (a tag named "main" also matches the branch filter). Only the current tip
-  # of main is deployed; if main has moved on, the newer commit's CI run deploys instead.
-  production-gate:
+  # Decides what a green CI run on main (or a manual run) deploys. A workflow_run job always runs as
+  # main, so the environment's branch rule cannot tell where head_sha came from (a tag named "main"
+  # also matches the branch filter); the commit must therefore be on main.
+  main-gate:
     if: >-
       (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
       && github.event.workflow_run.event == 'push')
       || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
     outputs:
-      sha: ${{ steps.check.outputs.sha }}
+      production: ${{ steps.check.outputs.production }}
+      staging: ${{ steps.check.outputs.staging }}
     steps:
       - id: check
         env:
           GH_TOKEN: ${{ github.token }}
-          SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
         run: |
-          main=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq .object.sha)
+          repo="repos/$GITHUB_REPOSITORY"
+          version_at() {
+            gh api -H 'Accept: application/vnd.github.raw' "$repo/contents/package.json?ref=$1" --jq .version
+          }
+
+          if [ "$GITHUB_EVENT_NAME" = workflow_dispatch ]; then
+            tag=$(gh release view --repo "$GITHUB_REPOSITORY" --json tagName --jq .tagName)
+            echo "::notice::Redeploying the latest release $tag."
+            echo "production=$tag" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          main=$(gh api "$repo/git/ref/heads/main" --jq .object.sha)
+          status=$(gh api "$repo/compare/$SHA...$main" --jq .status)
+          if [ "$status" != identical ] && [ "$status" != ahead ]; then
+            echo "::notice::Not deploying $SHA: it is not on main."
+            exit 0
+          fi
+
+          # Staging follows the tip of main; if main has moved on, the newer commit's CI run deploys.
           if [ "$SHA" = "$main" ]; then
-            echo "sha=$SHA" >> "$GITHUB_OUTPUT"
-          else
-            echo "::notice::Not deploying $SHA: the tip of main is $main."
+            echo "staging=$SHA" >> "$GITHUB_OUTPUT"
+          fi
+
+          # Production takes release commits (the release PR bumps the version) that are still the
+          # latest release, so a slow run of an older release cannot overwrite a newer one.
+          version=$(version_at "$SHA")
+          parent=$(gh api "$repo/commits/$SHA" --jq '.parents[0].sha')
+          if [ "$version" != "$(version_at "$parent")" ] && [ "$version" = "$(version_at "$main")" ]; then
+            echo "::notice::Deploying release $version to production."
+            echo "production=$SHA" >> "$GITHUB_OUTPUT"
           fi
 
   production:
-    needs: production-gate
-    if: needs.production-gate.outputs.sha != ''
+    needs: main-gate
+    if: needs.main-gate.outputs.production != ''
     runs-on: ubuntu-latest
     environment:
       name: Production
@@ -54,7 +83,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ needs.production-gate.outputs.sha }}
+          ref: ${{ needs.main-gate.outputs.production }}
 
       - uses: actions/setup-node@v4
         with:
@@ -67,6 +96,40 @@ jobs:
       - run: sudo apt-get update -q && sudo apt-get install -y -q lftp
 
       - run: bash scripts/deploy-ftp.sh dist/grynd/browser httpdocs
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          LFTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+
+  # The current state of main, between releases. Shares the preview database with the PR previews.
+  staging:
+    needs: main-gate
+    if: needs.main-gate.outputs.staging != ''
+    runs-on: ubuntu-latest
+    environment:
+      name: Preview
+      url: ${{ vars.SITE_URL }}/main/
+    concurrency:
+      group: deploy-preview-main
+      cancel-in-progress: true
+    env:
+      BASE_HREF: /main/
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.main-gate.outputs.staging }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build --base-href "$BASE_HREF"
+
+      - run: sed "s|__BASE__|$BASE_HREF|" deploy/app.htaccess > dist/grynd/browser/.htaccess
+      - run: sudo apt-get update -q && sudo apt-get install -y -q lftp
+
+      - run: bash scripts/deploy-ftp.sh dist/grynd/browser "httpdocs$BASE_HREF"
         env:
           FTP_HOST: ${{ secrets.FTP_HOST }}
           FTP_USER: ${{ secrets.FTP_USER }}
