@@ -36,12 +36,15 @@ import {
   toggle,
 } from '../../core/exercises/exercise-search';
 import { ConfirmService } from '../../core/services/confirm.service';
+import { SegmentedControl } from '../../shared/components/segmented-control/segmented-control';
 import { StickyAction } from '../../shared/components/sticky-action/sticky-action';
 import { PlanEditorStore } from './plan-editor.store';
 
-/** One chip group in the filter row. */
+type FilterGroupId = 'muscles' | 'equipment' | 'forces';
+
+/** One filter tab and its chips. */
 interface FilterGroup {
-  id: 'muscles' | 'equipment' | 'forces';
+  id: FilterGroupId;
   labelPrefix: string;
   options: readonly string[];
   value: WritableSignal<readonly string[]>;
@@ -61,12 +64,21 @@ function equipmentChip(value: string | null): EquipmentFilter | null {
 
 /**
  * «Übungen hinzufügen» (Figma 63:12824, 63:13440, 63:14032; filters per decision 0016): search,
- * one row of filter chips and the result count stay pinned while only the list scrolls. Recently
+ * filter tabs with their chips and the result count stay pinned while only the list scrolls. Recently
  * used, alphabetical list with thumbnails, multi-select. Exercises already in the plan are dimmed.
  */
 @Component({
   selector: 'app-exercise-picker-page',
-  imports: [StickyAction, HlmButton, HlmInput, HlmBadge, NgIcon, TranslocoPipe, NgTemplateOutlet],
+  imports: [
+    StickyAction,
+    SegmentedControl,
+    HlmButton,
+    HlmInput,
+    HlmBadge,
+    NgIcon,
+    TranslocoPipe,
+    NgTemplateOutlet,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'bg-background pt-safe px-safe fixed inset-0 z-10 flex flex-col' },
   template: `
@@ -114,47 +126,45 @@ function equipmentChip(value: string | null): EquipmentFilter | null {
         }
       </label>
 
-      <div
-        class="-mx-4 -my-1.5 flex [scrollbar-width:none] items-center gap-2 overflow-x-auto px-4 py-1.5"
-        role="group"
+      <app-segmented-control
         [attr.aria-label]="'picker.filters' | transloco"
+        [options]="tabs()"
+        [value]="activeGroup().id"
+        (valueChange)="selectGroup($event)"
+      />
+
+      <div
+        #chipRow
+        class="-mx-4 -my-1.5 flex [scrollbar-width:none] gap-2 overflow-x-auto px-4 py-1.5"
+        role="group"
+        [attr.aria-label]="tabs()[groups.indexOf(activeGroup())].label"
       >
-        @if (chipsActive()) {
+        @let group = activeGroup();
+        @for (option of group.options; track option) {
           <button
             type="button"
-            class="relative flex size-8 shrink-0 items-center justify-center rounded-full bg-secondary text-secondary-foreground after:absolute after:-inset-1.5"
-            [attr.aria-label]="'picker.resetFilters' | transloco"
-            (click)="clearChips()"
+            [class]="chipClass(group.value().includes(option))"
+            [attr.aria-pressed]="group.value().includes(option)"
+            (click)="group.value.set(toggle(group.value(), option))"
           >
-            <ng-icon name="lucideX" size="16" />
+            {{ group.labelPrefix + option | transloco }}
           </button>
-        }
-        @for (group of groups; track group.id; let first = $first) {
-          @if (!first) {
-            <span class="h-5 w-px shrink-0 bg-border" aria-hidden="true"></span>
-          }
-          @for (option of group.options; track option) {
-            <button
-              type="button"
-              [class]="chipClass(group.value().includes(option))"
-              [attr.aria-pressed]="group.value().includes(option)"
-              (click)="group.value.set(toggle(group.value(), option))"
-            >
-              {{ group.labelPrefix + option | transloco }}
-            </button>
-          }
         }
       </div>
 
-      <p class="h-5 truncate text-sm text-muted-foreground" aria-live="polite">
-        {{
-          (results().length === 1 ? 'picker.countOne' : 'picker.countMany')
-            | transloco: { count: results().length }
-        }}
+      <div class="flex h-8 items-center gap-2">
+        <p class="min-w-0 flex-1 truncate text-sm text-muted-foreground" aria-live="polite">
+          {{
+            (results().length === 1 ? 'picker.countOne' : 'picker.countMany')
+              | transloco: { count: results().length }
+          }}
+        </p>
         @if (chipsActive()) {
-          · {{ activeLabels() }}
+          <button hlmBtn variant="ghost" size="sm" class="-mr-3 shrink-0" (click)="clearChips()">
+            <ng-icon name="lucideX" />{{ 'picker.reset' | transloco }}
+          </button>
         }
-      </p>
+      </div>
     </div>
 
     <div
@@ -295,6 +305,16 @@ export class ExercisePickerPage implements OnInit {
     },
   ];
   protected readonly toggle = toggle;
+  protected readonly activeGroup = signal(this.groups[0]);
+  /** Tab labels carry the number of active chips, e.g. «Muskeln · 2». */
+  protected readonly tabs = computed(() =>
+    this.groups.map((group) => {
+      const count = group.value().length;
+      const label = this.transloco.translate(`picker.groups.${group.id}`);
+      return { value: group.id, label: count ? `${label} · ${count}` : label };
+    }),
+  );
+  private readonly chipRow = viewChild<ElementRef<HTMLElement>>('chipRow');
   /** The list is scrolled: the pinned area gets a bottom border. */
   protected readonly scrolled = signal(false);
   private readonly scroller = viewChild<ElementRef<HTMLElement>>('scroller');
@@ -330,15 +350,7 @@ export class ExercisePickerPage implements OnInit {
     equipment: this.equipment(),
   }));
   protected readonly filterActive = computed(() => isFilterActive(this.filter()));
-  /** Active chips in row order, so they stay visible when the row is swiped. */
-  protected readonly activeLabels = computed(() =>
-    this.groups
-      .flatMap((group) =>
-        group.value().map((value) => this.transloco.translate(group.labelPrefix + value)),
-      )
-      .join(', '),
-  );
-  protected readonly chipsActive = computed(() => this.activeLabels() !== '');
+  protected readonly chipsActive = computed(() => this.groups.some((g) => g.value().length > 0));
 
   /** Sorted by display name in the UI language. */
   private readonly sorted = computed(() => {
@@ -391,6 +403,14 @@ export class ExercisePickerPage implements OnInit {
     return `relative flex h-8 shrink-0 items-center rounded-full px-3 text-sm font-medium after:absolute after:inset-x-0 after:-inset-y-1.5 ${
       active ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'
     }`;
+  }
+
+  protected selectGroup(id: FilterGroupId): void {
+    this.activeGroup.set(this.groups.find((g) => g.id === id) ?? this.groups[0]);
+    const row = this.chipRow()?.nativeElement;
+    if (row) {
+      row.scrollLeft = 0;
+    }
   }
 
   /** Clears the chips; the search stays. */

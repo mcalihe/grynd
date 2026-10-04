@@ -103,31 +103,46 @@ describe('ExercisePickerPage', () => {
     expect(navigate).not.toHaveBeenCalled();
   });
 
-  it('filters with one tap per chip and clears the chips with ✕', async () => {
+  it('filters per group tab with one tap and resets the chips', async () => {
     const { fixture } = await setup();
     const el: HTMLElement = fixture.nativeElement;
     const names = () => rows(el).map((r) => r.querySelector('.truncate')?.textContent?.trim());
+    const chips = () =>
+      [...el.querySelectorAll<HTMLButtonElement>('[role=group] button')].map((b) =>
+        b.textContent?.trim(),
+      );
     const chip = (label: string) =>
       [...el.querySelectorAll<HTMLButtonElement>('[role=group] button')].find(
         (b) => b.textContent?.trim() === label,
       );
-    const clear = () =>
-      el.querySelector<HTMLButtonElement>('[role=group] [aria-label="picker.resetFilters"]');
-    expect(clear()).toBeNull();
+    const tab = (label: string) =>
+      [...el.querySelectorAll<HTMLButtonElement>('[role=radio]')].find((b) =>
+        b.textContent?.includes(label),
+      );
+    const reset = () =>
+      [...el.querySelectorAll<HTMLButtonElement>('button')].find((b) =>
+        b.textContent?.includes('picker.reset'),
+      );
+    expect(chips()).toContain('muscles.chest');
+    expect(reset()).toBeUndefined();
 
     chip('muscles.arms')?.click();
     fixture.detectChanges();
 
     expect(names()).toEqual(['Curls']);
-    expect(chip('muscles.arms')?.getAttribute('aria-pressed')).toBe('true');
-    expect(el.textContent).toContain('picker.countOne');
-    expect(el.querySelector('[aria-live]')?.textContent).toContain('· muscles.arms');
+    expect(el.querySelector('[aria-live]')?.textContent).toContain('picker.countOne');
+    expect(tab('picker.groups.muscles')?.textContent).toContain('· 1');
 
-    clear()?.click();
+    tab('picker.groups.forces')?.click();
+    fixture.detectChanges();
+    expect(chips()).toEqual(['forces.push', 'forces.pull']);
+    expect(names()).toEqual(['Curls']);
+
+    reset()?.click();
     fixture.detectChanges();
 
     expect(names()).toEqual(['Bankdrücken', 'Curls', 'Rudern']);
-    expect(clear()).toBeNull();
+    expect(reset()).toBeUndefined();
   });
 
   it('clears the search with its button', async () => {

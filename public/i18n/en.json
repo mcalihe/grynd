@@ -207,7 +207,13 @@
     "search": "Search exercises",
     "clearSearch": "Clear search",
     "filters": "Filters",
+    "groups": {
+      "muscles": "Muscles",
+      "equipment": "Equipment",
+      "forces": "Movement"
+    },
     "resetFilters": "Reset filters",
+    "reset": "Reset",
     "noResults": "No exercise found",
     "recent": "Recently used",
     "countOne": "1 exercise",

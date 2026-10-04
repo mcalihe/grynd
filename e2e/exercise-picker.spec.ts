@@ -12,11 +12,18 @@ test('search and filters stay visible while scrolling', async ({ page }) => {
   await expect(page.getByText('Abduktorenmaschine')).not.toBeInViewport();
   await expect(search).toBeInViewport();
 
-  // One tap filters, ✕ at the start of the row clears the chips
+  // A tab per group, one tap per chip, reset in the count line
   const chest = page.getByRole('button', { name: 'Brust', exact: true });
   await chest.click();
   await expect(chest).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.getByText(/\d+ Übungen/)).toBeVisible();
-  await page.getByRole('button', { name: 'Filter zurücksetzen' }).click();
-  await expect(chest).toHaveAttribute('aria-pressed', 'false');
+  await expect(page.getByRole('radio', { name: 'Muskeln · 1' })).toBeChecked();
+  await page.getByRole('radio', { name: 'Equipment' }).click();
+  await page.getByRole('button', { name: 'Kurzhantel', exact: true }).click();
+  await expect(page.getByRole('radio', { name: 'Equipment · 1' })).toBeChecked();
+  await page.getByRole('button', { name: 'Zurücksetzen' }).click();
+  await expect(page.getByRole('radio', { name: 'Equipment', exact: true })).toBeChecked();
+  await expect(page.getByRole('button', { name: 'Kurzhantel', exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'false',
+  );
 });

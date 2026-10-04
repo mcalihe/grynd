@@ -207,7 +207,13 @@
     "search": "Übungen durchsuchen",
     "clearSearch": "Suche löschen",
     "filters": "Filter",
+    "groups": {
+      "muscles": "Muskeln",
+      "equipment": "Equipment",
+      "forces": "Bewegung"
+    },
     "resetFilters": "Filter zurücksetzen",
+    "reset": "Zurücksetzen",
     "noResults": "Keine Übung gefunden",
     "recent": "Zuletzt verwendet",
     "countOne": "1 Übung",
