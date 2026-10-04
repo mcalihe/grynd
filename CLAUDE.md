@@ -84,6 +84,7 @@ Node 24 (`.nvmrc`), pnpm via `corepack enable` (version pinned in `package.json`
 - Regenerate app icons and splash screens from `assets/` (exported from Figma page «App Icon – Fitness», frames «Export · …»): `pnpm assets:generate`, then `pnpm exec cap sync`
 - Rebuild the exercise catalog (free-exercise-db → `public/data/exercises.json`, thumbnails, `catalog-version.ts`): `pnpm catalog:import`
 - Add a Spartan helm component: `pnpm ng g @spartan-ng/cli:ui <name>` (goes to `src/app/shared/ui`, then align it with the Figma component)
+- README screenshots (light/dark, English, demo data, frozen clock): with `pnpm start` running, `node scripts/readme-screenshots.mjs` → `docs/readme/screenshots/*.webp`; rerun when a screen in the README changes visibly
 - Component showcase (dev only): http://localhost:4200/dev/components – every shared component in all states; add new ones there
 - CI (`.github/workflows/ci.yml`) runs format check, lint, test and build, plus the E2E job, on every push and PR.
 - Release (`.github/workflows/release.yml`): release-please keeps a release PR open on `main`; merging it tags `vX.Y.Z`, publishes the GitHub release with the changelog and attaches the debug APK. PR titles are checked by `.github/workflows/pr-title.yml`.
