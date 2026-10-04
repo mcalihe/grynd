@@ -26,6 +26,7 @@ import { WeekChart, WeekChartBar } from '../../shared/components/week-chart/week
 import { BarChart, BarChartBar } from '../../shared/components/bar-chart/bar-chart';
 import { DonutChart, DonutSegment } from '../../shared/components/donut-chart/donut-chart';
 import { KeyFigure, KeyFigures } from '../../shared/components/key-figures/key-figures';
+import { NumberStepper } from '../../shared/components/number-stepper/number-stepper';
 import { MonthCalendar } from '../../shared/components/month-calendar/month-calendar';
 import { PeriodPager } from '../../shared/components/period-pager/period-pager';
 import { Sparkline } from '../../shared/components/sparkline/sparkline';
@@ -36,6 +37,7 @@ import { SetRow, SetRowState } from '../../shared/components/set-row/set-row';
 import { StickyAction } from '../../shared/components/sticky-action/sticky-action';
 import { TimerBar } from '../../shared/components/timer-bar/timer-bar';
 import { WeekdayChips } from '../../shared/components/weekday-chips/weekday-chips';
+import { ValueScrubber } from '../../shared/components/value-scrubber/value-scrubber';
 import { WorkoutClock } from '../../shared/components/workout-clock/workout-clock';
 import { CelebrationService } from '../../shared/motion/celebration.service';
 import { ExerciseCelebration } from '../workout/exercise-celebration';
@@ -58,6 +60,8 @@ import { ExerciseCelebration } from '../workout/exercise-celebration';
     HlmSheetImports,
     HlmAlertDialogImports,
     SetRow,
+    NumberStepper,
+    ValueScrubber,
     ProgressRing,
     SegmentProgress,
     TimerBar,

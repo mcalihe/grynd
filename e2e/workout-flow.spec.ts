@@ -27,7 +27,7 @@ test('plan → workout → history', async ({ page }) => {
 
   // First set: 60 kg × 8 (reps are prefilled with the plan minimum)
   const firstSet = page.locator('app-set-row').first();
-  await firstSet.locator('app-number-stepper').first().getByRole('button', { name: '–' }).click();
+  await firstSet.getByRole('spinbutton', { name: 'KG' }).click();
   await firstSet.getByRole('textbox', { name: 'KG' }).fill('60');
   await firstSet.getByRole('textbox', { name: 'KG' }).press('Enter');
   await firstSet.getByRole('button', { name: 'Satz abhaken' }).click();

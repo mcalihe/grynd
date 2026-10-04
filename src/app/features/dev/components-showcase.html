@@ -25,6 +25,42 @@
 
   <section class="flex flex-col gap-3">
     <h2 class="text-sm font-semibold text-muted-foreground">
+      Number Stepper 56:48064 · Value Scrubber · decision 0018
+    </h2>
+    <p class="text-xs text-muted-foreground">
+      Drag sideways on a stepper; rest at a screen edge to keep scrolling. Below: the ruler frozen
+      mid-scrub (80 → 87,5 kg).
+    </p>
+    <div class="flex gap-2">
+      <app-number-stepper label="KG" [value]="82.5" [stepSize]="2.5" [decimals]="2" />
+      <app-number-stepper label="REPS" [value]="8" [max]="999" />
+    </div>
+    <app-number-stepper
+      label="PAUSE (S)"
+      [value]="90"
+      [stepSize]="15"
+      [max]="600"
+      [stretch]="true"
+    />
+    <!-- The transform makes the fixed overlay fill this frame instead of the screen. -->
+    <div class="relative h-90 [transform:translateZ(0)] overflow-hidden rounded-lg border">
+      <app-value-scrubber
+        label="KG"
+        [value]="87.5"
+        [start]="80"
+        [step]="2.5"
+        [decimals]="2"
+        [max]="999"
+        [originX]="120"
+        [pointerX]="168"
+        [pointerY]="290"
+        [width]="361"
+      />
+    </div>
+  </section>
+
+  <section class="flex flex-col gap-3">
+    <h2 class="text-sm font-semibold text-muted-foreground">
       Progress Ring 66:2852 · Segments 56:48035
     </h2>
     <div class="flex gap-3">
