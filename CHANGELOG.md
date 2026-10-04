@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/mcalihe/grynd/compare/v0.2.0...v0.3.0) (2026-10-04)
+
+
+### Features
+
+* **workout:** show the running workout time as the end button ([#25](https://github.com/mcalihe/grynd/issues/25)) ([fb45028](https://github.com/mcalihe/grynd/commit/fb450286661f026f373558ce0d473fb8ee7f2461))
+
 ## [0.2.0](https://github.com/mcalihe/grynd/compare/v0.1.0...v0.2.0) (2026-10-04)
 
 
