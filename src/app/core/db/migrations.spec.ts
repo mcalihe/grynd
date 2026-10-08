@@ -4,6 +4,7 @@ import { getSchemaVersion, migrate, MIGRATIONS } from './migrations';
 const TABLES = [
   'exercise',
   'exercise_interval',
+  'exercise_note',
   'meta',
   'plan',
   'plan_exercise',
@@ -56,6 +57,29 @@ describe('migrate', () => {
     expect(await getSchemaVersion(driver)).toBe(MIGRATIONS.at(-1)?.version);
     const brokenTables = await driver.query("SELECT name FROM sqlite_master WHERE name = 'broken'");
     expect(brokenTables).toEqual([]);
+  });
+
+  it('upgrades a database of version 1 and keeps its data', async () => {
+    await migrate(driver, MIGRATIONS.slice(0, 1));
+    await driver.run(
+      `INSERT INTO plan (id, name, createdAt, updatedAt) VALUES ('p', 'Beine', 'x', 'x')`,
+    );
+
+    expect(await migrate(driver)).toBe(MIGRATIONS.at(-1)?.version);
+
+    expect(await driver.query('SELECT name FROM plan')).toEqual([{ name: 'Beine' }]);
+    expect(await driver.query('SELECT * FROM exercise_note')).toEqual([]);
+  });
+
+  it('allows only one note per exercise, apart from deleted ones', async () => {
+    await migrate(driver);
+    await driver.run(`INSERT INTO exercise (id, key, nameDe, nameEn, createdAt, updatedAt)
+      VALUES ('e', 'bench', 'Bank', 'Bench', 'x', 'x')`);
+    const insert = `INSERT INTO exercise_note (id, exerciseId, text, createdAt, updatedAt, deletedAt)
+      VALUES (?, 'e', 'note', 'x', 'x', ?)`;
+    await driver.run(insert, ['old', 'x']);
+    await driver.run(insert, ['a', null]);
+    await expect(driver.run(insert, ['b', null])).rejects.toThrow();
   });
 
   it('allows only one active workout session', async () => {

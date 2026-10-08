@@ -31,6 +31,12 @@ export interface Exercise extends BaseEntity {
   images: string[];
 }
 
+/** The user's note on a catalog exercise, shared by all plans (decision 0019). */
+export interface ExerciseNote extends BaseEntity {
+  exerciseId: string;
+  text: string;
+}
+
 export interface Plan extends BaseEntity {
   name: string;
   /** 0 = Sunday … 6 = Saturday (Date#getDay). */

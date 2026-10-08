@@ -4,6 +4,7 @@ import { catalogEntry, seedCatalog } from '../../../testing/catalog';
 import { provideMemorySettings } from '../../../testing/settings';
 import { SqlJsDriver } from '../../../testing/sqljs-driver';
 import { createTestDatabase } from '../../../testing/test-database';
+import { ExerciseNotesService } from '../exercises/exercise-notes.service';
 import { addExercises } from '../plans/plan-draft';
 import { PlansService } from '../plans/plans.service';
 import { WorkoutService } from '../workout/workout.service';
@@ -55,6 +56,20 @@ describe('BackupService', () => {
     expect(await backups.create()).toEqual({ ...backup, exportedAt: expect.any(String) });
     expect(await count('plan')).toBe(1);
     expect(await count('set_log')).toBe(6);
+  });
+
+  it('brings back exercise notes and shows them right away', async () => {
+    const notes = TestBed.inject(ExerciseNotesService);
+    await notes.save('e0', 'Bank flach');
+    const backup = await backups.create();
+    expect(backup.data.exercise_note).toHaveLength(1);
+
+    await notes.save('e0', 'Sitz Stufe 4');
+    await notes.save('e1', 'Griff eng');
+    await backups.restore(backup);
+
+    expect(notes.noteFor('e0')).toBe('Bank flach');
+    expect(notes.noteFor('e1')).toBe('');
   });
 
   it('rejects broken files without touching the data', async () => {

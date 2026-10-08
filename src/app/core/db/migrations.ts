@@ -1,4 +1,5 @@
 import { migration001Initial } from './migrations/001-initial';
+import { migration002ExerciseNotes } from './migrations/002-exercise-notes';
 import { SqlDriver } from './sql-driver';
 
 export interface Migration {
@@ -7,7 +8,7 @@ export interface Migration {
 }
 
 /** Ordered list of schema migrations. Never edit a released migration; add a new one. */
-export const MIGRATIONS: readonly Migration[] = [migration001Initial];
+export const MIGRATIONS: readonly Migration[] = [migration001Initial, migration002ExerciseNotes];
 
 export async function getSchemaVersion(driver: SqlDriver): Promise<number> {
   const [row] = await driver.query<{ user_version: number }>('PRAGMA user_version');
