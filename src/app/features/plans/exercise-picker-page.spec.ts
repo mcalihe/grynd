@@ -102,4 +102,64 @@ describe('ExercisePickerPage', () => {
     expect(confirm).toHaveBeenCalledOnce();
     expect(navigate).not.toHaveBeenCalled();
   });
+
+  it('filters per group tab with one tap and resets the chips', async () => {
+    const { fixture } = await setup();
+    const el: HTMLElement = fixture.nativeElement;
+    const names = () => rows(el).map((r) => r.querySelector('.truncate')?.textContent?.trim());
+    const chips = () =>
+      [...el.querySelectorAll<HTMLButtonElement>('[role=group] button')].map((b) =>
+        b.textContent?.trim(),
+      );
+    const chip = (label: string) =>
+      [...el.querySelectorAll<HTMLButtonElement>('[role=group] button')].find(
+        (b) => b.textContent?.trim() === label,
+      );
+    const tab = (label: string) =>
+      [...el.querySelectorAll<HTMLButtonElement>('[role=radio]')].find((b) =>
+        b.textContent?.includes(label),
+      );
+    const reset = () =>
+      [...el.querySelectorAll<HTMLButtonElement>('button')].find((b) =>
+        b.textContent?.includes('picker.reset'),
+      );
+    expect(chips()).toContain('muscles.chest');
+    expect(reset()).toBeUndefined();
+
+    chip('muscles.arms')?.click();
+    fixture.detectChanges();
+
+    expect(names()).toEqual(['Curls']);
+    expect(el.querySelector('[aria-live]')?.textContent).toContain('picker.countOne');
+    expect(tab('picker.groups.muscles')?.textContent).toContain('· 1');
+
+    tab('picker.groups.forces')?.click();
+    fixture.detectChanges();
+    expect(chips()).toEqual(['forces.push', 'forces.pull']);
+    expect(names()).toEqual(['Curls']);
+
+    reset()?.click();
+    fixture.detectChanges();
+
+    expect(names()).toEqual(['Bankdrücken', 'Curls', 'Rudern']);
+    expect(reset()).toBeUndefined();
+  });
+
+  it('clears the search with its button', async () => {
+    const { fixture } = await setup();
+    const el: HTMLElement = fixture.nativeElement;
+    const input = el.querySelector<HTMLInputElement>('input[type=search]')!;
+    const clear = () => el.querySelector<HTMLButtonElement>('[aria-label="picker.clearSearch"]');
+    expect(clear()).toBeNull();
+
+    input.value = 'rud';
+    input.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    expect(rows(el)).toHaveLength(1);
+
+    clear()?.click();
+    fixture.detectChanges();
+    expect(input.value).toBe('');
+    expect(rows(el)).toHaveLength(3);
+  });
 });

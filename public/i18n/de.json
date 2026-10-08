@@ -292,13 +292,19 @@
   },
   "picker": {
     "search": "Übungen durchsuchen",
-    "muscleGroup": "Muskelgruppe",
-    "movement": "Bewegung",
-    "equipment": "Equipment",
+    "clearSearch": "Suche löschen",
+    "filters": "Filter",
+    "groups": {
+      "muscles": "Muskeln",
+      "equipment": "Equipment",
+      "forces": "Bewegung"
+    },
     "resetFilters": "Filter zurücksetzen",
+    "reset": "Zurücksetzen",
     "noResults": "Keine Übung gefunden",
     "recent": "Zuletzt verwendet",
-    "results": "Ergebnisse",
+    "countOne": "1 Übung",
+    "countMany": "{{count}} Übungen",
     "inPlan": "Im Plan",
     "choose": "Übungen auswählen",
     "addOne": "1 Übung hinzufügen",

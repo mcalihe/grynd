@@ -122,7 +122,8 @@ Alle Tabellen haben `id` (UUIDv7), `createdAt`, `updatedAt`, `deletedAt`. Dazu k
 - **Unsaved Changes Guard:** Bei ungespeicherten Änderungen Dialog «Änderungen verwerfen?» mit «Verwerfen» (destructive) und «Weiter bearbeiten». Umsetzung als `CanDeactivateFn`; greift auch beim Android-Zurück-Button (`App`-Listener `backButton`, Navigation über den Router). Rückgängig gemachte Änderungen zählen nicht als dirty.
 
 ### Übungen hinzufügen (`/plans/new/add-exercises`, `/plans/:id/edit/add-exercises`)
-- Vollbild mit X, Suchfeld (tolerant bei Umlauten und Gross-/Kleinschreibung), Filter-Chips: Muskelgruppe (Brust, Rücken, Schultern, Beine, Po, Arme, Core), Bewegung (Push, Pull), Equipment (Langhantel, Kurzhantel, Kabel, Maschine, Körpergewicht). Innerhalb einer Gruppe ODER, zwischen Gruppen UND.
+- Vollbild mit X, Suchfeld (tolerant bei Umlauten und Gross-/Kleinschreibung, mit Löschen-X), Filter: Muskelgruppe (Brust, Rücken, Schultern, Beine, Po, Arme, Core), Bewegung (Push, Pull), Equipment (Langhantel, Kurzhantel, Kabel, Maschine, Körpergewicht). Innerhalb einer Gruppe ODER, zwischen Gruppen UND.
+- **Kopf bleibt stehen, nur die Liste scrollt** ([0016](decisions/0016-exercise-picker-filters.md)): Segmented Control «Muskeln · Equipment · Bewegung» (Anzahl aktiver Chips im Tab, z.B. «Muskeln · 2»), darunter die Chips der gewählten Gruppe, ein Tap filtert sofort. Darunter «24 Übungen» und «✕ Zurücksetzen».
 - «Zuletzt verwendet» (3 Übungen aus `session_exercise`), dann alphabetische Liste mit Vorschaubild, Muskelgruppe und Equipment.
 - Mehrfachauswahl, Primary-Button «3 Übungen hinzufügen». Übungen, die schon im Plan sind: gedimmt, «Im Plan», nicht auswählbar.
 - Neue Übungen am Ende des Plans mit Standard 3 × 8–12. Schliessen mit Auswahl → Guard-Dialog.

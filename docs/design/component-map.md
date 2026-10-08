@@ -69,7 +69,7 @@ Klassen folgen dem Angular-Styleguide 2025 (ohne `Component`-Suffix), Selektor-P
 | Notiz einer Übung (Karte) | – (nur Code, [0019](../decisions/0019-exercise-notes.md)) | `ExerciseNote` (`app-exercise-note`) im Training und Plan-Detail |
 | Notiz bearbeiten (Sheet) | – (nur Code, [0019](../decisions/0019-exercise-notes.md)) | `ExerciseNoteSheet` (`app-exercise-note-sheet`, helm Sheet + `hlmTextarea`) |
 | Übungszeile im Plan (Detail/Editor, ≡-Handle, Chevron) | `37:27708`, `37:28096` | `PlanExerciseRow` (`app-plan-exercise-row`, features/plans) |
-| Übungs-Listeneintrag + Filter-Chips im Picker | `63:13440` | im `ExercisePickerPage` (features/plans) |
+| Übungs-Listeneintrag + Filter-Chips im Picker | `63:13440` (Filter-Tabs nach [0016](../decisions/0016-exercise-picker-filters.md)) | im `ExercisePickerPage` (features/plans) |
 | «Änderungen verwerfen» / Bestätigungen | `66:1123` | `ConfirmService` + `ConfirmDialogHost` (App-Shell, `@defer`) |
 | Wochenübersicht (Balkendiagramm) | `37:29739` | `WeekChart` (`app-week-chart`), Balken über `BarChart` |
 | Balkendiagramm (Statistik, Plan-Verlauf) | `120:1844`, `122:1931` | `BarChart` (`app-bar-chart`, optional antippbar) |
