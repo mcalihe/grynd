@@ -127,6 +127,14 @@
       "continue": "Continue"
     }
   },
+  "exerciseNote": {
+    "label": "Note",
+    "add": "Add note",
+    "edit": "Edit note",
+    "hint": "Applies to this exercise in all plans.",
+    "placeholder": "e.g. seat on 4, feet high, lower slowly",
+    "done": "Done"
+  },
   "history": {
     "title": "History",
     "detail": "Workout",

@@ -19,9 +19,11 @@ import { SetLog } from '../../core/db/models';
 import { BackButtonService } from '../../core/services/back-button.service';
 import { ConfirmService } from '../../core/services/confirm.service';
 import { ExerciseCatalogService } from '../../core/exercises/exercise-catalog.service';
+import { ExerciseNotesService } from '../../core/exercises/exercise-notes.service';
 import { RestTimerService } from '../../core/workout/rest-timer.service';
 import { isExerciseDone, WorkoutService, workoutPercent } from '../../core/workout/workout.service';
 import { Clock } from '../../core/utils/time';
+import { ExerciseNoteSheet } from '../../shared/components/exercise-note/exercise-note-sheet';
 import { RollingNumber } from '../../shared/components/rolling-number/rolling-number';
 import { SegmentProgress } from '../../shared/components/segment-progress/segment-progress';
 import { StickyAction } from '../../shared/components/sticky-action/sticky-action';
@@ -57,6 +59,7 @@ interface ExerciseMoment {
   imports: [
     ExercisePage,
     ExerciseCelebration,
+    ExerciseNoteSheet,
     OverviewSheet,
     RollingNumber,
     SegmentProgress,
@@ -123,6 +126,7 @@ interface ExerciseMoment {
               (moveBack)="moveBack(i, $event)"
               (setCompleted)="timer.autoStart($event)"
               (exerciseCompleted)="exerciseCompleted(i)"
+              (editNote)="editNote(item.entry.exerciseId)"
             />
           </section>
         }
@@ -166,6 +170,13 @@ interface ExerciseMoment {
 
       <app-overview-sheet [(open)]="overviewOpen" />
 
+      <app-exercise-note-sheet
+        [(open)]="noteOpen"
+        [title]="catalog.nameById(noteExerciseId())"
+        [note]="notes.noteFor(noteExerciseId())"
+        (save)="saveNote($event)"
+      />
+
       @if (moment(); as m) {
         <app-exercise-celebration
           [praise]="(m.done === m.total ? 'workout.allDone' : m.praise) | transloco"
@@ -182,6 +193,7 @@ export class WorkoutPage {
   protected readonly workout = inject(WorkoutService);
   protected readonly timer = inject(RestTimerService);
   protected readonly catalog = inject(ExerciseCatalogService);
+  protected readonly notes = inject(ExerciseNotesService);
   private readonly router = inject(Router);
   private readonly confirm = inject(ConfirmService);
   private readonly celebration = inject(CelebrationService);
@@ -195,6 +207,9 @@ export class WorkoutPage {
   protected readonly current = this.workout.current;
   protected readonly menuSet = signal<SetLog | null>(null);
   protected readonly overviewOpen = signal(false);
+  /** Exercise whose note the sheet edits; kept after closing so the sheet can save on close. */
+  protected readonly noteExerciseId = signal('');
+  protected readonly noteOpen = signal(false);
   protected readonly busy = signal(false);
   protected readonly moment = signal<ExerciseMoment | null>(null);
   /** Refreshed every second for the workout clock; the time itself comes from `startedAt`. */
@@ -228,6 +243,7 @@ export class WorkoutPage {
 
   constructor() {
     void this.catalog.load();
+    void this.notes.load();
     const destroyRef = inject(DestroyRef);
 
     // Android back opens the end dialog instead of leaving the workout.
@@ -319,6 +335,15 @@ export class WorkoutPage {
     const last = (this.workout.workout()?.exercises.length ?? 1) - 1;
     await this.workout.moveExercise(index, how === 1 ? index + 1 : last);
     await this.workout.setCurrent(index);
+  }
+
+  protected editNote(exerciseId: string): void {
+    this.noteExerciseId.set(exerciseId);
+    this.noteOpen.set(true);
+  }
+
+  protected saveNote(text: string): void {
+    void this.notes.save(this.noteExerciseId(), text);
   }
 
   protected async finish(): Promise<void> {
