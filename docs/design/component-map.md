@@ -26,6 +26,7 @@ Klassen folgen dem Angular-Styleguide 2025 (ohne `Component`-Suffix), Selektor-P
 | --- | --- | --- | --- | --- |
 | Button | `9:206` | default/secondary/outline/ghost/destructive × sm/default/lg × default/pressed/disabled | helm `hlmBtn`, Größen 44/48/56, Icon `icon`/`icon-lg` | shared/ui/button |
 | Input | `9:219` | default/focus/error | helm `hlmInput` (48 px, Radius 16) | shared/ui/input |
+| (Textfeld, mehrzeilig) | – (nur Code) | – | helm `hlmTextarea`, Stil wie `hlmInput`, wächst mit dem Inhalt | shared/ui/textarea |
 | Number Input | `9:244` | default/focus/error | im Set-Row-Layout: `NumberStepper` (`app-number-stepper`, 121×44, auf schmalen Phones schmaler, Entscheid [0009](../decisions/0009-set-row.md)) | shared/components/number-stepper |
 | Badge | `9:265` | default/secondary/success/warning/destructive | helm `hlmBadge` (32 px Pill) | shared/ui/badge |
 | Switch | `9:284` | checked × default/disabled | helm `hlm-switch` (52×32) | shared/ui/switch |
@@ -65,6 +66,8 @@ Klassen folgen dem Angular-Styleguide 2025 (ohne `Component`-Suffix), Selektor-P
 | Wochentage | `37:28125` | `WeekdayChips` (`app-weekday-chips`) |
 | Satz-Stepper | `56:48064` | `NumberStepper` (`app-number-stepper`, Wert als Spinbutton) |
 | Lineal beim Ziehen über einen Stepper | – (nur Code, [0018](../decisions/0018-value-scrubber.md)) | `ValueScrubber` (`app-value-scrubber`, per CDK Overlay aus `NumberStepper`) |
+| Notiz einer Übung (Karte) | – (nur Code, [0019](../decisions/0019-exercise-notes.md)) | `ExerciseNote` (`app-exercise-note`) im Training und Plan-Detail |
+| Notiz bearbeiten (Sheet) | – (nur Code, [0019](../decisions/0019-exercise-notes.md)) | `ExerciseNoteSheet` (`app-exercise-note-sheet`, helm Sheet + `hlmTextarea`) |
 | Übungszeile im Plan (Detail/Editor, ≡-Handle, Chevron) | `37:27708`, `37:28096` | `PlanExerciseRow` (`app-plan-exercise-row`, features/plans) |
 | Übungs-Listeneintrag + Filter-Chips im Picker | `63:13440` | im `ExercisePickerPage` (features/plans) |
 | «Änderungen verwerfen» / Bestätigungen | `66:1123` | `ConfirmService` + `ConfirmDialogHost` (App-Shell, `@defer`) |

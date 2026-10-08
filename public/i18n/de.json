@@ -127,6 +127,14 @@
       "continue": "Weiter"
     }
   },
+  "exerciseNote": {
+    "label": "Notiz",
+    "add": "Notiz hinzufügen",
+    "edit": "Notiz bearbeiten",
+    "hint": "Gilt für diese Übung in allen Plänen.",
+    "placeholder": "z.B. Sitz auf Stufe 4, Füsse hoch, langsam ablassen",
+    "done": "Fertig"
+  },
   "history": {
     "title": "Verlauf",
     "detail": "Training",

@@ -177,6 +177,10 @@ Umgesetzt in `claude/history-statistics-views-066be4`, Entscheide in [0016](deci
 
 Umgesetzt in `claude/weight-reps-slider-ux-98fc52`, Entscheide in [0018](decisions/0018-value-scrubber.md). Ziehen über einen Stepper zeigt ein Lineal über den ganzen Bildschirm (ein Strich = ein Schritt, am Rand scrollt es weiter); der Wert ist ein Spinbutton für Tastatur und Screenreader. Ohne Figma-Entwurf, Vorschau unter `/dev/components`.
 
+## Notizen pro Übung ✅
+
+Umgesetzt in `ccr-37c3cc58-uxl97v`, Entscheide in [0019](decisions/0019-exercise-notes.md). Eine Notiz pro Übung (Geräteeinstellung, Ausführung, Technik-Tipps), gültig in allen Plänen; Tabelle `exercise_note` (Migration 2), im Backup ab Schema 2. Sichtbar und bearbeitbar im Training (Karte über den Sätzen, Übungsmenü) und im Plan-Detail. Ohne Figma-Entwurf, Vorschau unter `/dev/components`.
+
 ---
 
 ## Entscheide aus M0

@@ -23,7 +23,8 @@
       "@spartan-ng/helm/popover": ["./src/app/shared/ui/popover/src/index.ts"],
       "@spartan-ng/helm/sheet": ["./src/app/shared/ui/sheet/src/index.ts"],
       "@spartan-ng/helm/alert-dialog": ["./src/app/shared/ui/alert-dialog/src/index.ts"],
-      "@spartan-ng/helm/sonner": ["./src/app/shared/ui/sonner/src/index.ts"]
+      "@spartan-ng/helm/sonner": ["./src/app/shared/ui/sonner/src/index.ts"],
+      "@spartan-ng/helm/textarea": ["./src/app/shared/ui/textarea/src/index.ts"]
     }
   },
   "angularCompilerOptions": {

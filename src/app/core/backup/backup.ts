@@ -13,6 +13,8 @@ interface TableSpec {
   columns: readonly string[];
   /** Columns that must not be null (besides id, createdAt, updatedAt). */
   required: readonly string[];
+  /** Schema version that added the table; older backups may lack it (read as empty). */
+  since?: number;
 }
 
 /** User tables in insert order (parents first); deleting goes in reverse. */
@@ -38,6 +40,7 @@ export const BACKUP_TABLES = {
     columns: ['sessionExerciseId', 'position', 'weightKg', 'reps', 'completedAt', 'isExtra'],
     required: ['sessionExerciseId', 'position', 'isExtra'],
   },
+  exercise_note: { columns: ['exerciseId', 'text'], required: ['exerciseId', 'text'], since: 2 },
 } as const satisfies Record<string, TableSpec>;
 
 export type BackupTable = keyof typeof BACKUP_TABLES;
@@ -122,7 +125,8 @@ export function validateBackup(
   const rawData = raw['data'];
   const data = {} as Record<BackupTable, BackupRow[]>;
   for (const table of BACKUP_TABLE_NAMES) {
-    const rows = rawData[table];
+    const since: number | undefined = (BACKUP_TABLES[table] as TableSpec).since;
+    const rows = rawData[table] ?? (since && schemaVersion < since ? [] : undefined);
     if (!Array.isArray(rows)) {
       return { ok: false, error: 'format' };
     }
@@ -145,6 +149,7 @@ export function validateBackup(
     ['session_exercise', 'exerciseId', exerciseIds, false],
     ['exercise_interval', 'sessionExerciseId', sessionExercises, false],
     ['set_log', 'sessionExerciseId', sessionExercises, false],
+    ['exercise_note', 'exerciseId', exerciseIds, false],
   ];
   for (const [table, column, known, nullable] of refs) {
     for (const row of data[table]) {

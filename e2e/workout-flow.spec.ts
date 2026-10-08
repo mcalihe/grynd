@@ -50,6 +50,13 @@ test('plan → workout → history', async ({ page }) => {
     'true',
   );
 
+  // Exercise note (decision 0019): written mid-workout, shown above the sets
+  await page.getByRole('button', { name: 'Übungsmenü' }).click();
+  await page.getByRole('menuitem', { name: 'Notiz hinzufügen' }).click();
+  await page.getByRole('textbox', { name: 'Notiz' }).fill('Bank flach, Griff eng');
+  await page.getByRole('button', { name: 'Fertig' }).click();
+  await expect(page.getByRole('button', { name: /Bank flach, Griff eng/ })).toBeVisible();
+
   // Finish → celebration (figures count up to their final values) → history detail
   await page.getByRole('button', { name: 'Training abschliessen' }).click();
   await expect(page).toHaveURL(/\/workout\/done\/.+/);
@@ -82,4 +89,13 @@ test('plan → workout → history', async ({ page }) => {
   await expect(page).toHaveURL(/\/history\/plans\/.+/);
   await expect(page.getByRole('heading', { name: 'E2E Brust' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Alle Trainings' })).toBeVisible();
+
+  // The plan shows the note in the exercise details
+  await page.goto('/plans');
+  await page
+    .getByRole('button', { name: /E2E Brust/ })
+    .first()
+    .click();
+  await page.getByRole('button', { name: 'Details' }).click();
+  await expect(page.getByRole('button', { name: /Bank flach, Griff eng/ })).toBeVisible();
 });

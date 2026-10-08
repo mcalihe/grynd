@@ -25,6 +25,8 @@ import { ProgressRing } from '../../shared/components/progress-ring/progress-rin
 import { WeekChart, WeekChartBar } from '../../shared/components/week-chart/week-chart';
 import { BarChart, BarChartBar } from '../../shared/components/bar-chart/bar-chart';
 import { DonutChart, DonutSegment } from '../../shared/components/donut-chart/donut-chart';
+import { ExerciseNote } from '../../shared/components/exercise-note/exercise-note';
+import { ExerciseNoteSheet } from '../../shared/components/exercise-note/exercise-note-sheet';
 import { KeyFigure, KeyFigures } from '../../shared/components/key-figures/key-figures';
 import { NumberStepper } from '../../shared/components/number-stepper/number-stepper';
 import { MonthCalendar } from '../../shared/components/month-calendar/month-calendar';
@@ -66,6 +68,8 @@ import { ExerciseCelebration } from '../workout/exercise-celebration';
     SegmentProgress,
     TimerBar,
     WorkoutClock,
+    ExerciseNote,
+    ExerciseNoteSheet,
     PageHeader,
     PlanCard,
     WeekChart,
@@ -104,6 +108,12 @@ export class ComponentsShowcase {
     { label: 'Sätze', value: '214', delta: '−4', tone: 'down' },
   ];
   protected readonly figure = signal(2);
+
+  // Exercise note (decision 0019)
+  protected readonly demoNote = signal(
+    'Sitz auf Stufe 4, Füsse oben auf der Platte.\nLangsam ablassen, unten nicht ganz durchstrecken.\nIm letzten Satz halbe Wiederholungen.',
+  );
+  protected readonly noteOpen = signal(false);
   protected readonly monthBars: BarChartBar[] = Array.from({ length: 30 }, (_, i) => {
     const trained = [0, 2, 4, 7, 9, 11, 14, 16, 18, 21, 23, 28].includes(i);
     return {

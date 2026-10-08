@@ -12,6 +12,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
 import { NgIcon } from '@ng-icons/core';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { ExerciseCatalogService } from '../../core/exercises/exercise-catalog.service';
+import { ExerciseNotesService } from '../../core/exercises/exercise-notes.service';
 import { sessionDurationMs } from '../../core/history/history-stats';
 import { HistoryService } from '../../core/history/history.service';
 import { PlanDraft } from '../../core/plans/plan-draft';
@@ -19,13 +20,18 @@ import { PlansService } from '../../core/plans/plans.service';
 import { ConfirmService } from '../../core/services/confirm.service';
 import { Clock } from '../../core/utils/time';
 import { WorkoutService } from '../../core/workout/workout.service';
+import { ExerciseNote } from '../../shared/components/exercise-note/exercise-note';
+import { ExerciseNoteSheet } from '../../shared/components/exercise-note/exercise-note-sheet';
 import { PageHeader } from '../../shared/components/page-header/page-header';
 import { StickyAction } from '../../shared/components/sticky-action/sticky-action';
 import { WeekdayChips } from '../../shared/components/weekday-chips/weekday-chips';
 import { HistoryFormat } from '../history/history-format';
 import { PlanExerciseRow, targetSummary } from './plan-exercise-row';
 
-/** Read-only plan view with «Bearbeiten» and «Training starten» (Figma 37:27708, decision 0010). */
+/**
+ * Read-only plan view with «Bearbeiten» and «Training starten» (Figma 37:27708, decision 0010).
+ * Exercise notes are not plan data, so they can be edited here directly (decision 0019).
+ */
 @Component({
   selector: 'app-plan-detail-page',
   imports: [
@@ -33,6 +39,8 @@ import { PlanExerciseRow, targetSummary } from './plan-exercise-row';
     StickyAction,
     WeekdayChips,
     PlanExerciseRow,
+    ExerciseNote,
+    ExerciseNoteSheet,
     HlmButton,
     NgIcon,
     TranslocoPipe,
@@ -90,10 +98,26 @@ import { PlanExerciseRow, targetSummary } from './plan-exercise-row';
             <app-plan-exercise-row
               [name]="catalog.nameById(exercise.exerciseId)"
               [summary]="summary(exercise.targetSets, exercise.repMin, exercise.repMax)"
+              [hasNote]="!!notes.noteFor(exercise.exerciseId)"
             >
-              <p class="text-sm text-muted-foreground">
-                {{ 'plans.restSeconds' | transloco: { seconds: exercise.restSeconds } }}
-              </p>
+              <div class="flex flex-col gap-3">
+                <p class="text-sm text-muted-foreground">
+                  {{ 'plans.restSeconds' | transloco: { seconds: exercise.restSeconds } }}
+                </p>
+                @if (notes.noteFor(exercise.exerciseId); as text) {
+                  <app-exercise-note [text]="text" (edit)="editNote(exercise.exerciseId)" />
+                } @else {
+                  <button
+                    hlmBtn
+                    variant="ghost"
+                    size="sm"
+                    class="-ml-2 self-start"
+                    (click)="editNote(exercise.exerciseId)"
+                  >
+                    <ng-icon name="lucideStickyNote" />{{ 'exerciseNote.add' | transloco }}
+                  </button>
+                }
+              </div>
             </app-plan-exercise-row>
           }
         </section>
@@ -104,6 +128,13 @@ import { PlanExerciseRow, targetSummary } from './plan-exercise-row';
           <ng-icon name="lucideArrowRight" />{{ 'plans.startWorkout' | transloco }}
         </button>
       </app-sticky-action>
+
+      <app-exercise-note-sheet
+        [(open)]="noteOpen"
+        [title]="catalog.nameById(noteExerciseId())"
+        [note]="notes.noteFor(noteExerciseId())"
+        (save)="saveNote($event)"
+      />
     }
   `,
 })
@@ -116,6 +147,7 @@ export class PlanDetailPage implements OnInit {
   private readonly workout = inject(WorkoutService);
   private readonly confirm = inject(ConfirmService);
   protected readonly catalog = inject(ExerciseCatalogService);
+  protected readonly notes = inject(ExerciseNotesService);
 
   private readonly history = inject(HistoryService);
   private readonly format = inject(HistoryFormat);
@@ -123,6 +155,8 @@ export class PlanDetailPage implements OnInit {
 
   protected readonly plan = signal<PlanDraft | undefined>(undefined);
   protected readonly summary = targetSummary;
+  protected readonly noteExerciseId = signal('');
+  protected readonly noteOpen = signal(false);
 
   /** Entry to the plan history: number of workouts, the last one and the average time. */
   protected readonly planHistory = computed(() => {
@@ -142,7 +176,11 @@ export class PlanDetailPage implements OnInit {
 
   async ngOnInit(): Promise<void> {
     void this.history.load();
-    const [plan] = await Promise.all([this.plans.getDraft(this.id()), this.catalog.load()]);
+    const [plan] = await Promise.all([
+      this.plans.getDraft(this.id()),
+      this.catalog.load(),
+      this.notes.load(),
+    ]);
     if (!plan) {
       await this.router.navigate(['/plans']);
       return;
@@ -156,6 +194,15 @@ export class PlanDetailPage implements OnInit {
 
   protected openHistory(): void {
     void this.router.navigate(['/history/plans', this.id()]);
+  }
+
+  protected editNote(exerciseId: string): void {
+    this.noteExerciseId.set(exerciseId);
+    this.noteOpen.set(true);
+  }
+
+  protected saveNote(text: string): void {
+    void this.notes.save(this.noteExerciseId(), text);
   }
 
   protected edit(): void {

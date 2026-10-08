@@ -6,12 +6,14 @@ import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmDropdownMenuImports } from '@spartan-ng/helm/dropdown-menu';
 import { SetLog } from '../../core/db/models';
 import { ExerciseCatalogService } from '../../core/exercises/exercise-catalog.service';
+import { ExerciseNotesService } from '../../core/exercises/exercise-notes.service';
 import { SettingsService } from '../../core/settings/settings.service';
 import {
   exerciseJustDone,
   WorkoutExercise,
   WorkoutService,
 } from '../../core/workout/workout.service';
+import { ExerciseNote } from '../../shared/components/exercise-note/exercise-note';
 import { SetRow, SetRowState } from '../../shared/components/set-row/set-row';
 import { SetMenu } from './set-menu';
 
@@ -25,11 +27,21 @@ export function repTarget(repMin: number | null, repMax: number | null): string 
 
 /**
  * One exercise page in the workout pager (Figma Training · Normal 56:48015): header with name,
- * set progress, muscle badge and menu, the target line, set rows and «+ Satz».
+ * set progress, muscle badge and menu, the target line, the exercise note (decision 0019),
+ * set rows and «+ Satz».
  */
 @Component({
   selector: 'app-exercise-page',
-  imports: [SetRow, SetMenu, HlmBadge, HlmButton, HlmDropdownMenuImports, NgIcon, TranslocoPipe],
+  imports: [
+    SetRow,
+    SetMenu,
+    ExerciseNote,
+    HlmBadge,
+    HlmButton,
+    HlmDropdownMenuImports,
+    NgIcon,
+    TranslocoPipe,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'flex flex-col gap-2 px-4 pt-4 pb-6' },
   template: `
@@ -56,6 +68,10 @@ export function repTarget(repMin: number | null, repMax: number | null): string 
       </button>
       <ng-template #exerciseMenu>
         <hlm-dropdown-menu class="w-60">
+          <button hlmDropdownMenuItem (click)="editNote.emit()">
+            {{ (note() ? 'exerciseNote.edit' : 'exerciseNote.add') | transloco }}
+          </button>
+          <hlm-dropdown-menu-separator />
           <button hlmDropdownMenuItem [disabled]="isLast()" (click)="moveBack.emit(1)">
             {{ 'workout.exerciseMenu.back' | transloco }}
           </button>
@@ -69,6 +85,10 @@ export function repTarget(repMin: number | null, repMax: number | null): string 
     <p class="text-sm font-medium text-muted-foreground">
       {{ 'workout.targetLine' | transloco: { sets: plannedCount(), reps: target() } }}
     </p>
+
+    @if (note(); as text) {
+      <app-exercise-note [text]="text" (edit)="editNote.emit()" />
+    }
 
     <div class="flex flex-col gap-1.5">
       @for (set of item().sets; track set.id; let i = $index) {
@@ -117,11 +137,15 @@ export class ExercisePage {
   readonly setCompleted = output<number>();
   /** Emitted when checking a set finished the exercise (all planned sets done). */
   readonly exerciseCompleted = output<void>();
+  /** Opens the note editor for this exercise. */
+  readonly editNote = output<void>();
 
   protected readonly workout = inject(WorkoutService);
   private readonly catalog = inject(ExerciseCatalogService);
   private readonly settings = inject(SettingsService);
+  private readonly notes = inject(ExerciseNotesService);
   protected readonly unit = computed(() => this.settings.settings().unit);
+  protected readonly note = computed(() => this.notes.noteFor(this.item().entry.exerciseId));
 
   protected readonly exercise = computed(
     () => this.catalog.byId().get(this.item().entry.exerciseId) ?? { muscleGroup: null },

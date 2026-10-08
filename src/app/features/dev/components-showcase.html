@@ -115,6 +115,25 @@
     </div>
   </section>
 
+  <section class="flex flex-col gap-3">
+    <h2 class="text-sm font-semibold text-muted-foreground">
+      Exercise note · code only (decision 0019)
+    </h2>
+    <app-exercise-note text="Sitz Stufe 4" (edit)="noteOpen.set(true)" />
+    @if (demoNote()) {
+      <app-exercise-note [text]="demoNote()" (edit)="noteOpen.set(true)" />
+    }
+    <button hlmBtn variant="ghost" size="sm" class="self-start" (click)="noteOpen.set(true)">
+      <ng-icon name="lucideStickyNote" />Notiz bearbeiten
+    </button>
+    <app-exercise-note-sheet
+      [(open)]="noteOpen"
+      title="Beinpresse"
+      [note]="demoNote()"
+      (save)="demoNote.set($event.trim())"
+    />
+  </section>
+
   <section class="-mx-4 flex flex-col gap-3">
     <h2 class="px-4 text-sm font-semibold text-muted-foreground">
       Page header · Plan card · Sticky

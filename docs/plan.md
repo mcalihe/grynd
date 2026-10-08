@@ -77,6 +77,7 @@ Alle Tabellen haben `id` (UUIDv7), `createdAt`, `updatedAt`, `deletedAt`. Dazu k
 | Tabelle | Felder | Hinweis |
 | --- | --- | --- |
 | `exercise` | key, nameDe, nameEn, primaryMuscles, secondaryMuscles, muscleGroup, force (push / pull / static), equipment, level, category, images | Katalog aus free-exercise-db (gemeinfrei), mit der App ausgeliefert, nur lesbar; deutsche Namen per AI übersetzt |
+| `exercise_note` | exerciseId, text | Notiz des Nutzers zu einer Übung, gilt in allen Plänen; höchstens eine pro Übung, max. 500 Zeichen ([0019](decisions/0019-exercise-notes.md)) |
 | `plan` | name, weekdays (Liste 0–6, optional) | Ein Plan = ein Training |
 | `plan_exercise` | planId, exerciseId, position, targetSets, repMin, repMax, restSeconds | Feste Reihenfolge über `position`; Standard 3 × 8–12, 90 s |
 | `workout_session` | planId (optional), startedAt, finishedAt, status (active / finished / aborted) | Maximal eine aktive Session |
@@ -87,6 +88,7 @@ Alle Tabellen haben `id` (UUIDv7), `createdAt`, `updatedAt`, `deletedAt`. Dazu k
 ## 7. Geschäftsregeln
 
 - **Session als Kopie:** Beim Start werden Übungen und Soll-Sätze des Plans in `session_exercise` und `set_log` kopiert. Änderungen im Training (Reihenfolge, Extra-Sätze, Sätze löschen/duplizieren) betreffen nur die Session, nie den Plan.
+- **Notizen pro Übung** gehören zur Übung, nicht zum Plan: Sie werden nicht in die Session kopiert, lassen sich jederzeit ändern (auch im Training) und erscheinen nicht im Verlauf ([0019](decisions/0019-exercise-notes.md)).
 - **Vorbefüllung:** Gewicht und Wiederholungen pro Satzposition aus der letzten abgeschlossenen Session mit derselben Übung; fehlt eine Position, gelten die Werte des letzten Vorsatzes; sonst Gewicht leer und Wdh. = Plan-Minimum. Verworfene Trainings zählen nicht.
 - **Extra-Satz:** «+ Satz» übernimmt die Werte des letzten Satzes und setzt `isExtra = true`. Wurde in dieser Session ein geplanter Satz gelöscht, kommt stattdessen dieser zurück (offen, mit den neuen Werten), bis die Satzzahl des Plans wieder erreicht ist; das gilt auch für «Satz duplizieren».
 - **Heute:** alle Pläne, deren `weekdays` den aktuellen Wochentag enthalten (mehrere möglich).
@@ -113,6 +115,7 @@ Alle Tabellen haben `id` (UUIDv7), `createdAt`, `updatedAt`, `deletedAt`. Dazu k
 ### Plan-Detail, Plan bearbeiten, Plan erstellen (`/plans/:id`, `/plans/:id/edit`, `/plans/new`)
 - **Plan-Detail ist eine Ansicht** ([0010](decisions/0010-plan-detail-and-editor.md)): Wochentage und Reihenfolge nur angezeigt, Chevron klappt die Ziele auf; «Bearbeiten» oben rechts, «Training starten» als Primary.
 - **Bearbeiten/Erstellen:** Ziele pro Übung (Sätze, Wdh. min/max, Pause) im aufgeklappten Eintrag; «Plan löschen» im Drei-Punkte-Menü mit Bestätigung (Soft Delete).
+- **Notizen:** Ein Notiz-Symbol neben den Zielen markiert Übungen mit Notiz (Detail und Editor). Im Detail zeigt der aufgeklappte Eintrag die Notiz oder «Notiz hinzufügen»; bearbeitet wird im selben Sheet wie im Training ([0019](decisions/0019-exercise-notes.md)).
 - Planname, «Wochentage (optional)» als 7 Chips, Übungsliste mit Drag-Handle, Name, «3 × 8–10», Menü.
 - «Plan erstellen» = gleicher Screen wie Bearbeiten, Titel «Neuer Plan», Empty State; «Plan speichern» deaktiviert, solange Name oder Übungen fehlen.
 - Kein Abbrechen-Button, verlassen über den Zurück-Pfeil.
@@ -128,7 +131,8 @@ Alle Tabellen haben `id` (UUIDv7), `createdAt`, `updatedAt`, `deletedAt`. Dazu k
 - **Eine Übung pro Seite,** horizontales Wischen per CSS Scroll-Snap (`scroll-snap-type: x mandatory`). Kopfbereich und Weiter-Button bewegen sich nicht mit.
 - **Segment-Indikator oben:** ein Segment pro Übung (Session-Reihenfolge), füllt sich anteilig zu den erledigten Sätzen (inkl. Extra-Sätze), aktuelles Segment hervorgehoben, ohne Zahlen. Rechts daneben der Gesamtfortschritt in Prozent (erledigte Sätze aller Übungen inkl. Extra-Sätze, abgerundet: 100 % erst, wenn alles abgehakt ist).
 - **Übersicht:** Pill «2 / 6» mit Listen-Icon und Chevron öffnet ein Sheet mit allen Übungen. Umsortieren per Angular CDK Drag and Drop, alle Zeilen immer verschiebbar. Status als Fortschrittsring in `primary` (voll = Haken), aktuelle Übung über Hintergrund und Rahmen markiert, kein Text. Tippen springt zur Übung.
-- **Übungsmenü (drei Punkte):** «1 nach hinten verschieben», «Ans Ende verschieben».
+- **Übungsmenü (drei Punkte):** «Notiz hinzufügen» bzw. «Notiz bearbeiten», «1 nach hinten verschieben», «Ans Ende verschieben».
+- **Notiz:** Hat die Übung eine Notiz, steht sie als Karte (höchstens 3 Zeilen) unter der Zielzeile; ein Tap öffnet ein Sheet mit Textfeld und «Fertig». Gespeichert wird beim Schliessen, eine geleerte Notiz wird gelöscht ([0019](decisions/0019-exercise-notes.md)).
 - **Satz-Zeile** (80 px): Nummer, Vorwert, Stepper für kg und Wdh., Haken. Werte lassen sich auch durch waagrechtes Ziehen über den Stepper ändern: ein Lineal über den ganzen Bildschirm zeigt jeden Schritt, am Bildschirmrand scrollt es weiter ([0018](decisions/0018-value-scrubber.md)). Zustände: offen, erledigt, Rekord, Menü offen. Kein «aktiv»-Zustand.
 - **Satz-Kontextmenü:** Long-Press (ca. 500 ms, mit Haptik), Rechtsklick (Web) oder Tippen auf die Satznummer, öffnet unter der Zeile; «Satz duplizieren», «Satz löschen». Kein Swipe-to-Delete.
 - **«+ Satz»** unter den Sätzen; Extra-Sätze mit Label «Extra».

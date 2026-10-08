@@ -5,6 +5,7 @@ import { Directory, Encoding, Filesystem } from '@capacitor/filesystem';
 import { Share } from '@capacitor/share';
 import { DatabaseService } from '../db/database.service';
 import { MIGRATIONS } from '../db/migrations';
+import { ExerciseNotesService } from '../exercises/exercise-notes.service';
 import { Clock } from '../utils/time';
 import { RestTimerService } from '../workout/rest-timer.service';
 import { WorkoutService } from '../workout/workout.service';
@@ -28,6 +29,7 @@ export class BackupService {
   private readonly database = inject(DatabaseService);
   private readonly workout = inject(WorkoutService);
   private readonly timer = inject(RestTimerService);
+  private readonly notes = inject(ExerciseNotesService);
   private readonly clock = inject(Clock);
   private readonly document = inject(DOCUMENT);
 
@@ -94,6 +96,7 @@ export class BackupService {
         }
       }
     });
+    await this.notes.reload();
     // A running workout may have been replaced (or brought back by the backup).
     if (!(await this.workout.restore())) {
       this.timer.stop();
