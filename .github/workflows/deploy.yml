@@ -4,7 +4,8 @@ name: Deploy
 # - production: releases only. After CI passed on main for a release commit (the merged release PR),
 #   or manually from main to redeploy the latest release → httpdocs/ of the production FTP user
 # - staging: every push to main after CI passed → httpdocs/main/ of the preview FTP user
-# - preview: every PR from this repo → httpdocs/pr-<n>/ of the preview FTP user, removed when the PR closes
+# - preview: every PR from this repo → httpdocs/pr-<n>/ of the preview FTP user, removed when the PR closes.
+#   Not for the release PR: it only bumps the version and CHANGELOG.md, so it would match staging.
 # Each GitHub environment holds FTP_HOST, FTP_USER, FTP_PASSWORD (secrets) and SITE_URL (variable).
 on:
   workflow_run:
@@ -136,10 +137,12 @@ jobs:
           LFTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
 
   preview:
-    # Fork PRs get no secrets, so they get no preview.
+    # Fork PRs get no secrets, so they get no preview. The release PR (release-please branch) gets none
+    # either: it differs from main only in the version number, and main is already on staging.
     if: >-
       github.event_name == 'pull_request' && github.event.action != 'closed'
       && github.event.pull_request.head.repo.full_name == github.repository
+      && !startsWith(github.event.pull_request.head.ref, 'release-please--')
     runs-on: ubuntu-latest
     environment:
       name: Preview
@@ -190,6 +193,7 @@ jobs:
     if: >-
       github.event_name == 'pull_request' && github.event.action == 'closed'
       && github.event.pull_request.head.repo.full_name == github.repository
+      && !startsWith(github.event.pull_request.head.ref, 'release-please--')
     runs-on: ubuntu-latest
     environment: Preview
     concurrency:

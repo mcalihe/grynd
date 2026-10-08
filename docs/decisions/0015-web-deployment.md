@@ -11,3 +11,4 @@
 - **Upload-Reihenfolge:** zuerst neue Dateien, dann `index.html`, zuletzt das Löschen veralteter Dateien. So zeigt die Live-Seite nie auf Bundles, die es noch nicht gibt. Verglichen wird nur über die Dateigrösse, weil ein frischer Checkout jede Datei neuer erscheinen lässt. Dateien, die sich bei gleicher Grösse ändern können (`index.html`, `.htaccess`, i18n, Katalog), werden immer hochgeladen.
 - **`.htaccess`** (`deploy/app.htaccess`): SPA-Fallback auf `index.html` (Path-Routing), MIME-Typ `application/wasm`, `index.html` ohne Cache, gehashte Bundles ein Jahr `immutable`. Die Preview-Wurzel (`deploy/preview-root.htaccess`) leitet auf die Produktion um und setzt `X-Robots-Tag: noindex` für alle Previews.
 - **Keine Previews für Fork-PRs**, weil diese keine Secrets bekommen.
+- **Keine Preview für den Release-PR** (Branch `release-please--…`): Er ändert nur Version und Changelog, die Preview wäre derselbe Stand wie Staging (`/main/`) und kostete nur Laufzeit.
