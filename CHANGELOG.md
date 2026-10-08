@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.4.0](https://github.com/mcalihe/grynd/compare/v0.3.0...v0.4.0) (2026-10-05)
+
+
+### Features
+
+* **workout:** show a ruler while dragging weight and reps ([#29](https://github.com/mcalihe/grynd/issues/29)) ([a92230e](https://github.com/mcalihe/grynd/commit/a92230e53f279eb9dba2314c78f16b256152eebd))
+* **workout:** tidy set rows, right-click set menu, re-add planned sets ([#24](https://github.com/mcalihe/grynd/issues/24)) ([4c539a4](https://github.com/mcalihe/grynd/commit/4c539a4205f1c37e55eae5417921b08d8590b0a6))
+
+
+### Bug Fixes
+
+* **workout:** keep set rows inside the screen on narrow phones ([#28](https://github.com/mcalihe/grynd/issues/28)) ([a92e26e](https://github.com/mcalihe/grynd/commit/a92e26ea4f7f980d7bb56d5deed7371893cfee4e))
+
 ## [0.3.0](https://github.com/mcalihe/grynd/compare/v0.2.0...v0.3.0) (2026-10-04)
 
 
