@@ -26,7 +26,7 @@ Native Versionen: Android liest `versionName` aus `package.json` und rechnet `ve
 
 - Version und `CHANGELOG.md` nie von Hand ändern. Den Changelog-Text vor dem Release bei Bedarf im Release-PR korrigieren.
 - Version erzwingen (z.B. 1.0.0): Commit mit Footer `Release-As: 1.0.0` auf `main`.
-- Der Release-PR stammt von `GITHUB_TOKEN`, dadurch laufen CI und Previews darauf nicht. Er ändert nur Version und Changelog.
+- Der Release-PR stammt von `GITHUB_TOKEN`. Seine Workflows warten deshalb auf Freigabe («Approve workflows to run») und laufen erst danach. Eine Preview bekommt er nie: Er ändert nur Version und Changelog, die App ist also dieselbe wie auf Staging (`/main/`).
 - Repo-Einstellungen, die das voraussetzt: Squash-Merge mit PR-Titel als Commit-Titel, Merge-Commits und Rebase-Merges aus; Actions → General → «Allow GitHub Actions to create and approve pull requests» an.
 
 ## Was CI heute baut
@@ -63,10 +63,12 @@ Workflow `.github/workflows/deploy.yml` («Deploy»), Hintergrund in `docs/decis
 | --- | --- | --- |
 | `production` | nur Releases: CI auf `main` grün für den Release-Commit (gemergter Release-PR); manuell von `main` deployt den letzten Release erneut | `httpdocs/` des Produktions-FTP-Benutzers → `https://fit.michael-isler.com` |
 | `staging` | CI auf `main` grün (jeder Merge) | `httpdocs/main/` des Preview-FTP-Benutzers → `https://fit-preview.michael-isler.com/main/` |
-| `preview` | PR geöffnet oder aktualisiert | `httpdocs/pr-<n>/` des Preview-FTP-Benutzers → `https://fit-preview.michael-isler.com/pr-<n>/` |
+| `preview` | PR geöffnet oder aktualisiert, ausser dem Release-PR | `httpdocs/pr-<n>/` des Preview-FTP-Benutzers → `https://fit-preview.michael-isler.com/pr-<n>/` |
 | `preview-cleanup` | PR geschlossen oder gemergt | löscht `httpdocs/pr-<n>/` |
 
 Der Link zur Preview erscheint im PR als «View deployment» und in einem Kommentar des Jobs `preview-comment`, der bei jedem Deploy aktualisiert wird und beim Schliessen «Preview removed» meldet.
+
+Staging und Previews sind als solche erkennbar: Die Einstellungen zeigen die Version mit Build-Kennzeichnung (`0.4.0+main.abc1234`, `0.4.0+pr-31.abc1234`, lokal mit `pnpm start` `0.4.0+dev`), der Tab-Titel beginnt mit dem Kanal (`pr-31 · Grynd`). Die Kennzeichnung setzt der Build mit `--define "GRYND_BUILD='…'"` (`src/app/core/app-info.ts`, `angular.json` für `dev`). Releases und native Builds zeigen nur die Version.
 
 ### Einmalige Einrichtung
 

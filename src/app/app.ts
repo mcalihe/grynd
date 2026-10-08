@@ -9,9 +9,11 @@ import {
 import { Capacitor } from '@capacitor/core';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { Title } from '@angular/platform-browser';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { TranslocoService } from '@jsverse/transloco';
 import { filter, map, take } from 'rxjs';
+import { displayTitle } from './core/app-info';
 import { ThemeService } from './core/services/theme.service';
 import { WorkoutService } from './core/workout/workout.service';
 import { BottomNavigation } from './shared/components/bottom-navigation/bottom-navigation';
@@ -62,6 +64,10 @@ export class App {
           void this.router.navigateByUrl('/workout', { replaceUrl: true });
         }
       });
+
+    // Staging and previews carry their channel in the tab title (`pr-31 · Grynd`).
+    const title = inject(Title);
+    title.setTitle(displayTitle(title.getTitle()));
 
     const document = inject(DOCUMENT);
     inject(TranslocoService)
