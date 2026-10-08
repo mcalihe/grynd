@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/mcalihe/grynd/compare/v0.4.0...v0.5.0) (2026-10-08)
+
+
+### Features
+
+* **workout:** show how much of the workout is done in percent ([#31](https://github.com/mcalihe/grynd/issues/31)) ([37bc5bd](https://github.com/mcalihe/grynd/commit/37bc5bdce42f90b080abea00d69b25b0c1a9e3ab))
+
 ## [0.4.0](https://github.com/mcalihe/grynd/compare/v0.3.0...v0.4.0) (2026-10-05)
 
 
