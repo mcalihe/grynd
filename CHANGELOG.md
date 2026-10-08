@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/mcalihe/grynd/compare/v0.5.0...v0.6.0) (2026-10-08)
+
+
+### Features
+
+* **db:** keep a note per exercise in the database and backups ([#33](https://github.com/mcalihe/grynd/issues/33)) ([7140632](https://github.com/mcalihe/grynd/commit/7140632b7d2882b69d283be22292bb2192956da7))
+
 ## [0.5.0](https://github.com/mcalihe/grynd/compare/v0.4.0...v0.5.0) (2026-10-08)
 
 
