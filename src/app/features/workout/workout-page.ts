@@ -20,8 +20,9 @@ import { BackButtonService } from '../../core/services/back-button.service';
 import { ConfirmService } from '../../core/services/confirm.service';
 import { ExerciseCatalogService } from '../../core/exercises/exercise-catalog.service';
 import { RestTimerService } from '../../core/workout/rest-timer.service';
-import { isExerciseDone, WorkoutService } from '../../core/workout/workout.service';
+import { isExerciseDone, WorkoutService, workoutPercent } from '../../core/workout/workout.service';
 import { Clock } from '../../core/utils/time';
+import { RollingNumber } from '../../shared/components/rolling-number/rolling-number';
 import { SegmentProgress } from '../../shared/components/segment-progress/segment-progress';
 import { StickyAction } from '../../shared/components/sticky-action/sticky-action';
 import { TimerBar } from '../../shared/components/timer-bar/timer-bar';
@@ -47,7 +48,8 @@ interface ExerciseMoment {
 
 /**
  * Active workout (Figma Training 56:48015 / Swipe 60:3568): one exercise per page with
- * horizontal scroll-snap; header, progress, timer and the next button stay in place.
+ * horizontal scroll-snap; header, progress (segments plus the overall percent), timer and the
+ * next button stay in place.
  * A finished exercise is celebrated once (decision 0015); when all are done, the finish button pulses.
  */
 @Component({
@@ -56,6 +58,7 @@ interface ExerciseMoment {
     ExercisePage,
     ExerciseCelebration,
     OverviewSheet,
+    RollingNumber,
     SegmentProgress,
     StickyAction,
     TimerBar,
@@ -82,11 +85,24 @@ interface ExerciseMoment {
         <app-workout-clock [elapsedMs]="elapsedMs()" (stop)="end()" />
       </header>
 
-      <app-segment-progress
-        class="shrink-0 px-4 pt-2 pb-2"
-        [segments]="segments()"
-        [current]="current()"
-      />
+      <div
+        class="flex shrink-0 items-center gap-3 px-4 pt-2 pb-2"
+        role="progressbar"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        [attr.aria-valuenow]="percent()"
+        [attr.aria-label]="'workout.progress' | transloco"
+      >
+        <app-segment-progress
+          class="min-w-0 flex-1"
+          [segments]="segments()"
+          [current]="current()"
+        />
+        <app-rolling-number
+          class="min-w-10 justify-end text-xs leading-none font-semibold text-muted-foreground"
+          [text]="'workout.percent' | transloco: { percent: percent() }"
+        />
+      </div>
 
       <div
         #pager
@@ -194,6 +210,10 @@ export class WorkoutPage {
       done: sets.filter((s) => s.completedAt !== null).length,
       total: sets.length,
     })),
+  );
+  /** Share of all sets done, shown next to the segments (which stay without numbers). */
+  protected readonly percent = computed(() =>
+    workoutPercent(this.workout.workout()?.exercises ?? []),
   );
   protected readonly next = computed(
     () => this.workout.workout()?.exercises[this.current() + 1] ?? null,

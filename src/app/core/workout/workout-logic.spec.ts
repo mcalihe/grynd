@@ -2,7 +2,7 @@ import { closeStaleInterval, keepInterval } from './intervals';
 import { prefillSets } from './prefill';
 import { SetLog } from '../db/models';
 import { estimatedOneRepMax, recordSetIds } from './records';
-import { exerciseJustDone } from './workout.service';
+import { exerciseJustDone, workoutPercent } from './workout.service';
 
 describe('prefillSets', () => {
   it('starts empty with the plan minimum without history', () => {
@@ -105,5 +105,23 @@ describe('exerciseJustDone', () => {
     expect(exerciseJustDone([set(true)], [set(true)])).toBe(false);
     expect(exerciseJustDone([set(false), set(false)], [set(true), set(false)])).toBe(false);
     expect(exerciseJustDone([], [])).toBe(false);
+  });
+});
+
+describe('workoutPercent', () => {
+  const set = (done: boolean, isExtra = false) =>
+    ({ completedAt: done ? '2026-10-02T10:00:00.000Z' : null, isExtra }) as SetLog;
+
+  it('is the share of completed sets across all exercises', () => {
+    expect(workoutPercent([])).toBe(0);
+    expect(workoutPercent([{ sets: [] }])).toBe(0);
+    expect(
+      workoutPercent([{ sets: [set(true), set(false)] }, { sets: [set(false), set(false)] }]),
+    ).toBe(25);
+  });
+
+  it('counts extra sets and rounds down, so 100 means everything is checked', () => {
+    expect(workoutPercent([{ sets: [set(true), set(true), set(false, true)] }])).toBe(66);
+    expect(workoutPercent([{ sets: [set(true), set(true), set(true, true)] }])).toBe(100);
   });
 });

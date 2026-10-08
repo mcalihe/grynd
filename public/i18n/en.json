@@ -86,6 +86,8 @@
     "finish": "Finish workout",
     "addSet": "Set",
     "setProgress": "Set {{current}} of {{total}}",
+    "progress": "Workout progress",
+    "percent": "{{percent}}%",
     "targetLine": "{{sets}} sets · target {{reps}} reps",
     "resume": {
       "title": "Workout in progress",

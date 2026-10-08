@@ -30,6 +30,16 @@ export function isExerciseDone(sets: readonly SetLog[]): boolean {
   return planned.length > 0 && planned.every((s) => s.completedAt !== null);
 }
 
+/**
+ * Completed share of all sets in the workout (extra sets included, like the progress segments)
+ * as a whole percent. Rounded down, so 100 only shows once every set is checked.
+ */
+export function workoutPercent(exercises: readonly { sets: readonly SetLog[] }[]): number {
+  const sets = exercises.flatMap((e) => e.sets);
+  const done = sets.filter((s) => s.completedAt !== null).length;
+  return sets.length === 0 ? 0 : Math.floor((done / sets.length) * 100);
+}
+
 /** The change from `before` to `after` finished the exercise (celebrated once, decision 0015). */
 export function exerciseJustDone(before: readonly SetLog[], after: readonly SetLog[]): boolean {
   return !isExerciseDone(before) && isExerciseDone(after);
