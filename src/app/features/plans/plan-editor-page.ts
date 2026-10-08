@@ -7,6 +7,7 @@ import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmDropdownMenuImports } from '@spartan-ng/helm/dropdown-menu';
 import { HlmInput } from '@spartan-ng/helm/input';
 import { ExerciseCatalogService } from '../../core/exercises/exercise-catalog.service';
+import { ExerciseNotesService } from '../../core/exercises/exercise-notes.service';
 import { ConfirmService } from '../../core/services/confirm.service';
 import { HapticsService } from '../../core/services/haptics.service';
 import { NumberStepper } from '../../shared/components/number-stepper/number-stepper';
@@ -134,6 +135,7 @@ import { PlanExerciseRow, targetSummary } from './plan-exercise-row';
                   (cdkDragStarted)="haptics.selectionStart()"
                   [name]="catalog.nameById(exercise.exerciseId)"
                   [summary]="summary(exercise.targetSets, exercise.repMin, exercise.repMax)"
+                  [hasNote]="!!notes.noteFor(exercise.exerciseId)"
                 >
                   <div class="flex flex-col gap-3">
                     <div class="grid grid-cols-2 gap-2">
@@ -203,6 +205,7 @@ import { PlanExerciseRow, targetSummary } from './plan-exercise-row';
 export class PlanEditorPage implements OnInit {
   protected readonly store = inject(PlanEditorStore);
   protected readonly catalog = inject(ExerciseCatalogService);
+  protected readonly notes = inject(ExerciseNotesService);
   protected readonly haptics = inject(HapticsService);
   private readonly confirm = inject(ConfirmService);
   private readonly router = inject(Router);
@@ -217,7 +220,11 @@ export class PlanEditorPage implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
-    const [found] = await Promise.all([this.store.init(this.planId), this.catalog.load()]);
+    const [found] = await Promise.all([
+      this.store.init(this.planId),
+      this.catalog.load(),
+      this.notes.load(),
+    ]);
     if (!found) {
       await this.router.navigate(['/plans'], { replaceUrl: true });
     }

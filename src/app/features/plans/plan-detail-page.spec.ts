@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { TranslocoTestingModule } from '@jsverse/transloco';
 import { ExerciseCatalogService } from '../../core/exercises/exercise-catalog.service';
+import { ExerciseNotesService } from '../../core/exercises/exercise-notes.service';
 import { HistorySummary } from '../../core/history/history-stats';
 import { HistoryService } from '../../core/history/history.service';
 import { PlansService } from '../../core/plans/plans.service';
@@ -44,7 +45,11 @@ describe('PlanDetailPage', () => {
     volumeKg: 1200,
   });
 
-  async function setup(found = true, history: HistorySummary[] = []) {
+  async function setup(
+    found = true,
+    history: HistorySummary[] = [],
+    notes: Record<string, string> = {},
+  ) {
     TestBed.configureTestingModule({
       imports: [PlanDetailPage, TranslocoTestingModule.forRoot({ langs: { de: {} } })],
       providers: [
@@ -57,6 +62,10 @@ describe('PlanDetailPage', () => {
         {
           provide: HistoryService,
           useValue: { summaries: signal(history), load: async () => undefined },
+        },
+        {
+          provide: ExerciseNotesService,
+          useValue: { load: async () => undefined, noteFor: (id: string) => notes[id] ?? '' },
         },
       ],
     });
@@ -82,6 +91,24 @@ describe('PlanDetailPage', () => {
     el.querySelector<HTMLButtonElement>('app-plan-exercise-row button')?.click();
     fixture.detectChanges();
     expect(el.textContent).toContain('plans.restSeconds');
+  });
+
+  it('shows the exercise note in the details, or offers to add one', async () => {
+    const withNote = (await setup(true, [], { e1: 'Bank flach' })).fixture;
+    const el: HTMLElement = withNote.nativeElement;
+    expect(el.querySelector('[aria-label$="exerciseNote.label"]')).not.toBeNull();
+    el.querySelector<HTMLButtonElement>('app-plan-exercise-row button')?.click();
+    withNote.detectChanges();
+    expect(el.querySelector('app-exercise-note')?.textContent).toContain('Bank flach');
+
+    TestBed.resetTestingModule();
+    const without = (await setup()).fixture;
+    const plain: HTMLElement = without.nativeElement;
+    expect(plain.querySelector('[aria-label$="exerciseNote.label"]')).toBeNull();
+    plain.querySelector<HTMLButtonElement>('app-plan-exercise-row button')?.click();
+    without.detectChanges();
+    expect(plain.querySelector('app-exercise-note')).toBeNull();
+    expect(plain.textContent).toContain('exerciseNote.add');
   });
 
   it('links to the plan history once the plan was trained', async () => {
