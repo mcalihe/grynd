@@ -86,6 +86,8 @@
     "finish": "Training abschliessen",
     "addSet": "Satz",
     "setProgress": "Satz {{current}} von {{total}}",
+    "progress": "Trainingsfortschritt",
+    "percent": "{{percent}} %",
     "targetLine": "{{sets}} Sätze · Ziel {{reps}} Wdh.",
     "resume": {
       "title": "Training läuft bereits",

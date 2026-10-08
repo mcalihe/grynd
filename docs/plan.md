@@ -126,7 +126,7 @@ Alle Tabellen haben `id` (UUIDv7), `createdAt`, `updatedAt`, `deletedAt`. Dazu k
 
 ### Training (`/workout`)
 - **Eine Übung pro Seite,** horizontales Wischen per CSS Scroll-Snap (`scroll-snap-type: x mandatory`). Kopfbereich und Weiter-Button bewegen sich nicht mit.
-- **Segment-Indikator oben:** ein Segment pro Übung (Session-Reihenfolge), füllt sich anteilig zu den erledigten Sätzen (inkl. Extra-Sätze), aktuelles Segment hervorgehoben, ohne Zahlen.
+- **Segment-Indikator oben:** ein Segment pro Übung (Session-Reihenfolge), füllt sich anteilig zu den erledigten Sätzen (inkl. Extra-Sätze), aktuelles Segment hervorgehoben, ohne Zahlen. Rechts daneben der Gesamtfortschritt in Prozent (erledigte Sätze aller Übungen inkl. Extra-Sätze, abgerundet: 100 % erst, wenn alles abgehakt ist).
 - **Übersicht:** Pill «2 / 6» mit Listen-Icon und Chevron öffnet ein Sheet mit allen Übungen. Umsortieren per Angular CDK Drag and Drop, alle Zeilen immer verschiebbar. Status als Fortschrittsring in `primary` (voll = Haken), aktuelle Übung über Hintergrund und Rahmen markiert, kein Text. Tippen springt zur Übung.
 - **Übungsmenü (drei Punkte):** «1 nach hinten verschieben», «Ans Ende verschieben».
 - **Satz-Zeile** (80 px): Nummer, Vorwert, Stepper für kg und Wdh., Haken. Werte lassen sich auch durch waagrechtes Ziehen über den Stepper ändern: ein Lineal über den ganzen Bildschirm zeigt jeden Schritt, am Bildschirmrand scrollt es weiter ([0018](decisions/0018-value-scrubber.md)). Zustände: offen, erledigt, Rekord, Menü offen. Kein «aktiv»-Zustand.
