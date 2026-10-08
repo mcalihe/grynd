@@ -4,7 +4,7 @@ import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmSwitch } from '@spartan-ng/helm/switch';
 import { toast } from '@spartan-ng/brain/sonner';
-import { APP_VERSION } from '../../core/app-info';
+import { displayVersion } from '../../core/app-info';
 import { BackupService } from '../../core/backup/backup.service';
 import { ConfirmService } from '../../core/services/confirm.service';
 import { AppLang } from '../../core/i18n/language';
@@ -137,7 +137,7 @@ export class SettingsPage {
 
   protected readonly settings = this.service.settings;
   protected readonly busy = signal(false);
-  protected readonly version = APP_VERSION;
+  protected readonly version = displayVersion();
 
   protected readonly themeOptions = computed<SegmentedOption<ThemeMode>[]>(() => {
     this.translation();

@@ -125,7 +125,10 @@ jobs:
           node-version-file: .nvmrc
       - run: corepack enable
       - run: pnpm install --frozen-lockfile
-      - run: pnpm build --base-href "$BASE_HREF"
+      # Build label (src/app/core/app-info.ts): version 0.4.0+main.abc1234, tab title «main · Grynd»
+      - run: pnpm build --base-href "$BASE_HREF" --define "GRYND_BUILD='main.${SHA:0:7}'"
+        env:
+          SHA: ${{ needs.main-gate.outputs.staging }}
 
       - run: sed "s|__BASE__|$BASE_HREF|" deploy/app.htaccess > dist/grynd/browser/.htaccess
       - run: sudo apt-get update -q && sudo apt-get install -y -q lftp
@@ -167,7 +170,11 @@ jobs:
           node-version-file: .nvmrc
       - run: corepack enable
       - run: pnpm install --frozen-lockfile
-      - run: pnpm build --base-href "$BASE_HREF"
+      # Build label (src/app/core/app-info.ts): version 0.4.0+pr-31.abc1234, tab title «pr-31 · Grynd»
+      - run: pnpm build --base-href "$BASE_HREF" --define "GRYND_BUILD='pr-$PR_NUMBER.${SHA:0:7}'"
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          SHA: ${{ github.event.pull_request.head.sha }}
 
       - run: sed "s|__BASE__|$BASE_HREF|" deploy/app.htaccess > dist/grynd/browser/.htaccess
       - run: sudo apt-get update -q && sudo apt-get install -y -q lftp

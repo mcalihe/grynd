@@ -68,6 +68,8 @@ Workflow `.github/workflows/deploy.yml` («Deploy»), Hintergrund in `docs/decis
 
 Der Link zur Preview erscheint im PR als «View deployment» und in einem Kommentar des Jobs `preview-comment`, der bei jedem Deploy aktualisiert wird und beim Schliessen «Preview removed» meldet.
 
+Staging und Previews sind als solche erkennbar: Die Einstellungen zeigen die Version mit Build-Kennzeichnung (`0.4.0+main.abc1234`, `0.4.0+pr-31.abc1234`, lokal mit `pnpm start` `0.4.0+dev`), der Tab-Titel beginnt mit dem Kanal (`pr-31 · Grynd`). Die Kennzeichnung setzt der Build mit `--define "GRYND_BUILD='…'"` (`src/app/core/app-info.ts`, `angular.json` für `dev`). Releases und native Builds zeigen nur die Version.
+
 ### Einmalige Einrichtung
 
 1. **Plesk:** Domain `fit.michael-isler.com` und Subdomain `fit-preview.michael-isler.com` mit je eigenem FTP-Benutzer, beide mit `httpdocs/` in der FTP-Wurzel. Für beide ein Let's-Encrypt-Zertifikat ausstellen. Liegt das DNS nicht bei Plesk, beim DNS-Anbieter A- oder CNAME-Einträge für `fit` und `fit-preview` anlegen. Hinter dem Cloudflare-Proxy bleiben beide Namen eine Ebene tief, sonst deckt das kostenlose Cloudflare-Zertifikat sie nicht ab (`ERR_SSL_VERSION_OR_CIPHER_MISMATCH`).

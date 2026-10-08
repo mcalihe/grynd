@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { TranslocoTestingModule } from '@jsverse/transloco';
 import packageJson from '../../../../package.json';
 import { provideMemorySettings } from '../../../testing/settings';
-import { APP_VERSION } from '../../core/app-info';
+import { APP_VERSION, displayVersion } from '../../core/app-info';
 import { SettingsService } from '../../core/settings/settings.service';
 import { SettingsPage } from './settings-page';
 
@@ -51,6 +51,6 @@ describe('SettingsPage', () => {
 
   it('shows the version', async () => {
     const { el } = await render();
-    expect(el.textContent).toContain(`Grynd ${APP_VERSION}`);
+    expect(el.textContent).toContain(`Grynd ${displayVersion()}`);
   });
 });
