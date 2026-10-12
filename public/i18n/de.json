@@ -329,6 +329,10 @@
       "title": "Neuigkeiten auf einen Blick",
       "text": "Nach einem Update zeigt dir Grynd kurz, was neu ist. Alle Neuerungen findest du jederzeit in den Einstellungen unter «Neuigkeiten»."
     },
+    "weightStep": {
+      "title": "Eigener Gewichtsschritt pro Übung",
+      "text": "Kurzhanteln in 2-kg-Stufen, Maschinen in 5 kg? Wähl pro Übung, um wie viel + und − springen, im Training über das Übungsmenü oder im Plan."
+    },
     "exerciseNotes": {
       "title": "Notizen zu Übungen",
       "text": "Halte Sitzeinstellung, Griff oder Technik-Tipps zu einer Übung fest. Die Notiz steht im Training direkt über den Sätzen, in jedem Plan mit dieser Übung."

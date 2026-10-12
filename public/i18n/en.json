@@ -329,6 +329,10 @@
       "title": "What’s new at a glance",
       "text": "After an update, Grynd briefly shows you what’s new. You can find all changes any time in the settings under “What’s new”."
     },
+    "weightStep": {
+      "title": "Your own weight step per exercise",
+      "text": "Dumbbells in 2 kg steps, machines in 5 kg? Choose per exercise how much + and − change the weight, from the exercise menu during a workout or in the plan."
+    },
     "exerciseNotes": {
       "title": "Exercise notes",
       "text": "Jot down seat settings, grip or technique tips for an exercise. The note shows up right above your sets during the workout, in every plan with that exercise."
