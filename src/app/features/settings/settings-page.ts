@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { RouterLink } from '@angular/router';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
+import { NgIcon } from '@ng-icons/core';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmSwitch } from '@spartan-ng/helm/switch';
 import { toast } from '@spartan-ng/brain/sonner';
@@ -16,12 +18,12 @@ import {
 } from '../../shared/components/segmented-control/segmented-control';
 
 /**
- * Einstellungen (Figma 84:2796 / 84:3950): theme, units, language, timer autostart, backup and
- * the app version. Every change is saved right away.
+ * Einstellungen (Figma 84:2796 / 84:3950): theme, units, language, timer autostart, backup, the
+ * «What's new» page (decision 0020) and the app version. Every change is saved right away.
  */
 @Component({
   selector: 'app-settings-page',
-  imports: [PageHeader, SegmentedControl, HlmSwitch, HlmButton, TranslocoPipe],
+  imports: [PageHeader, SegmentedControl, HlmSwitch, HlmButton, NgIcon, RouterLink, TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'flex flex-1 flex-col' },
   template: `
@@ -120,6 +122,29 @@ import {
             (change)="importBackup(file)"
           />
         </div>
+      </section>
+
+      <section class="flex flex-col gap-2">
+        <h2 class="text-sm font-medium text-muted-foreground">{{ 'settings.app' | transloco }}</h2>
+        <a
+          routerLink="/settings/whats-new"
+          class="flex items-center gap-3 rounded-xl border bg-card p-4"
+          data-action="whats-new"
+        >
+          <span
+            class="flex size-10 shrink-0 items-center justify-center rounded-md bg-secondary text-secondary-foreground"
+            aria-hidden="true"
+          >
+            <ng-icon name="lucideSparkles" size="24" />
+          </span>
+          <span class="flex min-w-0 flex-1 flex-col gap-1">
+            <span class="text-sm font-semibold">{{ 'settings.whatsNew.title' | transloco }}</span>
+            <span class="text-xs text-muted-foreground">
+              {{ 'settings.whatsNew.text' | transloco }}
+            </span>
+          </span>
+          <ng-icon name="lucideChevronRight" size="20" aria-hidden="true" />
+        </a>
       </section>
 
       <p class="pt-1 text-center text-xs text-muted-foreground">Grynd {{ version }}</p>

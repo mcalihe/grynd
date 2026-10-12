@@ -284,7 +284,7 @@
     "app": "App",
     "whatsNew": {
       "title": "Neuigkeiten",
-      "text": "Was sich in den letzten Versionen getan hat"
+      "text": "Was in den letzten Versionen neu ist"
     }
   },
   "whatsNew": {
@@ -316,7 +316,7 @@
     },
     "setMenu": {
       "title": "Sätze schneller anpassen",
-      "text": "Tipp auf die Satznummer, um einen Satz zu duplizieren oder zu löschen. Einen gelöschten geplanten Satz holst du mit «+ Satz» zurück."
+      "text": "Tipp auf die Satznummer, um einen Satz zu duplizieren oder zu löschen. Einen gelöschten geplanten Satz holst du mit «+ Satz» zurück."
     },
     "narrowPhones": {
       "title": "Auch auf kleinen Handys",

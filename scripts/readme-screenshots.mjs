@@ -22,6 +22,7 @@ const VIEWPORT = { width: 393, height: 852 };
 const SCALE = 2;
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+const packageJson = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'));
 const outDir = join(root, 'docs/readme/screenshots');
 
 // ---------------------------------------------------------------------------------------------
@@ -211,10 +212,15 @@ try {
       locale: 'en-US',
       timezoneId: process.env.TZ,
     });
-    await context.addInitScript((t) => {
-      const settings = { theme: t, unit: 'kg', lang: 'en', timerAutostart: true };
-      localStorage.setItem('CapacitorStorage.grynd.settings', JSON.stringify(settings));
-    }, theme);
+    await context.addInitScript(
+      ([t, version]) => {
+        const settings = { theme: t, unit: 'kg', lang: 'en', timerAutostart: true };
+        localStorage.setItem('CapacitorStorage.grynd.settings', JSON.stringify(settings));
+        // News already seen: the «What's new» popup must not cover a screen (decision 0020)
+        localStorage.setItem('CapacitorStorage.grynd.lastSeenVersion', version);
+      },
+      [theme, packageJson.version],
+    );
     await context.clock.setFixedTime(NOW);
     const page = await context.newPage();
     const shot = async (name) => {

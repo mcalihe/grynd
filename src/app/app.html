@@ -13,5 +13,11 @@
 <!-- Loaded after startup: keeps the CDK overlay out of the initial bundle. -->
 @defer (on idle) {
   <app-confirm-dialog-host />
+  <app-whats-new-dialog
+    [open]="showWhatsNew()"
+    [version]="whatsNew.version"
+    [notes]="whatsNew.pending()"
+    (closed)="whatsNew.dismiss()"
+  />
   <hlm-toaster position="top-center" [theme]="theme.resolved()" />
 }

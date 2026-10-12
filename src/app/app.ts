@@ -15,9 +15,11 @@ import { TranslocoService } from '@jsverse/transloco';
 import { filter, map, take } from 'rxjs';
 import { displayTitle } from './core/app-info';
 import { ThemeService } from './core/services/theme.service';
+import { WhatsNewService } from './core/whats-new/whats-new.service';
 import { WorkoutService } from './core/workout/workout.service';
 import { BottomNavigation } from './shared/components/bottom-navigation/bottom-navigation';
 import { ConfirmDialogHost } from './shared/components/confirm-dialog/confirm-dialog-host';
+import { WhatsNewDialog } from './shared/components/whats-new/whats-new-dialog';
 import { HlmToaster } from '@spartan-ng/helm/sonner';
 
 /** Routes that show the bottom navigation (top-level tabs only). */
@@ -25,7 +27,7 @@ const TAB_ROUTES = ['/plans', '/history', '/settings'];
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, BottomNavigation, ConfirmDialogHost, HlmToaster],
+  imports: [RouterOutlet, BottomNavigation, ConfirmDialogHost, WhatsNewDialog, HlmToaster],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './app.html',
 })
@@ -42,6 +44,12 @@ export class App {
   );
 
   protected readonly showNav = computed(() => TAB_ROUTES.includes(this.url()));
+
+  protected readonly whatsNew = inject(WhatsNewService);
+  /** After an update, on a tab screen only: never in the middle of a workout or an editor. */
+  protected readonly showWhatsNew = computed(
+    () => this.showNav() && this.whatsNew.pending().length > 0,
+  );
 
   constructor() {
     // App initializers are done once the first frame renders: no blank flash, no theme flicker.
@@ -64,6 +72,9 @@ export class App {
           void this.router.navigateByUrl('/workout', { replaceUrl: true });
         }
       });
+
+    // Once per update: what is new since the last version the user saw (decision 0020).
+    void this.whatsNew.check();
 
     // Staging and previews carry their channel in the tab title (`pr-31 · Grynd`).
     const title = inject(Title);
