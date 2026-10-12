@@ -18,6 +18,7 @@ import { HlmSheetImports } from '@spartan-ng/helm/sheet';
 import { HlmSwitchImports } from '@spartan-ng/helm/switch';
 import { HlmToggleGroupImports } from '@spartan-ng/helm/toggle-group';
 import { ThemeMode, ThemeService } from '../../core/services/theme.service';
+import { RELEASE_NOTES } from '../../core/whats-new/release-notes';
 import { PageHeader } from '../../shared/components/page-header/page-header';
 import { HistoryRow } from '../../shared/components/history-row/history-row';
 import { PlanCard } from '../../shared/components/plan-card/plan-card';
@@ -41,6 +42,8 @@ import { TimerBar } from '../../shared/components/timer-bar/timer-bar';
 import { WeekdayChips } from '../../shared/components/weekday-chips/weekday-chips';
 import { ValueScrubber } from '../../shared/components/value-scrubber/value-scrubber';
 import { WorkoutClock } from '../../shared/components/workout-clock/workout-clock';
+import { ReleaseNotesList } from '../../shared/components/whats-new/release-notes-list';
+import { WhatsNewDialog } from '../../shared/components/whats-new/whats-new-dialog';
 import { CelebrationService } from '../../shared/motion/celebration.service';
 import { ExerciseCelebration } from '../workout/exercise-celebration';
 
@@ -70,6 +73,8 @@ import { ExerciseCelebration } from '../workout/exercise-celebration';
     WorkoutClock,
     ExerciseNote,
     ExerciseNoteSheet,
+    ReleaseNotesList,
+    WhatsNewDialog,
     PageHeader,
     PlanCard,
     WeekChart,
@@ -114,6 +119,13 @@ export class ComponentsShowcase {
     'Sitz auf Stufe 4, Füsse oben auf der Platte.\nLangsam ablassen, unten nicht ganz durchstrecken.\nIm letzten Satz halbe Wiederholungen.',
   );
   protected readonly noteOpen = signal(false);
+
+  // What's new (decision 0020): the two newest versions, as after skipping one update
+  protected readonly whatsNewNotes = RELEASE_NOTES.filter((entry) => entry.items.length).slice(
+    0,
+    2,
+  );
+  protected readonly whatsNewOpen = signal(false);
   protected readonly monthBars: BarChartBar[] = Array.from({ length: 30 }, (_, i) => {
     const trained = [0, 2, 4, 7, 9, 11, 14, 16, 18, 21, 23, 28].includes(i);
     return {

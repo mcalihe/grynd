@@ -71,6 +71,8 @@ Klassen folgen dem Angular-Styleguide 2025 (ohne `Component`-Suffix), Selektor-P
 | Übungszeile im Plan (Detail/Editor, ≡-Handle, Chevron) | `37:27708`, `37:28096` | `PlanExerciseRow` (`app-plan-exercise-row`, features/plans) |
 | Übungs-Listeneintrag + Filter-Chips im Picker | `63:13440` | im `ExercisePickerPage` (features/plans) |
 | «Änderungen verwerfen» / Bestätigungen | `66:1123` | `ConfirmService` + `ConfirmDialogHost` (App-Shell, `@defer`) |
+| Neuigkeiten nach einem Update (Popup) | – (nur Code, [0020](../decisions/0020-whats-new.md); Stil wie Dialog `9:303`) | `WhatsNewDialog` (`app-whats-new-dialog`, helm Alert-Dialog, App-Shell `@defer`) |
+| Liste der Neuerungen (Popup, Einstellungen) | – (nur Code, [0020](../decisions/0020-whats-new.md)) | `ReleaseNotesList` (`app-release-notes-list`) |
 | Wochenübersicht (Balkendiagramm) | `37:29739` | `WeekChart` (`app-week-chart`), Balken über `BarChart` |
 | Balkendiagramm (Statistik, Plan-Verlauf) | `120:1844`, `122:1931` | `BarChart` (`app-bar-chart`, optional antippbar) |
 | Trainingseintrag im Verlauf | `37:29769` | `HistoryRow` (`app-history-row`) |

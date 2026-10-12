@@ -155,9 +155,13 @@ Alle Tabellen haben `id` (UUIDv7), `createdAt`, `updatedAt`, `deletedAt`. Dazu k
 
 ### Einstellungen (`/settings`)
 - Letzter Tab der Bottom-Navigation (Zahnrad).
-- Theme (Automatisch/Hell/Dunkel), Einheiten (kg/lb), Sprache (Deutsch/English, bis zur Wahl die Gerätesprache), Timer-Autostart, JSON-Export/Import als Backup, Version.
+- Theme (Automatisch/Hell/Dunkel), Einheiten (kg/lb), Sprache (Deutsch/English, bis zur Wahl die Gerätesprache), Timer-Autostart, JSON-Export/Import als Backup, «Neuigkeiten», Version.
 - Gespeichert mit `@capacitor/preferences`, wirksam sofort ([0013](decisions/0013-settings-units-swipe-backup.md)).
 - **Import ersetzt alle Pläne und Trainings** nach Prüfung der Datei und Bestätigung; Export als Download bzw. über das Teilen-Menü.
+
+### Neuigkeiten (Popup und `/settings/whats-new`)
+- Nach einem Update erscheint einmal ein Popup «Neu in Grynd {{version}}» mit den Neuerungen seit der zuletzt gesehenen Version (auch übersprungene), nur auf den Tab-Screens, nie im Training. Neuinstallationen sehen es nicht ([0020](decisions/0020-whats-new.md)).
+- Die Texte schreibt man von Hand, für alle verständlich, in Deutsch und Englisch; nur was Nutzer merken. In den Einstellungen listet «Neuigkeiten» alle Versionen.
 
 ## 9. UI-Regeln
 

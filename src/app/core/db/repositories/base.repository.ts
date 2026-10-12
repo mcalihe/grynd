@@ -103,6 +103,14 @@ export abstract class BaseRepository<T extends BaseEntity> {
     return this.findWhere('deletedAt IS NULL', [], orderBy);
   }
 
+  /** Number of rows that are not soft-deleted. */
+  async count(): Promise<number> {
+    const [row] = await this.db.query<{ n: number }>(
+      `SELECT count(*) AS n FROM ${this.table} WHERE deletedAt IS NULL`,
+    );
+    return row?.n ?? 0;
+  }
+
   protected async findWhere(
     where: string,
     params: readonly SqlValue[] = [],

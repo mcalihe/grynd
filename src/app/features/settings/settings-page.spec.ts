@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { TranslocoTestingModule } from '@jsverse/transloco';
 import packageJson from '../../../../package.json';
 import { provideMemorySettings } from '../../../testing/settings';
@@ -22,7 +23,7 @@ describe('SettingsPage', () => {
           translocoConfig: { availableLangs: ['de', 'en'], defaultLang: 'de' },
         }),
       ],
-      providers: [provideMemorySettings()],
+      providers: [provideMemorySettings(), provideRouter([])],
     });
     const settings = TestBed.inject(SettingsService);
     await settings.init();
@@ -47,6 +48,12 @@ describe('SettingsPage', () => {
     const { el, settings } = await render();
     el.querySelector<HTMLButtonElement>('hlm-switch button')!.click();
     expect(settings.settings().timerAutostart).toBe(false);
+  });
+
+  it('links to the release notes', async () => {
+    const { el } = await render();
+    const link = el.querySelector<HTMLAnchorElement>('[data-action=whats-new]')!;
+    expect(link.getAttribute('href')).toBe('/settings/whats-new');
   });
 
   it('shows the version', async () => {
