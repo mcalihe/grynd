@@ -280,6 +280,67 @@
         "text": "Alle Pläne und Trainings auf diesem Gerät werden durch die Sicherung ersetzt.",
         "confirm": "Ersetzen"
       }
+    },
+    "app": "App",
+    "whatsNew": {
+      "title": "Neuigkeiten",
+      "text": "Was sich in den letzten Versionen getan hat"
+    }
+  },
+  "whatsNew": {
+    "title": "Neu in Grynd {{version}}",
+    "text": "Das hat sich mit dem Update getan.",
+    "done": "Los geht’s",
+    "page": {
+      "title": "Neuigkeiten",
+      "version": "Version {{version}}",
+      "current": "Aktuell"
+    }
+  },
+  "releaseNotes": {
+    "whatsNew": {
+      "title": "Neuigkeiten auf einen Blick",
+      "text": "Nach einem Update zeigt dir Grynd kurz, was neu ist. Alle Neuerungen findest du jederzeit in den Einstellungen unter «Neuigkeiten»."
+    },
+    "exerciseNotes": {
+      "title": "Notizen zu Übungen",
+      "text": "Halte Sitzeinstellung, Griff oder Technik-Tipps zu einer Übung fest. Die Notiz steht im Training direkt über den Sätzen, in jedem Plan mit dieser Übung."
+    },
+    "workoutPercent": {
+      "title": "Fortschritt in Prozent",
+      "text": "Oben im Training siehst du jetzt, wie viel du schon geschafft hast."
+    },
+    "valueScrubber": {
+      "title": "Werte durch Ziehen ändern",
+      "text": "Zieh mit dem Finger seitlich über Gewicht oder Wiederholungen. Ein Lineal zeigt dir jeden Schritt, so triffst du den Wert schnell und genau."
+    },
+    "setMenu": {
+      "title": "Sätze schneller anpassen",
+      "text": "Tipp auf die Satznummer, um einen Satz zu duplizieren oder zu löschen. Einen gelöschten geplanten Satz holst du mit «+ Satz» zurück."
+    },
+    "narrowPhones": {
+      "title": "Auch auf kleinen Handys",
+      "text": "Die Sätze passen jetzt auch auf sehr schmale Bildschirme, ohne dass etwas abgeschnitten wird."
+    },
+    "workoutClock": {
+      "title": "Trainingsuhr",
+      "text": "Oben rechts läuft die Zeit deines Trainings mit. Tipp darauf, wenn du das Training beenden möchtest."
+    },
+    "historyStats": {
+      "title": "Statistik im Verlauf",
+      "text": "Ein Kalender mit deinen Trainingstagen, Zahlen pro Woche, Monat und Jahr, deine Kraftentwicklung pro Übung und welche Muskelgruppen du trainierst."
+    },
+    "compareWorkouts": {
+      "title": "Trainings vergleichen",
+      "text": "Jedes Training zeigt, was sich seit dem letzten Mal mit demselben Plan verändert hat. Dazu siehst du alle Trainings eines Plans auf einen Blick."
+    },
+    "celebrations": {
+      "title": "Kleine Feiern",
+      "text": "Ein Haken, der aufspringt, Sterne bei neuen Rekorden und Konfetti, wenn du eine Übung oder dein ganzes Training schaffst."
+    },
+    "firstRelease": {
+      "title": "Grynd ist da",
+      "text": "Pläne erstellen, Sätze mit einem Tipp abhaken (deine Werte vom letzten Mal sind schon eingetragen), Pausen-Timer und Verlauf. Ohne Werbung, ohne Konto, alles bleibt auf deinem Gerät."
     }
   },
   "common": {

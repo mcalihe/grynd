@@ -280,6 +280,67 @@
         "text": "All plans and workouts on this device will be replaced by the backup.",
         "confirm": "Replace"
       }
+    },
+    "app": "App",
+    "whatsNew": {
+      "title": "What’s new",
+      "text": "What changed in recent versions"
+    }
+  },
+  "whatsNew": {
+    "title": "New in Grynd {{version}}",
+    "text": "Here’s what changed with this update.",
+    "done": "Let’s go",
+    "page": {
+      "title": "What’s new",
+      "version": "Version {{version}}",
+      "current": "Current"
+    }
+  },
+  "releaseNotes": {
+    "whatsNew": {
+      "title": "What’s new at a glance",
+      "text": "After an update, Grynd briefly shows you what’s new. You can find all changes any time in the settings under “What’s new”."
+    },
+    "exerciseNotes": {
+      "title": "Exercise notes",
+      "text": "Jot down seat settings, grip or technique tips for an exercise. The note shows up right above your sets during the workout, in every plan with that exercise."
+    },
+    "workoutPercent": {
+      "title": "Progress in percent",
+      "text": "The top of the workout screen now shows how much you’ve already done."
+    },
+    "valueScrubber": {
+      "title": "Drag to change values",
+      "text": "Slide your finger sideways over weight or reps. A ruler shows every step, so you hit the right value quickly and precisely."
+    },
+    "setMenu": {
+      "title": "Adjust sets faster",
+      "text": "Tap the set number to duplicate or delete a set. Deleted a planned set? “+ Set” brings it back."
+    },
+    "narrowPhones": {
+      "title": "Fits small phones too",
+      "text": "Sets now fit on very narrow screens without anything being cut off."
+    },
+    "workoutClock": {
+      "title": "Workout clock",
+      "text": "The top right shows how long you’ve been training. Tap it when you want to end your workout."
+    },
+    "historyStats": {
+      "title": "Statistics in your history",
+      "text": "A calendar of your training days, numbers per week, month and year, your strength progress per exercise and which muscle groups you train."
+    },
+    "compareWorkouts": {
+      "title": "Compare workouts",
+      "text": "Every workout shows what changed since the last time you did the same plan. You can also see all workouts of a plan at a glance."
+    },
+    "celebrations": {
+      "title": "Little celebrations",
+      "text": "A check mark that pops, stars for new records and confetti when you finish an exercise or your whole workout."
+    },
+    "firstRelease": {
+      "title": "Grynd is here",
+      "text": "Build plans, check off sets with one tap (your numbers from last time are already filled in), rest timer and history. No ads, no account, everything stays on your device."
     }
   },
   "common": {
