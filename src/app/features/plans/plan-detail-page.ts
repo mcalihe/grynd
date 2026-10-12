@@ -7,17 +7,21 @@ import {
   OnInit,
   signal,
 } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { NgIcon } from '@ng-icons/core';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { ExerciseCatalogService } from '../../core/exercises/exercise-catalog.service';
 import { ExerciseNotesService } from '../../core/exercises/exercise-notes.service';
+import { ExerciseSettingsService } from '../../core/exercises/exercise-settings.service';
 import { sessionDurationMs } from '../../core/history/history-stats';
 import { HistoryService } from '../../core/history/history.service';
 import { PlanDraft } from '../../core/plans/plan-draft';
 import { PlansService } from '../../core/plans/plans.service';
 import { ConfirmService } from '../../core/services/confirm.service';
+import { SettingsService } from '../../core/settings/settings.service';
+import { weightStepLabel } from '../../core/units/weight';
 import { Clock } from '../../core/utils/time';
 import { WorkoutService } from '../../core/workout/workout.service';
 import { ExerciseNote } from '../../shared/components/exercise-note/exercise-note';
@@ -26,12 +30,14 @@ import { toastAddImagesResult } from '../../shared/components/exercise-note/note
 import { PageHeader } from '../../shared/components/page-header/page-header';
 import { StickyAction } from '../../shared/components/sticky-action/sticky-action';
 import { WeekdayChips } from '../../shared/components/weekday-chips/weekday-chips';
+import { WeightStepSheet } from '../../shared/components/weight-step/weight-step-sheet';
 import { HistoryFormat } from '../history/history-format';
 import { PlanExerciseRow, targetSummary } from './plan-exercise-row';
 
 /**
  * Read-only plan view with «Bearbeiten» and «Training starten» (Figma 37:27708, decision 0010).
- * Exercise notes are not plan data, so they can be edited here directly (decision 0019).
+ * Exercise notes and weight steps are not plan data, so they can be edited here directly
+ * (decisions 0019, 0021, 0022).
  */
 @Component({
   selector: 'app-plan-detail-page',
@@ -42,6 +48,7 @@ import { PlanExerciseRow, targetSummary } from './plan-exercise-row';
     PlanExerciseRow,
     ExerciseNote,
     ExerciseNoteSheet,
+    WeightStepSheet,
     HlmButton,
     NgIcon,
     TranslocoPipe,
@@ -105,6 +112,17 @@ import { PlanExerciseRow, targetSummary } from './plan-exercise-row';
                 <p class="text-sm text-muted-foreground">
                   {{ 'plans.restSeconds' | transloco: { seconds: exercise.restSeconds } }}
                 </p>
+                <button
+                  hlmBtn
+                  variant="ghost"
+                  size="sm"
+                  class="-ml-2 self-start"
+                  (click)="editWeightStep(exercise.exerciseId)"
+                >
+                  <ng-icon name="lucideDumbbell" />{{
+                    'weightStep.detail' | transloco: { step: weightStepLabel(exercise.exerciseId) }
+                  }}
+                </button>
                 @if (notes.hasNote(exercise.exerciseId)) {
                   <app-exercise-note
                     [text]="notes.noteFor(exercise.exerciseId)"
@@ -144,6 +162,14 @@ import { PlanExerciseRow, targetSummary } from './plan-exercise-row';
         (addImages)="addNoteImages($event)"
         (removeImage)="removeNoteImage($event)"
       />
+
+      <app-weight-step-sheet
+        [(open)]="stepOpen"
+        [title]="catalog.nameById(stepExerciseId())"
+        [unit]="unit()"
+        [step]="exerciseSettings.weightStepFor(stepExerciseId(), unit())"
+        (pick)="exerciseSettings.setWeightStep(stepExerciseId(), unit(), $event)"
+      />
     }
   `,
 })
@@ -158,6 +184,11 @@ export class PlanDetailPage implements OnInit {
   protected readonly catalog = inject(ExerciseCatalogService);
   protected readonly notes = inject(ExerciseNotesService);
   private readonly transloco = inject(TranslocoService);
+  protected readonly exerciseSettings = inject(ExerciseSettingsService);
+  private readonly settings = inject(SettingsService);
+  private readonly locale = toSignal(inject(TranslocoService).langChanges$, {
+    initialValue: 'de',
+  });
 
   private readonly history = inject(HistoryService);
   private readonly format = inject(HistoryFormat);
@@ -167,6 +198,9 @@ export class PlanDetailPage implements OnInit {
   protected readonly summary = targetSummary;
   protected readonly noteExerciseId = signal('');
   protected readonly noteOpen = signal(false);
+  protected readonly stepExerciseId = signal('');
+  protected readonly stepOpen = signal(false);
+  protected readonly unit = computed(() => this.settings.settings().unit);
 
   /** Entry to the plan history: number of workouts, the last one and the average time. */
   protected readonly planHistory = computed(() => {
@@ -190,6 +224,7 @@ export class PlanDetailPage implements OnInit {
       this.plans.getDraft(this.id()),
       this.catalog.load(),
       this.notes.load(),
+      this.exerciseSettings.load(),
     ]);
     if (!plan) {
       await this.router.navigate(['/plans']);
@@ -221,6 +256,21 @@ export class PlanDetailPage implements OnInit {
 
   protected removeNoteImage(imageId: string): void {
     void this.notes.removeImage(this.noteExerciseId(), imageId);
+  }
+
+  /** "2,5 kg": the exercise's weight step in the shown unit. */
+  protected weightStepLabel(exerciseId: string): string {
+    const unit = this.unit();
+    return weightStepLabel(
+      this.exerciseSettings.weightStepFor(exerciseId, unit),
+      unit,
+      this.locale(),
+    );
+  }
+
+  protected editWeightStep(exerciseId: string): void {
+    this.stepExerciseId.set(exerciseId);
+    this.stepOpen.set(true);
   }
 
   protected edit(): void {

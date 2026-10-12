@@ -114,7 +114,7 @@ test('plan → workout → history', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'E2E Brust' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Alle Trainings' })).toBeVisible();
 
-  // The plan shows the note in the exercise details
+  // The plan shows the note and the weight step in the exercise details
   await page.goto('/plans');
   await page
     .getByRole('button', { name: /E2E Brust/ })
@@ -123,4 +123,5 @@ test('plan → workout → history', async ({ page }) => {
   await page.getByRole('button', { name: 'Details' }).click();
   await expect(page.getByRole('button', { name: /Bank flach, Griff eng/ })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Bild 1 von 1' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Gewichtsschritt 1 kg' })).toBeVisible();
 });

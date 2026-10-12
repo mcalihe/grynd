@@ -4,6 +4,7 @@ import { provideRouter, Router } from '@angular/router';
 import { TranslocoTestingModule } from '@jsverse/transloco';
 import { ExerciseCatalogService } from '../../core/exercises/exercise-catalog.service';
 import { ExerciseNotesService, NoteImage } from '../../core/exercises/exercise-notes.service';
+import { ExerciseSettingsService } from '../../core/exercises/exercise-settings.service';
 import { HistorySummary } from '../../core/history/history-stats';
 import { HistoryService } from '../../core/history/history.service';
 import { PlansService } from '../../core/plans/plans.service';
@@ -50,6 +51,7 @@ describe('PlanDetailPage', () => {
     history: HistorySummary[] = [],
     notes: Record<string, string> = {},
     images: Record<string, NoteImage[]> = {},
+    steps: Record<string, number> = {},
   ) {
     const imagesFor = (id: string) => images[id] ?? [];
     TestBed.configureTestingModule({
@@ -73,6 +75,14 @@ describe('PlanDetailPage', () => {
             imagesFor,
             pendingFor: () => 0,
             hasNote: (id: string) => !!notes[id] || imagesFor(id).length > 0,
+          },
+        },
+        {
+          provide: ExerciseSettingsService,
+          useValue: {
+            load: async () => undefined,
+            weightStepFor: (id: string) => steps[id] ?? 2.5,
+            setWeightStep: vi.fn(),
           },
         },
       ],
@@ -99,6 +109,33 @@ describe('PlanDetailPage', () => {
     el.querySelector<HTMLButtonElement>('app-plan-exercise-row button')?.click();
     fixture.detectChanges();
     expect(el.textContent).toContain('plans.restSeconds');
+  });
+
+  it('shows the weight step in the details and changes it in the sheet', async () => {
+    const { fixture } = await setup(true, [], {}, {}, { e1: 2 });
+    const el: HTMLElement = fixture.nativeElement;
+    el.querySelector<HTMLButtonElement>('app-plan-exercise-row button')?.click();
+    fixture.detectChanges();
+
+    const stepButton = [...el.querySelectorAll('button')].find((b) =>
+      b.textContent?.includes('weightStep.detail'),
+    )!;
+    expect(stepButton).toBeDefined();
+    stepButton.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const option = [...document.body.querySelectorAll<HTMLButtonElement>('[role="radio"]')].find(
+      (b) => b.getAttribute('aria-checked') === 'true',
+    );
+    expect(option?.textContent?.trim()).toBe('2 kg');
+    document.body.querySelector<HTMLButtonElement>('[role="radio"]')?.click();
+    expect(TestBed.inject(ExerciseSettingsService).setWeightStep).toHaveBeenCalledWith(
+      'e1',
+      'kg',
+      0.25,
+    );
+    document.body.querySelectorAll('.cdk-overlay-container').forEach((e) => e.remove());
   });
 
   it('shows the exercise note in the details, or offers to add one', async () => {
