@@ -8,7 +8,7 @@ import {
   signal,
 } from '@angular/core';
 import { Router } from '@angular/router';
-import { TranslocoPipe } from '@jsverse/transloco';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { NgIcon } from '@ng-icons/core';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { ExerciseCatalogService } from '../../core/exercises/exercise-catalog.service';
@@ -22,6 +22,7 @@ import { Clock } from '../../core/utils/time';
 import { WorkoutService } from '../../core/workout/workout.service';
 import { ExerciseNote } from '../../shared/components/exercise-note/exercise-note';
 import { ExerciseNoteSheet } from '../../shared/components/exercise-note/exercise-note-sheet';
+import { toastAddImagesResult } from '../../shared/components/exercise-note/note-image-feedback';
 import { PageHeader } from '../../shared/components/page-header/page-header';
 import { StickyAction } from '../../shared/components/sticky-action/sticky-action';
 import { WeekdayChips } from '../../shared/components/weekday-chips/weekday-chips';
@@ -98,14 +99,18 @@ import { PlanExerciseRow, targetSummary } from './plan-exercise-row';
             <app-plan-exercise-row
               [name]="catalog.nameById(exercise.exerciseId)"
               [summary]="summary(exercise.targetSets, exercise.repMin, exercise.repMax)"
-              [hasNote]="!!notes.noteFor(exercise.exerciseId)"
+              [hasNote]="notes.hasNote(exercise.exerciseId)"
             >
               <div class="flex flex-col gap-3">
                 <p class="text-sm text-muted-foreground">
                   {{ 'plans.restSeconds' | transloco: { seconds: exercise.restSeconds } }}
                 </p>
-                @if (notes.noteFor(exercise.exerciseId); as text) {
-                  <app-exercise-note [text]="text" (edit)="editNote(exercise.exerciseId)" />
+                @if (notes.hasNote(exercise.exerciseId)) {
+                  <app-exercise-note
+                    [text]="notes.noteFor(exercise.exerciseId)"
+                    [images]="notes.imagesFor(exercise.exerciseId)"
+                    (edit)="editNote(exercise.exerciseId)"
+                  />
                 } @else {
                   <button
                     hlmBtn
@@ -133,7 +138,11 @@ import { PlanExerciseRow, targetSummary } from './plan-exercise-row';
         [(open)]="noteOpen"
         [title]="catalog.nameById(noteExerciseId())"
         [note]="notes.noteFor(noteExerciseId())"
+        [images]="notes.imagesFor(noteExerciseId())"
+        [pending]="notes.pendingFor(noteExerciseId())"
         (save)="saveNote($event)"
+        (addImages)="addNoteImages($event)"
+        (removeImage)="removeNoteImage($event)"
       />
     }
   `,
@@ -148,6 +157,7 @@ export class PlanDetailPage implements OnInit {
   private readonly confirm = inject(ConfirmService);
   protected readonly catalog = inject(ExerciseCatalogService);
   protected readonly notes = inject(ExerciseNotesService);
+  private readonly transloco = inject(TranslocoService);
 
   private readonly history = inject(HistoryService);
   private readonly format = inject(HistoryFormat);
@@ -203,6 +213,14 @@ export class PlanDetailPage implements OnInit {
 
   protected saveNote(text: string): void {
     void this.notes.save(this.noteExerciseId(), text);
+  }
+
+  protected async addNoteImages(files: File[]): Promise<void> {
+    toastAddImagesResult(await this.notes.addImages(this.noteExerciseId(), files), this.transloco);
+  }
+
+  protected removeNoteImage(imageId: string): void {
+    void this.notes.removeImage(this.noteExerciseId(), imageId);
   }
 
   protected edit(): void {

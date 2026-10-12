@@ -12,6 +12,7 @@
 
 <!-- Loaded after startup: keeps the CDK overlay out of the initial bundle. -->
 @defer (on idle) {
+  <app-image-viewer-host />
   <app-confirm-dialog-host />
   <app-whats-new-dialog
     [open]="showWhatsNew()"

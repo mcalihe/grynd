@@ -133,7 +133,24 @@
     "edit": "Notiz bearbeiten",
     "hint": "Gilt für diese Übung in allen Plänen.",
     "placeholder": "z.B. Sitz auf Stufe 4, Füsse hoch, langsam ablassen",
-    "done": "Fertig"
+    "done": "Fertig",
+    "images": "Bilder",
+    "chooseImages": "Bilder auswählen",
+    "takePhoto": "Foto aufnehmen",
+    "imagesHint": "Höchstens {{max}} Bilder. Sie bleiben auf deinem Gerät und sind nur für dich.",
+    "imageLoading": "Bild wird hinzugefügt",
+    "imageFailed": "Ein Bild konnte nicht hinzugefügt werden.",
+    "imageLimit": "Höchstens {{max}} Bilder pro Übung."
+  },
+  "imageViewer": {
+    "position": "{{index}} / {{count}}",
+    "image": "Bild {{index}} von {{count}}",
+    "delete": "Bild löschen",
+    "deleteConfirm": {
+      "title": "Bild löschen?",
+      "text": "Das Bild wird von diesem Gerät entfernt.",
+      "confirm": "Löschen"
+    }
   },
   "history": {
     "title": "Verlauf",
@@ -298,6 +315,10 @@
     }
   },
   "releaseNotes": {
+    "notePhotos": {
+      "title": "Bilder in Notizen",
+      "text": "Füge einer Übungsnotiz bis zu sechs Fotos hinzu, etwa von der Sitzeinstellung. Die Bilder bleiben auf deinem Gerät und sind nur für dich."
+    },
     "whatsNew": {
       "title": "Neuigkeiten auf einen Blick",
       "text": "Nach einem Update zeigt dir Grynd kurz, was neu ist. Alle Neuerungen findest du jederzeit in den Einstellungen unter «Neuigkeiten»."

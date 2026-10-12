@@ -3,6 +3,7 @@ import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { WhatsNewService } from '../whats-new/whats-new.service';
 import { BackButtonService } from './back-button.service';
+import { ImageViewerService } from './image-viewer.service';
 
 describe('BackButtonService', () => {
   function setup(path: string, pending = 1) {
@@ -38,5 +39,16 @@ describe('BackButtonService', () => {
     service.handle();
     expect(whatsNew.dismiss).not.toHaveBeenCalled();
     expect(location.back).toHaveBeenCalled();
+  });
+
+  it('closes the image viewer before anything else', () => {
+    const { service, location } = setup('/plans/some-plan', 0);
+    const viewer = TestBed.inject(ImageViewerService);
+    viewer.open({ images: [{ id: 'i', src: 'data:image/jpeg;base64,AAAA' }], index: 0 });
+
+    service.handle();
+
+    expect(viewer.current()).toBeNull();
+    expect(location.back).not.toHaveBeenCalled();
   });
 });

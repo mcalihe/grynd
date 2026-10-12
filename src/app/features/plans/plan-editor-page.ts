@@ -135,7 +135,7 @@ import { PlanExerciseRow, targetSummary } from './plan-exercise-row';
                   (cdkDragStarted)="haptics.selectionStart()"
                   [name]="catalog.nameById(exercise.exerciseId)"
                   [summary]="summary(exercise.targetSets, exercise.repMin, exercise.repMax)"
-                  [hasNote]="!!notes.noteFor(exercise.exerciseId)"
+                  [hasNote]="notes.hasNote(exercise.exerciseId)"
                 >
                   <div class="flex flex-col gap-3">
                     <div class="grid grid-cols-2 gap-2">

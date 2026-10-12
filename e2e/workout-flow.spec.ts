@@ -54,8 +54,18 @@ test('plan → workout → history', async ({ page }) => {
   await page.getByRole('button', { name: 'Übungsmenü' }).click();
   await page.getByRole('menuitem', { name: 'Notiz hinzufügen' }).click();
   await page.getByRole('textbox', { name: 'Notiz' }).fill('Bank flach, Griff eng');
+  // A photo (decision 0021): picked from the device, scaled down and stored right away
+  await page
+    .locator('input[type=file][multiple]')
+    .setInputFiles('public/exercises/Barbell_Bench_Press_-_Medium_Grip.webp');
+  await expect(page.getByRole('button', { name: 'Bild 1 von 1' })).toBeVisible();
   await page.getByRole('button', { name: 'Fertig' }).click();
   await expect(page.getByRole('button', { name: /Bank flach, Griff eng/ })).toBeVisible();
+  // The note card shows the photo; a tap opens it full screen
+  await page.getByRole('button', { name: 'Bild 1 von 1' }).click();
+  await expect(page.getByRole('dialog').getByRole('img', { name: 'Bild 1 von 1' })).toBeVisible();
+  await page.getByRole('dialog').getByRole('button', { name: 'Schließen' }).click();
+  await expect(page.getByRole('dialog')).toBeHidden();
 
   // Finish → celebration (figures count up to their final values) → history detail
   await page.getByRole('button', { name: 'Training abschliessen' }).click();
@@ -98,4 +108,5 @@ test('plan → workout → history', async ({ page }) => {
     .click();
   await page.getByRole('button', { name: 'Details' }).click();
   await expect(page.getByRole('button', { name: /Bank flach, Griff eng/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Bild 1 von 1' })).toBeVisible();
 });

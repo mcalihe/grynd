@@ -27,7 +27,7 @@ export function repTarget(repMin: number | null, repMax: number | null): string 
 
 /**
  * One exercise page in the workout pager (Figma Training · Normal 56:48015): header with name,
- * set progress, muscle badge and menu, the target line, the exercise note (decision 0019),
+ * set progress, muscle badge and menu, the target line, the exercise note (decisions 0019, 0021),
  * set rows and «+ Satz».
  */
 @Component({
@@ -69,7 +69,7 @@ export function repTarget(repMin: number | null, repMax: number | null): string 
       <ng-template #exerciseMenu>
         <hlm-dropdown-menu class="w-60">
           <button hlmDropdownMenuItem (click)="editNote.emit()">
-            {{ (note() ? 'exerciseNote.edit' : 'exerciseNote.add') | transloco }}
+            {{ (hasNote() ? 'exerciseNote.edit' : 'exerciseNote.add') | transloco }}
           </button>
           <hlm-dropdown-menu-separator />
           <button hlmDropdownMenuItem [disabled]="isLast()" (click)="moveBack.emit(1)">
@@ -86,8 +86,8 @@ export function repTarget(repMin: number | null, repMax: number | null): string 
       {{ 'workout.targetLine' | transloco: { sets: plannedCount(), reps: target() } }}
     </p>
 
-    @if (note(); as text) {
-      <app-exercise-note [text]="text" (edit)="editNote.emit()" />
+    @if (hasNote()) {
+      <app-exercise-note [text]="note()" [images]="images()" (edit)="editNote.emit()" />
     }
 
     <div class="flex flex-col gap-1.5">
@@ -146,6 +146,8 @@ export class ExercisePage {
   private readonly notes = inject(ExerciseNotesService);
   protected readonly unit = computed(() => this.settings.settings().unit);
   protected readonly note = computed(() => this.notes.noteFor(this.item().entry.exerciseId));
+  protected readonly images = computed(() => this.notes.imagesFor(this.item().entry.exerciseId));
+  protected readonly hasNote = computed(() => this.notes.hasNote(this.item().entry.exerciseId));
 
   protected readonly exercise = computed(
     () => this.catalog.byId().get(this.item().entry.exerciseId) ?? { muscleGroup: null },

@@ -133,7 +133,24 @@
     "edit": "Edit note",
     "hint": "Applies to this exercise in all plans.",
     "placeholder": "e.g. seat on 4, feet high, lower slowly",
-    "done": "Done"
+    "done": "Done",
+    "images": "Photos",
+    "chooseImages": "Choose photos",
+    "takePhoto": "Take photo",
+    "imagesHint": "Up to {{max}} photos. They stay on your device and are just for you.",
+    "imageLoading": "Adding photo",
+    "imageFailed": "A photo could not be added.",
+    "imageLimit": "Up to {{max}} photos per exercise."
+  },
+  "imageViewer": {
+    "position": "{{index}} / {{count}}",
+    "image": "Photo {{index}} of {{count}}",
+    "delete": "Delete photo",
+    "deleteConfirm": {
+      "title": "Delete photo?",
+      "text": "The photo will be removed from this device.",
+      "confirm": "Delete"
+    }
   },
   "history": {
     "title": "History",
@@ -298,6 +315,10 @@
     }
   },
   "releaseNotes": {
+    "notePhotos": {
+      "title": "Photos in notes",
+      "text": "Add up to six photos to an exercise note, like your seat setting. They stay on your device and are just for you."
+    },
     "whatsNew": {
       "title": "What’s new at a glance",
       "text": "After an update, Grynd briefly shows you what’s new. You can find all changes any time in the settings under “What’s new”."

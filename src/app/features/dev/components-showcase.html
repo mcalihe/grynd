@@ -117,11 +117,12 @@
 
   <section class="flex flex-col gap-3">
     <h2 class="text-sm font-semibold text-muted-foreground">
-      Exercise note · code only (decision 0019)
+      Exercise note · code only (decisions 0019, 0021)
     </h2>
     <app-exercise-note text="Sitz Stufe 4" (edit)="noteOpen.set(true)" />
-    @if (demoNote()) {
-      <app-exercise-note [text]="demoNote()" (edit)="noteOpen.set(true)" />
+    <app-exercise-note [images]="noteOnlyImages" (edit)="noteOpen.set(true)" />
+    @if (demoNote() || demoImages().length) {
+      <app-exercise-note [text]="demoNote()" [images]="demoImages()" (edit)="noteOpen.set(true)" />
     }
     <button hlmBtn variant="ghost" size="sm" class="self-start" (click)="noteOpen.set(true)">
       <ng-icon name="lucideStickyNote" />Notiz bearbeiten
@@ -130,7 +131,10 @@
       [(open)]="noteOpen"
       title="Beinpresse"
       [note]="demoNote()"
+      [images]="demoImages()"
       (save)="demoNote.set($event.trim())"
+      (addImages)="addDemoImages($event)"
+      (removeImage)="removeDemoImage($event)"
     />
   </section>
 

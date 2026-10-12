@@ -19,6 +19,7 @@ import { WhatsNewService } from './core/whats-new/whats-new.service';
 import { WorkoutService } from './core/workout/workout.service';
 import { BottomNavigation } from './shared/components/bottom-navigation/bottom-navigation';
 import { ConfirmDialogHost } from './shared/components/confirm-dialog/confirm-dialog-host';
+import { ImageViewerHost } from './shared/components/image-viewer/image-viewer-host';
 import { WhatsNewDialog } from './shared/components/whats-new/whats-new-dialog';
 import { HlmToaster } from '@spartan-ng/helm/sonner';
 
@@ -27,7 +28,14 @@ const TAB_ROUTES = ['/plans', '/history', '/settings'];
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, BottomNavigation, ConfirmDialogHost, WhatsNewDialog, HlmToaster],
+  imports: [
+    RouterOutlet,
+    BottomNavigation,
+    ConfirmDialogHost,
+    ImageViewerHost,
+    WhatsNewDialog,
+    HlmToaster,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './app.html',
 })

@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { TranslocoTestingModule } from '@jsverse/transloco';
 import { ExerciseCatalogService } from '../../core/exercises/exercise-catalog.service';
-import { ExerciseNotesService } from '../../core/exercises/exercise-notes.service';
+import { ExerciseNotesService, NoteImage } from '../../core/exercises/exercise-notes.service';
 import { HistorySummary } from '../../core/history/history-stats';
 import { HistoryService } from '../../core/history/history.service';
 import { PlansService } from '../../core/plans/plans.service';
@@ -49,7 +49,9 @@ describe('PlanDetailPage', () => {
     found = true,
     history: HistorySummary[] = [],
     notes: Record<string, string> = {},
+    images: Record<string, NoteImage[]> = {},
   ) {
+    const imagesFor = (id: string) => images[id] ?? [];
     TestBed.configureTestingModule({
       imports: [PlanDetailPage, TranslocoTestingModule.forRoot({ langs: { de: {} } })],
       providers: [
@@ -65,7 +67,13 @@ describe('PlanDetailPage', () => {
         },
         {
           provide: ExerciseNotesService,
-          useValue: { load: async () => undefined, noteFor: (id: string) => notes[id] ?? '' },
+          useValue: {
+            load: async () => undefined,
+            noteFor: (id: string) => notes[id] ?? '',
+            imagesFor,
+            pendingFor: () => 0,
+            hasNote: (id: string) => !!notes[id] || imagesFor(id).length > 0,
+          },
         },
       ],
     });
@@ -109,6 +117,20 @@ describe('PlanDetailPage', () => {
     without.detectChanges();
     expect(plain.querySelector('app-exercise-note')).toBeNull();
     expect(plain.textContent).toContain('exerciseNote.add');
+  });
+
+  it('shows a note of photos only, with the photos', async () => {
+    const photo = { id: 'i1', src: 'data:image/jpeg;base64,AAAA' };
+    const { fixture } = await setup(true, [], {}, { e1: [photo] });
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.querySelector('[aria-label$="exerciseNote.label"]')).not.toBeNull();
+
+    el.querySelector<HTMLButtonElement>('app-plan-exercise-row button')?.click();
+    fixture.detectChanges();
+    const note = el.querySelector('app-exercise-note')!;
+    expect(note.textContent).toContain('exerciseNote.images');
+    expect(note.querySelector('img')?.getAttribute('src')).toBe(photo.src);
+    expect(el.textContent).not.toContain('exerciseNote.add');
   });
 
   it('links to the plan history once the plan was trained', async () => {
