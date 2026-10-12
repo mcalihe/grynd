@@ -1,5 +1,5 @@
 /** App version shown in the settings; bumped by release-please, must match package.json (checked by a test). */
-export const APP_VERSION = '0.5.0'; // x-release-please-version
+export const APP_VERSION = '0.6.0'; // x-release-please-version
 
 /** Set at build time with `--define` (angular.json, deploy workflow); undefined in release builds. */
 declare const GRYND_BUILD: string | undefined;
