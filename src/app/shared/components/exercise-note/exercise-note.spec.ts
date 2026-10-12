@@ -124,6 +124,23 @@ describe('exercise note', () => {
     const button = (label: string) =>
       [...document.body.querySelectorAll('button')].find((b) => b.textContent?.includes(label));
 
+    it('offers no camera button on a desktop browser', async () => {
+      await open('');
+      expect(button('exerciseNote.takePhoto')).toBeUndefined();
+    });
+
+    it('offers the camera on touch devices', async () => {
+      // jsdom has no matchMedia: pretend to be a phone (coarse pointer).
+      window.matchMedia = vi.fn(() => ({ matches: true })) as never;
+      try {
+        await open('');
+        expect(button('exerciseNote.takePhoto')).toBeDefined();
+        expect(document.body.querySelector('input[capture=environment]')).not.toBeNull();
+      } finally {
+        delete (window as Partial<Window>).matchMedia;
+      }
+    });
+
     it('passes picked image files on and resets the picker', async () => {
       const { fixture } = await open('');
       const addImages = vi.fn();

@@ -89,7 +89,7 @@ import { ImageViewerService } from '../../../core/services/image-viewer.service'
               </ul>
             }
             @if (count() < maxImages) {
-              <div class="flex gap-2">
+              <div class="flex flex-wrap gap-2">
                 <button
                   hlmBtn
                   variant="secondary"
@@ -160,8 +160,12 @@ export class ExerciseNoteSheet {
 
   protected readonly maxLength = NOTE_MAX_LENGTH;
   protected readonly maxImages = NOTE_MAX_IMAGES;
-  /** On the phone the web view's picker offers no camera on Android, so it gets its own button. */
-  protected readonly camera = Capacitor.isNativePlatform();
+  /**
+   * The camera gets its own button on phones: Android's picker for several images (app and
+   * Chrome alike) offers no camera. On a desktop browser `capture` would only open a file dialog.
+   */
+  protected readonly camera =
+    Capacitor.isNativePlatform() || !!globalThis.matchMedia?.('(pointer: coarse)').matches;
   protected readonly draft = signal('');
   protected readonly count = computed(() => this.images().length + this.pending());
   protected readonly pendingSlots = computed(() => Array.from({ length: this.pending() }));

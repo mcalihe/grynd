@@ -187,7 +187,7 @@ Umgesetzt in `ccr-c602f928-9227l1`, Entscheide in [0020](decisions/0020-whats-ne
 
 ## Bilder in Notizen ✅
 
-Umgesetzt in `ccr-c5dece36-vt0o19`, Entscheide in [0021](decisions/0021-note-images.md). Bis zu 6 Bilder pro Übungsnotiz, nur für den Nutzer: aus der Galerie oder (in der App) mit der Kamera, auf 1600 px verkleinert und als Datei im Datenordner der App gespeichert; Tabelle `exercise_note_image` (Migration 3), im Backup ab Schema 3. Vorschau auf der Notiz-Karte, Vollbild-Betrachter zum Wischen, Löschen mit Bestätigung. Ohne Figma-Entwurf, Vorschau unter `/dev/components`. Offen: manueller Test von Kamera und Fotoauswahl auf Android und iOS.
+Umgesetzt in `ccr-c5dece36-vt0o19`, Entscheide in [0021](decisions/0021-note-images.md). Bis zu 6 Bilder pro Übungsnotiz, nur für den Nutzer: aus der Galerie oder (auf Handys) mit der Kamera, auf 1600 px verkleinert und als Datei im Datenordner der App gespeichert; Tabelle `exercise_note_image` (Migration 3), im Backup ab Schema 3. Vorschau auf der Notiz-Karte, Vollbild-Betrachter zum Wischen, Löschen mit Bestätigung. Ohne Figma-Entwurf, Vorschau unter `/dev/components`. Offen: manueller Test von Kamera und Fotoauswahl auf Android und iOS.
 
 ---
 
