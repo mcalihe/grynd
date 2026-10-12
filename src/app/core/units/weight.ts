@@ -43,3 +43,11 @@ export function displayToKg(value: number | null, unit: WeightUnit): number | nu
   }
   return unit === 'kg' ? value : round(value / LB_PER_KG, 6);
 }
+
+/** "2,5 kg" / "5 lb" for a weight step in the given locale. */
+export function weightStepLabel(step: number, unit: WeightUnit, locale: string): string {
+  const value = new Intl.NumberFormat(locale, {
+    maximumFractionDigits: weightDecimals(unit),
+  }).format(step);
+  return `${value} ${unit}`;
+}

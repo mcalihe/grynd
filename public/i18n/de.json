@@ -152,6 +152,12 @@
       "confirm": "Löschen"
     }
   },
+  "weightStep": {
+    "label": "Gewichtsschritt",
+    "menu": "Gewichtsschritt: {{step}}",
+    "hint": "Schritt für ± und die Skala beim Gewicht. Gilt für diese Übung in allen Plänen.",
+    "detail": "Gewichtsschritt {{step}}"
+  },
   "history": {
     "title": "Verlauf",
     "detail": "Training",

@@ -67,6 +67,20 @@ test('plan → workout → history', async ({ page }) => {
   await page.getByRole('dialog').getByRole('button', { name: 'Schließen' }).click();
   await expect(page.getByRole('dialog')).toBeHidden();
 
+  // Weight step (decision 0022): 1 kg instead of 2.5 kg for this exercise
+  await page.getByRole('button', { name: 'Übungsmenü' }).click();
+  await page.getByRole('menuitem', { name: 'Gewichtsschritt: 2,5 kg' }).click();
+  await page.getByRole('radio', { name: '1 kg', exact: true }).click();
+  const secondSet = page.locator('app-set-row').nth(1);
+  await secondSet.getByRole('spinbutton', { name: 'KG' }).click();
+  await secondSet.getByRole('textbox', { name: 'KG' }).fill('60');
+  await secondSet.getByRole('textbox', { name: 'KG' }).press('Enter');
+  await secondSet.getByRole('button', { name: 'KG erhöhen' }).click();
+  await expect(secondSet.getByRole('spinbutton', { name: 'KG' })).toHaveAttribute(
+    'aria-valuenow',
+    '61',
+  );
+
   // Finish → celebration (figures count up to their final values) → history detail
   await page.getByRole('button', { name: 'Training abschliessen' }).click();
   await expect(page).toHaveURL(/\/workout\/done\/.+/);

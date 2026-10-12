@@ -152,6 +152,12 @@
       "confirm": "Delete"
     }
   },
+  "weightStep": {
+    "label": "Weight step",
+    "menu": "Weight step: {{step}}",
+    "hint": "Step for ± and the scale when setting the weight. Applies to this exercise in all plans.",
+    "detail": "Weight step {{step}}"
+  },
   "history": {
     "title": "History",
     "detail": "Workout",

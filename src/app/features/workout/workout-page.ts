@@ -20,11 +20,14 @@ import { BackButtonService } from '../../core/services/back-button.service';
 import { ConfirmService } from '../../core/services/confirm.service';
 import { ExerciseCatalogService } from '../../core/exercises/exercise-catalog.service';
 import { ExerciseNotesService } from '../../core/exercises/exercise-notes.service';
+import { ExerciseSettingsService } from '../../core/exercises/exercise-settings.service';
+import { SettingsService } from '../../core/settings/settings.service';
 import { RestTimerService } from '../../core/workout/rest-timer.service';
 import { isExerciseDone, WorkoutService, workoutPercent } from '../../core/workout/workout.service';
 import { Clock } from '../../core/utils/time';
 import { ExerciseNoteSheet } from '../../shared/components/exercise-note/exercise-note-sheet';
 import { toastAddImagesResult } from '../../shared/components/exercise-note/note-image-feedback';
+import { WeightStepSheet } from '../../shared/components/weight-step/weight-step-sheet';
 import { RollingNumber } from '../../shared/components/rolling-number/rolling-number';
 import { SegmentProgress } from '../../shared/components/segment-progress/segment-progress';
 import { StickyAction } from '../../shared/components/sticky-action/sticky-action';
@@ -61,6 +64,7 @@ interface ExerciseMoment {
     ExercisePage,
     ExerciseCelebration,
     ExerciseNoteSheet,
+    WeightStepSheet,
     OverviewSheet,
     RollingNumber,
     SegmentProgress,
@@ -128,6 +132,7 @@ interface ExerciseMoment {
               (setCompleted)="timer.autoStart($event)"
               (exerciseCompleted)="exerciseCompleted(i)"
               (editNote)="editNote(item.entry.exerciseId)"
+              (editWeightStep)="editWeightStep(item.entry.exerciseId)"
             />
           </section>
         }
@@ -182,6 +187,14 @@ interface ExerciseMoment {
         (removeImage)="removeNoteImage($event)"
       />
 
+      <app-weight-step-sheet
+        [(open)]="stepOpen"
+        [title]="catalog.nameById(stepExerciseId())"
+        [unit]="unit()"
+        [step]="exerciseSettings.weightStepFor(stepExerciseId(), unit())"
+        (pick)="exerciseSettings.setWeightStep(stepExerciseId(), unit(), $event)"
+      />
+
       @if (moment(); as m) {
         <app-exercise-celebration
           [praise]="(m.done === m.total ? 'workout.allDone' : m.praise) | transloco"
@@ -200,6 +213,9 @@ export class WorkoutPage {
   protected readonly catalog = inject(ExerciseCatalogService);
   protected readonly notes = inject(ExerciseNotesService);
   private readonly transloco = inject(TranslocoService);
+  protected readonly exerciseSettings = inject(ExerciseSettingsService);
+  private readonly settings = inject(SettingsService);
+  protected readonly unit = computed(() => this.settings.settings().unit);
   private readonly router = inject(Router);
   private readonly confirm = inject(ConfirmService);
   private readonly celebration = inject(CelebrationService);
@@ -216,6 +232,9 @@ export class WorkoutPage {
   /** Exercise whose note the sheet edits; kept after closing so the sheet can save on close. */
   protected readonly noteExerciseId = signal('');
   protected readonly noteOpen = signal(false);
+  /** Exercise whose weight step the sheet picks. */
+  protected readonly stepExerciseId = signal('');
+  protected readonly stepOpen = signal(false);
   protected readonly busy = signal(false);
   protected readonly moment = signal<ExerciseMoment | null>(null);
   /** Refreshed every second for the workout clock; the time itself comes from `startedAt`. */
@@ -250,6 +269,7 @@ export class WorkoutPage {
   constructor() {
     void this.catalog.load();
     void this.notes.load();
+    void this.exerciseSettings.load();
     const destroyRef = inject(DestroyRef);
 
     // Android back opens the end dialog instead of leaving the workout.
@@ -346,6 +366,11 @@ export class WorkoutPage {
   protected editNote(exerciseId: string): void {
     this.noteExerciseId.set(exerciseId);
     this.noteOpen.set(true);
+  }
+
+  protected editWeightStep(exerciseId: string): void {
+    this.stepExerciseId.set(exerciseId);
+    this.stepOpen.set(true);
   }
 
   protected saveNote(text: string): void {
