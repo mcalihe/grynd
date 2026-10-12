@@ -18,9 +18,10 @@ Semantic Versioning, automatisch aus den Commits auf `main` mit [release-please]
 
 **Ablauf** (`.github/workflows/release.yml`):
 1. Jeder Push auf `main` aktualisiert den Release-PR «chore(main): release X.Y.Z». Er erhöht die Version in `package.json`, `src/app/core/app-info.ts` (Markierung `x-release-please-version`) und `.release-please-manifest.json` und ergänzt `CHANGELOG.md`.
-2. Release = diesen PR mergen. release-please setzt den Tag `vX.Y.Z` und veröffentlicht einen GitHub-Release mit dem Changelog als Text.
-3. Danach baut derselbe Workflow die nativen Builds und hängt `grynd-vX.Y.Z-debug.apk` an den Release.
-4. Sobald CI für den Release-Commit grün ist, deployt «Deploy» die Web-App in die Produktion. Nur Releases gehen in die Produktion; der Stand von `main` dazwischen läuft auf Staging (`/main/` des Preview-Hosts).
+2. **Release Notes prüfen** ([0020](decisions/0020-whats-new.md)): Die App zeigt nach dem Update einmal «Neu in Grynd X.Y.Z» mit den Einträgen aus `RELEASE_NOTES` (`src/app/core/whats-new/release-notes.ts`, Texte in `public/i18n`). Normalerweise schreibt sie schon der Feature-PR. Fehlt der Eintrag für die Version des Release-PRs (oder steht er unter einer falsch geratenen Version), ist dessen CI rot: Dann einen PR `chore: add release notes for X.Y.Z` auf `main` mergen, der Release-PR zieht nach. Ein Release ohne Erwähnenswertes bekommt `items: []`.
+3. Release = diesen PR mergen. release-please setzt den Tag `vX.Y.Z` und veröffentlicht einen GitHub-Release mit dem Changelog als Text.
+4. Danach baut derselbe Workflow die nativen Builds und hängt `grynd-vX.Y.Z-debug.apk` an den Release.
+5. Sobald CI für den Release-Commit grün ist, deployt «Deploy» die Web-App in die Produktion. Nur Releases gehen in die Produktion; der Stand von `main` dazwischen läuft auf Staging (`/main/` des Preview-Hosts).
 
 Native Versionen: Android liest `versionName` aus `package.json` und rechnet `versionCode` = Major · 1 000 000 + Minor · 1 000 + Patch (0.2.0 → 2000), das steigt mit jeder Version. iOS bekommt `MARKETING_VERSION` und `CURRENT_PROJECT_VERSION` nach demselben Schema als Parameter von `xcodebuild` in CI.
 

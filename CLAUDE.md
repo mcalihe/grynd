@@ -62,6 +62,7 @@ Releases are automatic (release-please, `docs/release.md`): the commits on `main
 - Breaking change (e.g. backup format or DB migration without upgrade path): `feat!:` plus a `BREAKING CHANGE: …` footer.
 - One logical change per commit; on a branch every commit follows these rules too. The PR title summarizes the whole PR in the same format.
 - Never edit the version (`package.json`, `app-info.ts`, `.release-please-manifest.json`) or `CHANGELOG.md` by hand. To force a version, add a `Release-As: x.y.z` footer.
+- Release notes for users (decision 0020): a `feat` or `fix` users notice also adds an entry to `RELEASE_NOTES` (`src/app/core/whats-new/release-notes.ts`) under the next version (`feat` → next minor, only fixes → next patch; extend the entry if it exists) with title and text in `public/i18n/de.json` and `en.json` (`releaseNotes.<id>`). Write for everyone: what they can do now, short, no technical terms, Swiss spelling (ss) in German. Skip what users would not care about. The release PR fails CI until its version has an entry (`items: []` if there is nothing to tell); the app shows the notes once after the update and in Settings → What's new.
 
 ## Workflow
 

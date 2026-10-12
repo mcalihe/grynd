@@ -181,6 +181,10 @@ Umgesetzt in `claude/weight-reps-slider-ux-98fc52`, Entscheide in [0018](decisio
 
 Umgesetzt in `ccr-37c3cc58-uxl97v`, Entscheide in [0019](decisions/0019-exercise-notes.md). Eine Notiz pro Übung (Geräteeinstellung, Ausführung, Technik-Tipps), gültig in allen Plänen; Tabelle `exercise_note` (Migration 2), im Backup ab Schema 2. Sichtbar und bearbeitbar im Training (Karte über den Sätzen, Übungsmenü) und im Plan-Detail. Ohne Figma-Entwurf, Vorschau unter `/dev/components`.
 
+## Neuigkeiten nach Updates ✅
+
+Umgesetzt in `ccr-c602f928-9227l1`, Entscheide in [0020](decisions/0020-whats-new.md). Nach einem Update einmal ein Popup mit den Neuerungen (handgeschriebene Release Notes, de und en), in den Einstellungen «Neuigkeiten» mit allen Versionen; CI verlangt beim Release-PR einen Eintrag für dessen Version. Ohne Figma-Entwurf, Vorschau unter `/dev/components`.
+
 ---
 
 ## Entscheide aus M0
