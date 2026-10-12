@@ -66,8 +66,9 @@ Klassen folgen dem Angular-Styleguide 2025 (ohne `Component`-Suffix), Selektor-P
 | Wochentage | `37:28125` | `WeekdayChips` (`app-weekday-chips`) |
 | Satz-Stepper | `56:48064` | `NumberStepper` (`app-number-stepper`, Wert als Spinbutton) |
 | Lineal beim Ziehen über einen Stepper | – (nur Code, [0018](../decisions/0018-value-scrubber.md)) | `ValueScrubber` (`app-value-scrubber`, per CDK Overlay aus `NumberStepper`) |
-| Notiz einer Übung (Karte) | – (nur Code, [0019](../decisions/0019-exercise-notes.md)) | `ExerciseNote` (`app-exercise-note`) im Training und Plan-Detail |
-| Notiz bearbeiten (Sheet) | – (nur Code, [0019](../decisions/0019-exercise-notes.md)) | `ExerciseNoteSheet` (`app-exercise-note-sheet`, helm Sheet + `hlmTextarea`) |
+| Notiz einer Übung (Karte) | – (nur Code, [0019](../decisions/0019-exercise-notes.md), [0021](../decisions/0021-note-images.md)) | `ExerciseNote` (`app-exercise-note`, Text und Vorschaubilder) im Training und Plan-Detail |
+| Notiz bearbeiten (Sheet) | – (nur Code, [0019](../decisions/0019-exercise-notes.md), [0021](../decisions/0021-note-images.md)) | `ExerciseNoteSheet` (`app-exercise-note-sheet`, helm Sheet + `hlmTextarea`, Bilder per Datei-Input) |
+| Bildbetrachter (Vollbild) | – (nur Code, [0021](../decisions/0021-note-images.md)) | `ImageViewerService` + `ImageViewerHost` (App-Shell, `@defer`, helm Dialog) |
 | Übungszeile im Plan (Detail/Editor, ≡-Handle, Chevron) | `37:27708`, `37:28096` | `PlanExerciseRow` (`app-plan-exercise-row`, features/plans) |
 | Übungs-Listeneintrag + Filter-Chips im Picker | `63:13440` | im `ExercisePickerPage` (features/plans) |
 | «Änderungen verwerfen» / Bestätigungen | `66:1123` | `ConfirmService` + `ConfirmDialogHost` (App-Shell, `@defer`) |
