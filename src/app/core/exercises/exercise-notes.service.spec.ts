@@ -1,8 +1,11 @@
 import { TestBed } from '@angular/core/testing';
 import { catalogEntry, seedCatalog } from '../../../testing/catalog';
 import { SqlJsDriver } from '../../../testing/sqljs-driver';
+import { MemoryNoteImageStore } from '../../../testing/note-image-store';
 import { createTestDatabase } from '../../../testing/test-database';
 import { ExerciseNotesService, normalizeNote, NOTE_MAX_LENGTH } from './exercise-notes.service';
+import { NOTE_MAX_IMAGES } from './note-image';
+import { NoteImageStore } from './note-image-store';
 
 describe('normalizeNote', () => {
   it('trims and keeps line breaks inside', () => {
@@ -89,5 +92,105 @@ describe('ExerciseNotesService', () => {
     await notes.reload();
 
     expect(notes.noteFor('e0')).toBe('aus Backup');
+  });
+
+  describe('photos', () => {
+    const photo = (name: string) => new Blob([name], { type: 'image/jpeg' });
+    const files = () => TestBed.inject(NoteImageStore) as MemoryNoteImageStore;
+    const imageRows = () =>
+      driver.query<{ id: string; exerciseId: string; deletedAt: string | null }>(
+        'SELECT id, exerciseId, deletedAt FROM exercise_note_image ORDER BY createdAt, id',
+      );
+
+    it('stores picked photos as files with a row each, in the order picked', async () => {
+      const result = await notes.addImages('e0', [photo('sitz'), photo('griff')]);
+
+      expect(result).toEqual({ added: 2, skipped: 0, failed: 0 });
+      const images = notes.imagesFor('e0');
+      expect(images.map((image) => image.src)).toEqual([
+        `data:image/jpeg;base64,${btoa('sitz')}`,
+        `data:image/jpeg;base64,${btoa('griff')}`,
+      ]);
+      expect((await imageRows()).map((row) => row.id)).toEqual(images.map((image) => image.id));
+      expect([...files().files.keys()]).toEqual(images.map((image) => image.id));
+      expect(notes.imagesFor('e1')).toEqual([]);
+      expect(notes.pendingFor('e0')).toBe(0);
+    });
+
+    it('counts photos without text as a note', async () => {
+      expect(notes.hasNote('e0')).toBe(false);
+      await notes.addImages('e0', [photo('sitz')]);
+
+      expect(notes.noteFor('e0')).toBe('');
+      expect(notes.hasNote('e0')).toBe(true);
+    });
+
+    it('keeps the photos when the text is emptied', async () => {
+      await notes.save('e0', 'Sitz Stufe 4');
+      await notes.addImages('e0', [photo('sitz')]);
+      await notes.save('e0', '');
+
+      expect(notes.imagesFor('e0')).toHaveLength(1);
+      expect(notes.hasNote('e0')).toBe(true);
+    });
+
+    it('skips photos beyond the limit', async () => {
+      await notes.addImages('e0', [photo('a'), photo('b')]);
+      const many = Array.from({ length: NOTE_MAX_IMAGES }, (_, i) => photo(`p${i}`));
+
+      const result = await notes.addImages('e0', many);
+
+      expect(result).toEqual({ added: NOTE_MAX_IMAGES - 2, skipped: 2, failed: 0 });
+      expect(notes.imagesFor('e0')).toHaveLength(NOTE_MAX_IMAGES);
+      expect(await notes.addImages('e0', [photo('z')])).toEqual({
+        added: 0,
+        skipped: 1,
+        failed: 0,
+      });
+    });
+
+    it('counts photos still in progress against the limit', async () => {
+      const first = notes.addImages(
+        'e0',
+        Array.from({ length: NOTE_MAX_IMAGES - 1 }, (_, i) => photo(`p${i}`)),
+      );
+      const second = notes.addImages('e0', [photo('x'), photo('y')]);
+
+      expect((await first).added + (await second).added).toBe(NOTE_MAX_IMAGES);
+      expect(notes.imagesFor('e0')).toHaveLength(NOTE_MAX_IMAGES);
+    });
+
+    it('reports photos it cannot read and keeps the others', async () => {
+      const result = await notes.addImages('e0', [photo('broken'), photo('sitz')]);
+
+      expect(result).toEqual({ added: 1, skipped: 0, failed: 1 });
+      expect(await imageRows()).toHaveLength(1);
+      expect(files().files.size).toBe(1);
+    });
+
+    it('deletes a photo: the row softly, the file for good', async () => {
+      await notes.addImages('e0', [photo('sitz'), photo('griff')]);
+      const [first, second] = notes.imagesFor('e0');
+
+      await notes.removeImage('e0', first.id);
+
+      expect(notes.imagesFor('e0')).toEqual([second]);
+      expect(files().files.has(first.id)).toBe(false);
+      const stored = await imageRows();
+      expect(stored.find((row) => row.id === first.id)?.deletedAt).not.toBeNull();
+
+      await notes.removeImage('e0', second.id);
+      expect(notes.hasNote('e0')).toBe(false);
+    });
+
+    it('loads stored photos and leaves out ones whose file is gone', async () => {
+      await notes.addImages('e0', [photo('sitz'), photo('griff')]);
+      const [lost, kept] = notes.imagesFor('e0');
+      files().files.delete(lost.id);
+
+      await notes.reload();
+
+      expect(notes.imagesFor('e0')).toEqual([kept]);
+    });
   });
 });

@@ -3,8 +3,10 @@ import { TranslocoTestingModule } from '@jsverse/transloco';
 import { catalogEntry, seedCatalog } from '../../../testing/catalog';
 import { provideMemorySettings } from '../../../testing/settings';
 import { SqlJsDriver } from '../../../testing/sqljs-driver';
+import { MemoryNoteImageStore } from '../../../testing/note-image-store';
 import { createTestDatabase } from '../../../testing/test-database';
 import { ExerciseNotesService } from '../exercises/exercise-notes.service';
+import { NoteImageStore } from '../exercises/note-image-store';
 import { addExercises } from '../plans/plan-draft';
 import { PlansService } from '../plans/plans.service';
 import { WorkoutService } from '../workout/workout.service';
@@ -70,6 +72,41 @@ describe('BackupService', () => {
 
     expect(notes.noteFor('e0')).toBe('Bank flach');
     expect(notes.noteFor('e1')).toBe('');
+  });
+
+  it('carries the files of note photos and replaces the ones on the device', async () => {
+    const notes = TestBed.inject(ExerciseNotesService);
+    const files = TestBed.inject(NoteImageStore) as MemoryNoteImageStore;
+    const photo = (name: string) => new Blob([name], { type: 'image/jpeg' });
+    await notes.addImages('e0', [photo('sitz'), photo('griff')]);
+    const [kept, deleted] = notes.imagesFor('e0');
+    await notes.removeImage('e0', deleted.id);
+
+    const backup = await backups.create();
+    expect(backup.data.exercise_note_image.map((row) => row['id'])).toEqual([kept.id, deleted.id]);
+    expect(backup.images).toEqual({ [kept.id]: btoa('sitz') });
+    const parsed = await backups.parse(JSON.stringify(backup));
+    expect(parsed.ok).toBe(true);
+
+    await notes.addImages('e1', [photo('neu')]);
+    await backups.restore((parsed as { backup: Backup }).backup);
+
+    expect([...files.files.entries()]).toEqual([[kept.id, btoa('sitz')]]);
+    expect(notes.imagesFor('e0')).toEqual([kept]);
+    expect(notes.imagesFor('e1')).toEqual([]);
+  });
+
+  it('leaves photos without a file out of the backup', async () => {
+    const notes = TestBed.inject(ExerciseNotesService);
+    const files = TestBed.inject(NoteImageStore) as MemoryNoteImageStore;
+    await notes.addImages('e0', [new Blob(['sitz'])]);
+    files.files.clear();
+
+    const backup = await backups.create();
+
+    expect(backup.data.exercise_note_image).toEqual([]);
+    expect(backup.images).toEqual({});
+    expect((await backups.parse(JSON.stringify(backup))).ok).toBe(true);
   });
 
   it('rejects broken files without touching the data', async () => {
