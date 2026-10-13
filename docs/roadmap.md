@@ -185,6 +185,10 @@ Umgesetzt in `ccr-37c3cc58-uxl97v`, Entscheide in [0019](decisions/0019-exercise
 
 Umgesetzt in `ccr-c602f928-9227l1`, Entscheide in [0020](decisions/0020-whats-new.md). Nach einem Update einmal ein Popup mit den Neuerungen (handgeschriebene Release Notes, de und en), in den Einstellungen «Neuigkeiten» mit allen Versionen; CI verlangt beim Release-PR einen Eintrag für dessen Version. Ohne Figma-Entwurf, Vorschau unter `/dev/components`.
 
+## Bilder in Notizen ✅
+
+Umgesetzt in `ccr-c5dece36-vt0o19`, Entscheide in [0021](decisions/0021-note-images.md). Bis zu 6 Bilder pro Übungsnotiz, nur für den Nutzer: aus der Galerie oder (auf Handys) mit der Kamera, auf 1600 px verkleinert und als Datei im Datenordner der App gespeichert; Tabelle `exercise_note_image` (Migration 3), im Backup ab Schema 3. Vorschau auf der Notiz-Karte, Vollbild-Betrachter zum Wischen, Löschen mit Bestätigung. Ohne Figma-Entwurf, Vorschau unter `/dev/components`. Offen: manueller Test von Kamera und Fotoauswahl auf Android und iOS.
+
 ---
 
 ## Entscheide aus M0

@@ -11,25 +11,27 @@ Grynd speichert alle Daten nur auf deinem Gerät. Es gibt kein Konto, keinen Ser
 ## Welche Daten die App verarbeitet
 
 - **Trainingsdaten:** Pläne, Trainings, Sätze, Gewichte, Wiederholungen und Zeiten, die du eingibst.
+- **Notizen und Bilder:** Notizen zu Übungen und die Bilder, die du ihnen hinzufügst. Bilder werden verkleinert und im privaten Speicher der App abgelegt; sie sind nur für dich und werden nie hochgeladen oder geteilt.
 - **Einstellungen:** Design, Einheit, Sprache, Timer-Autostart.
 
 Diese Daten liegen in einer Datenbank auf deinem Gerät. Sie werden nicht übertragen und nicht mit Dritten geteilt.
 
 ## Sicherungsdateien
 
-Mit «Exportieren» erstellst du eine JSON-Datei mit deinen Trainingsdaten. Wohin sie geht (Dateien, Cloud-Speicher, Nachricht), entscheidest du über das Teilen-Menü deines Geräts. Für diese Ziele gelten die Bedingungen ihrer Anbieter. Beim «Importieren» liest die App nur die Datei, die du auswählst.
+Mit «Exportieren» erstellst du eine JSON-Datei mit deinen Trainingsdaten, deinen Notizen und deren Bildern. Wohin sie geht (Dateien, Cloud-Speicher, Nachricht), entscheidest du über das Teilen-Menü deines Geräts. Für diese Ziele gelten die Bedingungen ihrer Anbieter. Beim «Importieren» liest die App nur die Datei, die du auswählst.
 
 ## Berechtigungen
 
 - **Benachrichtigungen:** um das Ende der Pause anzuzeigen, auch wenn die App im Hintergrund ist. Du kannst sie in den Systemeinstellungen jederzeit abschalten.
 - **Vibration:** für spürbare Rückmeldungen.
 - **Bildschirm aktiv halten:** nur während eines laufenden Trainings.
+- **Kamera und Fotos:** nur wenn du einer Notiz ein Bild hinzufügst, und nur das Bild, das du aufnimmst oder auswählst. Die App liest sonst nichts aus deiner Mediathek.
 
-Die App nutzt keinen Standort, keine Kamera, kein Mikrofon und keine Kontakte.
+Die App nutzt keinen Standort, kein Mikrofon und keine Kontakte.
 
 ## Speicherdauer und Löschen
 
-Die Daten bleiben gespeichert, bis du sie löschst: einzelne Trainings im Verlauf, Pläne im Plan-Editor, oder alles, indem du die App deinstallierst.
+Die Daten bleiben gespeichert, bis du sie löschst: einzelne Trainings im Verlauf, Pläne im Plan-Editor, Bilder im Bildbetrachter einer Notiz, oder alles, indem du die App deinstallierst.
 
 ## Kinder
 

@@ -1,6 +1,6 @@
 # 0019 – Notizen pro Übung
 
-**Datum:** 2026-10-08 · **Status:** entschieden (ergänzt das Backup-Format aus [0013](0013-settings-units-swipe-backup.md))
+**Datum:** 2026-10-08 · **Status:** entschieden (ergänzt das Backup-Format aus [0013](0013-settings-units-swipe-backup.md); Bilder in Notizen: [0021](0021-note-images.md))
 
 ## Kontext
 Gewünscht ist ein freies Textfeld pro Übung: Einstellungen am Gerät («Sitz auf Stufe 4»), besondere Ausführung («halbe Wiederholungen», «2 s Pause unten») oder Technik-Tipps. Offen war, ob die Notiz zur Übung gehört oder zum Eintrag im Plan, und wo man sie bearbeitet.

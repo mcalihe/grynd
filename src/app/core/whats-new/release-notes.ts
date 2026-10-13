@@ -23,7 +23,10 @@ export interface ReleaseNotes {
 export const RELEASE_NOTES: readonly ReleaseNotes[] = [
   {
     version: '0.7.0',
-    items: [{ id: 'whatsNew', icon: 'lucideSparkles' }],
+    items: [
+      { id: 'notePhotos', icon: 'lucideImagePlus' },
+      { id: 'whatsNew', icon: 'lucideSparkles' },
+    ],
   },
   {
     version: '0.6.0',

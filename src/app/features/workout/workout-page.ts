@@ -12,7 +12,7 @@ import {
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { KeepAwake } from '@capacitor-community/keep-awake';
-import { TranslocoPipe } from '@jsverse/transloco';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { NgIcon } from '@ng-icons/core';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { SetLog } from '../../core/db/models';
@@ -24,6 +24,7 @@ import { RestTimerService } from '../../core/workout/rest-timer.service';
 import { isExerciseDone, WorkoutService, workoutPercent } from '../../core/workout/workout.service';
 import { Clock } from '../../core/utils/time';
 import { ExerciseNoteSheet } from '../../shared/components/exercise-note/exercise-note-sheet';
+import { toastAddImagesResult } from '../../shared/components/exercise-note/note-image-feedback';
 import { RollingNumber } from '../../shared/components/rolling-number/rolling-number';
 import { SegmentProgress } from '../../shared/components/segment-progress/segment-progress';
 import { StickyAction } from '../../shared/components/sticky-action/sticky-action';
@@ -174,7 +175,11 @@ interface ExerciseMoment {
         [(open)]="noteOpen"
         [title]="catalog.nameById(noteExerciseId())"
         [note]="notes.noteFor(noteExerciseId())"
+        [images]="notes.imagesFor(noteExerciseId())"
+        [pending]="notes.pendingFor(noteExerciseId())"
         (save)="saveNote($event)"
+        (addImages)="addNoteImages($event)"
+        (removeImage)="removeNoteImage($event)"
       />
 
       @if (moment(); as m) {
@@ -194,6 +199,7 @@ export class WorkoutPage {
   protected readonly timer = inject(RestTimerService);
   protected readonly catalog = inject(ExerciseCatalogService);
   protected readonly notes = inject(ExerciseNotesService);
+  private readonly transloco = inject(TranslocoService);
   private readonly router = inject(Router);
   private readonly confirm = inject(ConfirmService);
   private readonly celebration = inject(CelebrationService);
@@ -344,6 +350,14 @@ export class WorkoutPage {
 
   protected saveNote(text: string): void {
     void this.notes.save(this.noteExerciseId(), text);
+  }
+
+  protected async addNoteImages(files: File[]): Promise<void> {
+    toastAddImagesResult(await this.notes.addImages(this.noteExerciseId(), files), this.transloco);
+  }
+
+  protected removeNoteImage(imageId: string): void {
+    void this.notes.removeImage(this.noteExerciseId(), imageId);
   }
 
   protected async finish(): Promise<void> {

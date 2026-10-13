@@ -2,6 +2,7 @@ import { Provider } from '@angular/core';
 import { DatabaseService } from '../app/core/db/database.service';
 import { migrate } from '../app/core/db/migrations';
 import { Clock } from '../app/core/utils/time';
+import { provideMemoryNoteImages } from './note-image-store';
 import { SqlJsDriver } from './sqljs-driver';
 
 /** Clock that returns a settable time; advance it to test updatedAt. */
@@ -19,7 +20,10 @@ export class FakeClock extends Clock {
   }
 }
 
-/** Fresh migrated in-memory database plus the providers repositories need. */
+/**
+ * Fresh migrated in-memory database plus the providers repositories need, with note photos in
+ * memory too (their files live next to the database).
+ */
 export async function createTestDatabase(): Promise<{
   driver: SqlJsDriver;
   clock: FakeClock;
@@ -34,6 +38,7 @@ export async function createTestDatabase(): Promise<{
     providers: [
       { provide: DatabaseService, useValue: { driver } },
       { provide: Clock, useValue: clock },
+      ...provideMemoryNoteImages(),
     ],
   };
 }

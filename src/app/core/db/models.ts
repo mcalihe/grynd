@@ -37,6 +37,11 @@ export interface ExerciseNote extends BaseEntity {
   text: string;
 }
 
+/** A photo in the note of an exercise (decision 0021); the file is named after the id. */
+export interface ExerciseNoteImage extends BaseEntity {
+  exerciseId: string;
+}
+
 export interface Plan extends BaseEntity {
   name: string;
   /** 0 = Sunday … 6 = Saturday (Date#getDay). */

@@ -17,6 +17,8 @@ import { HlmPopoverImports } from '@spartan-ng/helm/popover';
 import { HlmSheetImports } from '@spartan-ng/helm/sheet';
 import { HlmSwitchImports } from '@spartan-ng/helm/switch';
 import { HlmToggleGroupImports } from '@spartan-ng/helm/toggle-group';
+import { NoteImage } from '../../core/exercises/exercise-notes.service';
+import { NOTE_MAX_IMAGES } from '../../core/exercises/note-image';
 import { ThemeMode, ThemeService } from '../../core/services/theme.service';
 import { RELEASE_NOTES } from '../../core/whats-new/release-notes';
 import { PageHeader } from '../../shared/components/page-header/page-header';
@@ -126,6 +128,31 @@ export class ComponentsShowcase {
     2,
   );
   protected readonly whatsNewOpen = signal(false);
+
+  // Note photos (decision 0021): catalog thumbnails stand in; picked files stay in memory.
+  protected readonly demoImages = signal<NoteImage[]>(
+    ['Leg_Press', 'Seated_Cable_Rows', 'Wide-Grip_Lat_Pulldown'].map((key) => ({
+      id: key,
+      src: `exercises/${key}.webp`,
+    })),
+  );
+  protected readonly noteOnlyImages: NoteImage[] = [
+    { id: 'bench', src: 'exercises/Barbell_Bench_Press_-_Medium_Grip.webp' },
+  ];
+
+  protected addDemoImages(files: File[]): void {
+    this.demoImages.update((images) => [
+      ...images,
+      ...files.slice(0, NOTE_MAX_IMAGES - images.length).map((file, i) => ({
+        id: `${file.name}-${Date.now()}-${i}`,
+        src: URL.createObjectURL(file),
+      })),
+    ]);
+  }
+
+  protected removeDemoImage(id: string): void {
+    this.demoImages.update((images) => images.filter((image) => image.id !== id));
+  }
   protected readonly monthBars: BarChartBar[] = Array.from({ length: 30 }, (_, i) => {
     const trained = [0, 2, 4, 7, 9, 11, 14, 16, 18, 21, 23, 28].includes(i);
     return {

@@ -41,6 +41,7 @@ export const BACKUP_TABLES = {
     required: ['sessionExerciseId', 'position', 'isExtra'],
   },
   exercise_note: { columns: ['exerciseId', 'text'], required: ['exerciseId', 'text'], since: 2 },
+  exercise_note_image: { columns: ['exerciseId'], required: ['exerciseId'], since: 3 },
 } as const satisfies Record<string, TableSpec>;
 
 export type BackupTable = keyof typeof BACKUP_TABLES;
@@ -55,6 +56,8 @@ export interface Backup {
   schemaVersion: number;
   exportedAt: string;
   data: Record<BackupTable, BackupRow[]>;
+  /** Photo files of exercise notes (decision 0021): image id → JPEG as base64, live rows only. */
+  images: Record<string, string>;
 }
 
 export type BackupError = 'format' | 'newerSchema' | 'invalidRow' | 'missingReference';
@@ -65,8 +68,9 @@ export function buildBackup(
   data: Record<BackupTable, BackupRow[]>,
   schemaVersion: number,
   exportedAt: string,
+  images: Record<string, string> = {},
 ): Backup {
-  return { app: 'grynd', schemaVersion, exportedAt, data };
+  return { app: 'grynd', schemaVersion, exportedAt, data, images };
 }
 
 /** `grynd-backup-2026-10-01.json` in local time. */
@@ -77,6 +81,10 @@ export function backupFileName(date: Date): string {
 
 const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
+
+const BASE64 = /^[A-Za-z0-9+/]+={0,2}$/;
+const isBase64 = (value: unknown): value is string =>
+  typeof value === 'string' && value.length % 4 === 0 && BASE64.test(value);
 
 /** Copies the known columns of a row; null when a value has the wrong type or is missing. */
 function cleanRow(table: BackupTable, raw: unknown): BackupRow | null {
@@ -150,6 +158,7 @@ export function validateBackup(
     ['exercise_interval', 'sessionExerciseId', sessionExercises, false],
     ['set_log', 'sessionExerciseId', sessionExercises, false],
     ['exercise_note', 'exerciseId', exerciseIds, false],
+    ['exercise_note_image', 'exerciseId', exerciseIds, false],
   ];
   for (const [table, column, known, nullable] of refs) {
     for (const row of data[table]) {
@@ -160,6 +169,25 @@ export function validateBackup(
     }
   }
 
+  // Every live photo needs its file; extra entries are ignored.
+  const rawImages =
+    raw['images'] ?? (schemaVersion < BACKUP_TABLES.exercise_note_image.since ? {} : undefined);
+  if (!isObject(rawImages)) {
+    return { ok: false, error: 'format' };
+  }
+  const images: Record<string, string> = {};
+  for (const row of data.exercise_note_image) {
+    if (row['deletedAt'] !== null) {
+      continue;
+    }
+    const id = row['id'] as string;
+    const file = rawImages[id];
+    if (!isBase64(file)) {
+      return { ok: false, error: 'missingReference' };
+    }
+    images[id] = file;
+  }
+
   const exportedAt = typeof raw['exportedAt'] === 'string' ? raw['exportedAt'] : '';
-  return { ok: true, backup: { app: 'grynd', schemaVersion, exportedAt, data } };
+  return { ok: true, backup: { app: 'grynd', schemaVersion, exportedAt, data, images } };
 }
