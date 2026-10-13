@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.7.0](https://github.com/mcalihe/grynd/compare/v0.6.0...v0.7.0) (2026-10-13)
+
+
+### Features
+
+* add release notes for users and decide when to show them ([#35](https://github.com/mcalihe/grynd/issues/35)) ([08dc3c4](https://github.com/mcalihe/grynd/commit/08dc3c415daf5f1c0b2bf06483aaa907a4620025))
+* **plans:** add photos to exercise notes ([#37](https://github.com/mcalihe/grynd/issues/37)) ([7d4b295](https://github.com/mcalihe/grynd/commit/7d4b295a18435118203b33ed29ff92ae0f9ad4ef))
+
 ## [0.6.0](https://github.com/mcalihe/grynd/compare/v0.5.0...v0.6.0) (2026-10-08)
 
 
