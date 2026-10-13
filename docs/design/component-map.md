@@ -69,6 +69,7 @@ Klassen folgen dem Angular-Styleguide 2025 (ohne `Component`-Suffix), Selektor-P
 | Notiz einer Übung (Karte) | – (nur Code, [0019](../decisions/0019-exercise-notes.md), [0021](../decisions/0021-note-images.md)) | `ExerciseNote` (`app-exercise-note`, Text und Vorschaubilder) im Training und Plan-Detail |
 | Notiz bearbeiten (Sheet) | – (nur Code, [0019](../decisions/0019-exercise-notes.md), [0021](../decisions/0021-note-images.md)) | `ExerciseNoteSheet` (`app-exercise-note-sheet`, helm Sheet + `hlmTextarea`, Bilder per Datei-Input) |
 | Bildbetrachter (Vollbild) | – (nur Code, [0021](../decisions/0021-note-images.md)) | `ImageViewerService` + `ImageViewerHost` (App-Shell, `@defer`, helm Dialog) |
+| Gewichtsschritt wählen (Sheet) | – (nur Code, [0022](../decisions/0022-weight-step.md)) | `WeightStepSheet` (`app-weight-step-sheet`, helm Sheet, Chips als Radio-Gruppe) |
 | Übungszeile im Plan (Detail/Editor, ≡-Handle, Chevron) | `37:27708`, `37:28096` | `PlanExerciseRow` (`app-plan-exercise-row`, features/plans) |
 | Übungs-Listeneintrag + Filter-Chips im Picker | `63:13440` | im `ExercisePickerPage` (features/plans) |
 | «Änderungen verwerfen» / Bestätigungen | `66:1123` | `ConfirmService` + `ConfirmDialogHost` (App-Shell, `@defer`) |
