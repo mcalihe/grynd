@@ -3,8 +3,17 @@ import { WeightUnit } from '../settings/settings.service';
 /** Exact factor of the international avoirdupois pound. */
 export const LB_PER_KG = 1 / 0.45359237;
 
-/** ± step of the weight stepper in the displayed unit. */
+/** Default ± step of the weight stepper in the displayed unit. */
 export const WEIGHT_STEP = 2.5;
+
+/**
+ * Steps a user can pick per exercise (decision 0022), from micro plates to machine stacks.
+ * They fit the shown decimals (kg 2, lb 1).
+ */
+export const WEIGHT_STEPS: Readonly<Record<WeightUnit, readonly number[]>> = {
+  kg: [0.25, 0.5, 1, 1.25, 2, 2.5, 5, 10],
+  lb: [0.5, 1, 2.5, 5, 10],
+};
 
 function round(value: number, decimals: number): number {
   const factor = 10 ** decimals;

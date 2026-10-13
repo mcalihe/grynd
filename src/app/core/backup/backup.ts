@@ -42,6 +42,11 @@ export const BACKUP_TABLES = {
   },
   exercise_note: { columns: ['exerciseId', 'text'], required: ['exerciseId', 'text'], since: 2 },
   exercise_note_image: { columns: ['exerciseId'], required: ['exerciseId'], since: 3 },
+  exercise_setting: {
+    columns: ['exerciseId', 'weightStepKg', 'weightStepLb'],
+    required: ['exerciseId'],
+    since: 4,
+  },
 } as const satisfies Record<string, TableSpec>;
 
 export type BackupTable = keyof typeof BACKUP_TABLES;
@@ -159,6 +164,7 @@ export function validateBackup(
     ['set_log', 'sessionExerciseId', sessionExercises, false],
     ['exercise_note', 'exerciseId', exerciseIds, false],
     ['exercise_note_image', 'exerciseId', exerciseIds, false],
+    ['exercise_setting', 'exerciseId', exerciseIds, false],
   ];
   for (const [table, column, known, nullable] of refs) {
     for (const row of data[table]) {

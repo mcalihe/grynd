@@ -7,6 +7,7 @@ import { DatabaseService } from '../db/database.service';
 import { MIGRATIONS } from '../db/migrations';
 import { ExerciseNotesService } from '../exercises/exercise-notes.service';
 import { NoteImageStore } from '../exercises/note-image-store';
+import { ExerciseSettingsService } from '../exercises/exercise-settings.service';
 import { Clock } from '../utils/time';
 import { RestTimerService } from '../workout/rest-timer.service';
 import { WorkoutService } from '../workout/workout.service';
@@ -32,6 +33,7 @@ export class BackupService {
   private readonly timer = inject(RestTimerService);
   private readonly notes = inject(ExerciseNotesService);
   private readonly imageFiles = inject(NoteImageStore);
+  private readonly exerciseSettings = inject(ExerciseSettingsService);
   private readonly clock = inject(Clock);
   private readonly document = inject(DOCUMENT);
 
@@ -120,6 +122,7 @@ export class BackupService {
       await this.imageFiles.write(id, file);
     }
     await this.notes.reload();
+    await this.exerciseSettings.reload();
     // A running workout may have been replaced (or brought back by the backup).
     if (!(await this.workout.restore())) {
       this.timer.stop();
