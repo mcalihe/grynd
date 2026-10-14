@@ -193,6 +193,10 @@ Umgesetzt in `ccr-c5dece36-vt0o19`, Entscheide in [0021](decisions/0021-note-ima
 
 Umgesetzt in `ccr-cd9d91b1-bugiex`, Entscheide in [0022](decisions/0022-weight-step.md). Der ±-Schritt und die Scrubber-Skala für das Gewicht sind pro Übung wählbar (kg 0,25–10, lb 0,5–10, Standard 2,5), gültig in allen Plänen; Tabelle `exercise_setting` (Migration 4), im Backup ab Schema 4. Änderbar im Training (Übungsmenü) und im Plan-Detail. Ohne Figma-Entwurf, Vorschau unter `/dev/components`.
 
+## Pläne teilen, Backup zusammenführen ✅
+
+Umgesetzt in `ccr-75552d4f-c8pzbr`, Entscheide in [0023](decisions/0023-plan-sharing-and-backup-merge.md). Pläne als Vorlage teilen (Code für den Chat oder Datei, optional mit Notizen, Fotos und Gewichtsschritten) und unter Pläne → «Plan importieren» hinzufügen, ohne etwas zu überschreiben. Backup-Import mit Vorschau, Zusammenführen oder Ersetzen und «Rückgängig»; strengere Prüfung von Backups (Zeitstempel, erlaubte Werte, Bereiche, Unique-Regeln). Ohne Figma-Entwurf, Vorschau unter `/dev/components`. Offen: manueller Test von Teilen-Menü und Dateiauswahl auf Android und iOS.
+
 ---
 
 ## Entscheide aus M0
