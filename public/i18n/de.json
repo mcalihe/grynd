@@ -296,7 +296,9 @@
         "format": "Die Datei ist keine Grynd-Sicherung.",
         "newerSchema": "Die Sicherung stammt aus einer neueren App-Version.",
         "invalidRow": "Die Sicherung enthält ungültige Daten.",
-        "missingReference": "Die Sicherung ist unvollständig oder verweist auf unbekannte Übungen."
+        "missingReference": "Die Sicherung ist unvollständig.",
+        "unknownExercise": "Die Sicherung verwendet Übungen, die diese App-Version noch nicht kennt. Aktualisiere Grynd und versuche es erneut.",
+        "tooLarge": "Die Datei ist zu gross."
       },
       "confirm": {
         "title": "Daten ersetzen?",
