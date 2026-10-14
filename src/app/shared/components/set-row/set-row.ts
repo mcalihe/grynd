@@ -86,7 +86,7 @@ const LONG_PRESS_SLOP_PX = 8;
       <app-number-stepper
         [label]="'workout.set.' + unit() | transloco"
         [value]="displayWeight()"
-        [stepSize]="weightStep"
+        [stepSize]="weightStep()"
         [decimals]="decimals()"
         [max]="unit() === 'kg' ? 999 : 2200"
         (valueChange)="weight.set(toKg($event))"
@@ -127,11 +127,12 @@ export class SetRow implements OnDestroy {
   readonly state = input<SetRowState>('open');
   readonly extra = input(false);
   readonly unit = input<WeightUnit>('kg');
+  /** ± step of the weight in the shown unit, chosen per exercise (decision 0022). */
+  readonly weightStep = input(WEIGHT_STEP);
 
   readonly complete = output<void>();
   readonly menu = output<void>();
 
-  protected readonly weightStep = WEIGHT_STEP;
   protected readonly displayWeight = computed(() => kgToDisplay(this.weight(), this.unit()));
   protected readonly decimals = computed(() => weightDecimals(this.unit()));
   protected readonly haptics = inject(HapticsService);

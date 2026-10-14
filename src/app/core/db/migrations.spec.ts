@@ -6,6 +6,7 @@ const TABLES = [
   'exercise_interval',
   'exercise_note',
   'exercise_note_image',
+  'exercise_setting',
   'meta',
   'plan',
   'plan_exercise',
@@ -71,6 +72,7 @@ describe('migrate', () => {
     expect(await driver.query('SELECT name FROM plan')).toEqual([{ name: 'Beine' }]);
     expect(await driver.query('SELECT * FROM exercise_note')).toEqual([]);
     expect(await driver.query('SELECT * FROM exercise_note_image')).toEqual([]);
+    expect(await driver.query('SELECT * FROM exercise_setting')).toEqual([]);
   });
 
   it('upgrades a database of version 2 and keeps its notes', async () => {
@@ -80,7 +82,7 @@ describe('migrate', () => {
     await driver.run(`INSERT INTO exercise_note (id, exerciseId, text, createdAt, updatedAt)
       VALUES ('n', 'e', 'Sitz Stufe 4', 'x', 'x')`);
 
-    expect(await migrate(driver)).toBe(3);
+    expect(await migrate(driver)).toBe(MIGRATIONS.at(-1)?.version);
 
     expect(await driver.query('SELECT text FROM exercise_note')).toEqual([
       { text: 'Sitz Stufe 4' },
@@ -99,6 +101,17 @@ describe('migrate', () => {
       VALUES ('e', 'bench', 'Bank', 'Bench', 'x', 'x')`);
     const insert = `INSERT INTO exercise_note (id, exerciseId, text, createdAt, updatedAt, deletedAt)
       VALUES (?, 'e', 'note', 'x', 'x', ?)`;
+    await driver.run(insert, ['old', 'x']);
+    await driver.run(insert, ['a', null]);
+    await expect(driver.run(insert, ['b', null])).rejects.toThrow();
+  });
+
+  it('allows only one settings row per exercise, apart from deleted ones', async () => {
+    await migrate(driver);
+    await driver.run(`INSERT INTO exercise (id, key, nameDe, nameEn, createdAt, updatedAt)
+      VALUES ('e', 'bench', 'Bank', 'Bench', 'x', 'x')`);
+    const insert = `INSERT INTO exercise_setting (id, exerciseId, weightStepKg, createdAt, updatedAt, deletedAt)
+      VALUES (?, 'e', 2, 'x', 'x', ?)`;
     await driver.run(insert, ['old', 'x']);
     await driver.run(insert, ['a', null]);
     await expect(driver.run(insert, ['b', null])).rejects.toThrow();

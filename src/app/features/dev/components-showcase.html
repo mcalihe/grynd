@@ -162,6 +162,22 @@
     />
   </section>
 
+  <section class="flex flex-col gap-3">
+    <h2 class="text-sm font-semibold text-muted-foreground">
+      Weight step · code only (decision 0022)
+    </h2>
+    <app-set-row [number]="1" [weight]="80" [reps]="8" [weightStep]="demoStep()" />
+    <button hlmBtn variant="ghost" size="sm" class="self-start" (click)="stepOpen.set(true)">
+      Gewichtsschritt: {{ demoStep() }} kg
+    </button>
+    <app-weight-step-sheet
+      [(open)]="stepOpen"
+      title="Kurzhantel-Bankdrücken"
+      [step]="demoStep()"
+      (pick)="demoStep.set($event)"
+    />
+  </section>
+
   <section class="-mx-4 flex flex-col gap-3">
     <h2 class="px-4 text-sm font-semibold text-muted-foreground">
       Page header · Plan card · Sticky

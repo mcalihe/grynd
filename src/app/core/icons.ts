@@ -34,6 +34,7 @@ import {
   lucideTimer,
   lucideTrash2,
   lucideTrophy,
+  lucideWeight,
   lucideX,
 } from '@ng-icons/lucide';
 
@@ -77,5 +78,6 @@ export const APP_ICONS = {
   lucideTimer,
   lucideTrash2,
   lucideTrophy,
+  lucideWeight,
   lucideX,
 };

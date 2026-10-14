@@ -7,6 +7,7 @@ import { MemoryNoteImageStore } from '../../../testing/note-image-store';
 import { createTestDatabase } from '../../../testing/test-database';
 import { ExerciseNotesService } from '../exercises/exercise-notes.service';
 import { NoteImageStore } from '../exercises/note-image-store';
+import { ExerciseSettingsService } from '../exercises/exercise-settings.service';
 import { addExercises } from '../plans/plan-draft';
 import { PlansService } from '../plans/plans.service';
 import { WorkoutService } from '../workout/workout.service';
@@ -107,6 +108,20 @@ describe('BackupService', () => {
     expect(backup.data.exercise_note_image).toEqual([]);
     expect(backup.images).toEqual({});
     expect((await backups.parse(JSON.stringify(backup))).ok).toBe(true);
+  });
+
+  it('brings back weight steps and uses them right away', async () => {
+    const settings = TestBed.inject(ExerciseSettingsService);
+    await settings.setWeightStep('e0', 'kg', 2);
+    const backup = await backups.create();
+    expect(backup.data.exercise_setting).toHaveLength(1);
+
+    await settings.setWeightStep('e0', 'kg', 5);
+    await settings.setWeightStep('e1', 'lb', 5);
+    await backups.restore(backup);
+
+    expect(settings.weightStepFor('e0', 'kg')).toBe(2);
+    expect(settings.weightStepFor('e1', 'lb')).toBe(2.5);
   });
 
   it('rejects broken files without touching the data', async () => {

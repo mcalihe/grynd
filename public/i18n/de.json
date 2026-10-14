@@ -152,6 +152,12 @@
       "confirm": "Löschen"
     }
   },
+  "weightStep": {
+    "label": "Gewichtsschritt",
+    "menu": "Gewichtsschritt: {{step}}",
+    "hint": "Schritt für ± und die Skala beim Gewicht. Gilt für diese Übung in allen Plänen.",
+    "detail": "Gewichtsschritt {{step}}"
+  },
   "history": {
     "title": "Verlauf",
     "detail": "Training",
@@ -322,6 +328,10 @@
     "whatsNew": {
       "title": "Neuigkeiten auf einen Blick",
       "text": "Nach einem Update zeigt dir Grynd kurz, was neu ist. Alle Neuerungen findest du jederzeit in den Einstellungen unter «Neuigkeiten»."
+    },
+    "weightStep": {
+      "title": "Eigener Gewichtsschritt pro Übung",
+      "text": "Kurzhanteln in 2-kg-Stufen, Maschinen in 5 kg? Wähl pro Übung, um wie viel + und − springen, im Training über das Übungsmenü oder im Plan."
     },
     "exerciseNotes": {
       "title": "Notizen zu Übungen",

@@ -30,6 +30,7 @@ import { BarChart, BarChartBar } from '../../shared/components/bar-chart/bar-cha
 import { DonutChart, DonutSegment } from '../../shared/components/donut-chart/donut-chart';
 import { ExerciseNote } from '../../shared/components/exercise-note/exercise-note';
 import { ExerciseNoteSheet } from '../../shared/components/exercise-note/exercise-note-sheet';
+import { WeightStepSheet } from '../../shared/components/weight-step/weight-step-sheet';
 import { KeyFigure, KeyFigures } from '../../shared/components/key-figures/key-figures';
 import { NumberStepper } from '../../shared/components/number-stepper/number-stepper';
 import { MonthCalendar } from '../../shared/components/month-calendar/month-calendar';
@@ -77,6 +78,7 @@ import { ExerciseCelebration } from '../workout/exercise-celebration';
     ExerciseNoteSheet,
     ReleaseNotesList,
     WhatsNewDialog,
+    WeightStepSheet,
     PageHeader,
     PlanCard,
     WeekChart,
@@ -153,6 +155,9 @@ export class ComponentsShowcase {
   protected removeDemoImage(id: string): void {
     this.demoImages.update((images) => images.filter((image) => image.id !== id));
   }
+  // Weight step (decision 0022)
+  protected readonly demoStep = signal(2);
+  protected readonly stepOpen = signal(false);
   protected readonly monthBars: BarChartBar[] = Array.from({ length: 30 }, (_, i) => {
     const trained = [0, 2, 4, 7, 9, 11, 14, 16, 18, 21, 23, 28].includes(i);
     return {

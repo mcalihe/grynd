@@ -63,6 +63,17 @@ describe('SetRow', () => {
     expect(fixture.componentInstance.weight()).toBeCloseTo(61.1443, 3);
   });
 
+  it('steps the weight by the step chosen for the exercise', () => {
+    fixture.componentRef.setInput('weightStep', 1.25);
+    fixture.detectChanges();
+    const [, weightMinus, weightPlus] = buttons();
+    weightPlus.click();
+    weightPlus.click();
+    weightMinus.click();
+
+    expect(fixture.componentInstance.weight()).toBe(81.25);
+  });
+
   it('emits complete from the check on the right and menu from the set number', () => {
     const complete = vi.fn();
     const menu = vi.fn();

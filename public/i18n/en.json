@@ -152,6 +152,12 @@
       "confirm": "Delete"
     }
   },
+  "weightStep": {
+    "label": "Weight step",
+    "menu": "Weight step: {{step}}",
+    "hint": "Step for ± and the scale when setting the weight. Applies to this exercise in all plans.",
+    "detail": "Weight step {{step}}"
+  },
   "history": {
     "title": "History",
     "detail": "Workout",
@@ -322,6 +328,10 @@
     "whatsNew": {
       "title": "What’s new at a glance",
       "text": "After an update, Grynd briefly shows you what’s new. You can find all changes any time in the settings under “What’s new”."
+    },
+    "weightStep": {
+      "title": "Your own weight step per exercise",
+      "text": "Dumbbells in 2 kg steps, machines in 5 kg? Choose per exercise how much + and − change the weight, from the exercise menu during a workout or in the plan."
     },
     "exerciseNotes": {
       "title": "Exercise notes",

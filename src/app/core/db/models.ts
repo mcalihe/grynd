@@ -42,6 +42,15 @@ export interface ExerciseNoteImage extends BaseEntity {
   exerciseId: string;
 }
 
+/** The user's settings for a catalog exercise, shared by all plans (decision 0022). */
+export interface ExerciseSetting extends BaseEntity {
+  exerciseId: string;
+  /** ± step of the weight stepper when weights are shown in kg; null = default. */
+  weightStepKg: number | null;
+  /** Same in lb; kept apart because converted steps would be odd (2.5 kg ≈ 5.51 lb). */
+  weightStepLb: number | null;
+}
+
 export interface Plan extends BaseEntity {
   name: string;
   /** 0 = Sunday … 6 = Saturday (Date#getDay). */

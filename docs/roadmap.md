@@ -189,6 +189,10 @@ Umgesetzt in `ccr-c602f928-9227l1`, Entscheide in [0020](decisions/0020-whats-ne
 
 Umgesetzt in `ccr-c5dece36-vt0o19`, Entscheide in [0021](decisions/0021-note-images.md). Bis zu 6 Bilder pro Übungsnotiz, nur für den Nutzer: aus der Galerie oder (auf Handys) mit der Kamera, auf 1600 px verkleinert und als Datei im Datenordner der App gespeichert; Tabelle `exercise_note_image` (Migration 3), im Backup ab Schema 3. Vorschau auf der Notiz-Karte, Vollbild-Betrachter zum Wischen, Löschen mit Bestätigung. Ohne Figma-Entwurf, Vorschau unter `/dev/components`. Offen: manueller Test von Kamera und Fotoauswahl auf Android und iOS.
 
+## Gewichtsschritt pro Übung ✅
+
+Umgesetzt in `ccr-cd9d91b1-bugiex`, Entscheide in [0022](decisions/0022-weight-step.md). Der ±-Schritt und die Scrubber-Skala für das Gewicht sind pro Übung wählbar (kg 0,25–10, lb 0,5–10, Standard 2,5), gültig in allen Plänen; Tabelle `exercise_setting` (Migration 4), im Backup ab Schema 4. Änderbar im Training (Übungsmenü) und im Plan-Detail. Ohne Figma-Entwurf, Vorschau unter `/dev/components`.
+
 ---
 
 ## Entscheide aus M0
