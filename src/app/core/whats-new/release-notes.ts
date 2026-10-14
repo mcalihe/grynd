@@ -29,6 +29,7 @@ export const RELEASE_NOTES: readonly ReleaseNotes[] = [
       { id: 'cardio', icon: 'lucideActivity' },
       { id: 'calories', icon: 'lucideFlame' },
       { id: 'restDuration', icon: 'lucideTimer' },
+      { id: 'sharePlans', icon: 'lucideShare2' },
       { id: 'backupMerge', icon: 'lucideDatabaseBackup' },
     ],
   },

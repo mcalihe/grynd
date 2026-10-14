@@ -263,6 +263,31 @@
     />
   </section>
 
+  <section class="flex flex-col gap-3">
+    <h2 class="text-sm font-semibold text-muted-foreground">
+      Plan share · Import · code only (decision 0027)
+    </h2>
+    <div class="flex flex-wrap gap-2">
+      <button hlmBtn variant="secondary" size="sm" (click)="shareOpen.set(true)">
+        Plan teilen (alle Extras)
+      </button>
+      <button hlmBtn variant="secondary" size="sm" (click)="importOpen.set(true)">
+        Importieren
+      </button>
+    </div>
+    @if (lastShare(); as request) {
+      <p class="text-xs text-muted-foreground">{{ request }}</p>
+    }
+    <app-plan-share-sheet
+      [(open)]="shareOpen"
+      [hasNotes]="true"
+      [hasPhotos]="true"
+      [hasWeightSteps]="true"
+      (share)="lastShare.set(JSON.stringify($event))"
+    />
+    <app-import-sheet [(open)]="importOpen" />
+  </section>
+
   <section class="-mx-4 flex flex-col gap-3">
     <h2 class="px-4 text-sm font-semibold text-muted-foreground">
       Page header · Plan card · Sticky
