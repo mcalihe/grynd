@@ -1,4 +1,11 @@
-import { backupFileName, BackupRow, BackupTable, buildBackup, validateBackup } from './backup';
+import {
+  backupFileName,
+  BackupRow,
+  BackupTable,
+  buildBackup,
+  summarizeBackup,
+  validateBackup,
+} from './backup';
 
 const ts = '2026-10-01T10:00:00.000Z';
 const base = (id: string) => ({ id, createdAt: ts, updatedAt: ts, deletedAt: null });
@@ -139,7 +146,7 @@ describe('validateBackup', () => {
 
     expect(validateBackup(buildBackup(sample(), SCHEMA, ts, photos()), SCHEMA, new Set())).toEqual({
       ok: false,
-      error: 'missingReference',
+      error: 'unknownExercise',
     });
   });
 
@@ -204,7 +211,7 @@ describe('validateBackup', () => {
     unknown.exercise_setting[0]['exerciseId'] = 'gone';
     expect(validate(buildBackup(unknown, SCHEMA, ts, photos()))).toEqual({
       ok: false,
-      error: 'missingReference',
+      error: 'unknownExercise',
     });
   });
 
@@ -292,15 +299,81 @@ describe('validateBackup', () => {
     unknown.exercise_note[0]['exerciseId'] = 'gone';
     expect(validate(buildBackup(unknown, SCHEMA, ts, photos()))).toEqual({
       ok: false,
-      error: 'missingReference',
+      error: 'unknownExercise',
     });
 
     const photo = sample();
     photo.exercise_note_image[0]['exerciseId'] = 'gone';
     expect(validate(buildBackup(photo, SCHEMA, ts, photos()))).toEqual({
       ok: false,
-      error: 'missingReference',
+      error: 'unknownExercise',
     });
+  });
+
+  it('rejects values the app never writes', () => {
+    const broken: [BackupTable, string, unknown][] = [
+      ['plan', 'createdAt', '1.10.2026'],
+      ['plan', 'deletedAt', '2026-10-01 10:00'],
+      ['plan', 'name', ''],
+      ['plan', 'weekdays', '[7]'],
+      ['plan', 'weekdays', '[1,1]'],
+      ['plan', 'weekdays', 'Montag'],
+      ['plan_exercise', 'targetSets', 0],
+      ['plan_exercise', 'repMin', 11],
+      ['plan_exercise', 'restSeconds', 1.5],
+      ['workout_session', 'status', 'paused'],
+      ['session_exercise', 'status', 'skipped'],
+      ['set_log', 'weightKg', -5],
+      ['set_log', 'isExtra', 2],
+      ['workout_pause', 'resumedAt', 'später'],
+      ['exercise_note', 'text', 'x'.repeat(2001)],
+      ['exercise_setting', 'weightStepKg', 3],
+    ];
+    for (const [table, column, value] of broken) {
+      const data = sample();
+      data[table][0][column] = value as never;
+      expect(validate(buildBackup(data, SCHEMA, ts, photos())), `${table}.${column}`).toEqual({
+        ok: false,
+        error: 'invalidRow',
+      });
+    }
+  });
+
+  it('rejects what the database would refuse', () => {
+    const duplicate = sample();
+    duplicate.plan.push({ ...duplicate.plan[0] });
+    expect(validate(buildBackup(duplicate, SCHEMA, ts, photos())).ok).toBe(false);
+
+    const active = sample();
+    const session = active.workout_session[0];
+    active.workout_session = [
+      { ...session, status: 'active', finishedAt: null },
+      { ...session, id: 's2', status: 'active', finishedAt: null },
+    ];
+    expect(validate(buildBackup(active, SCHEMA, ts, photos()))).toEqual({
+      ok: false,
+      error: 'invalidRow',
+    });
+
+    const pauses = sample();
+    pauses.workout_pause = [
+      { ...base('wp1'), sessionId: 's1', pausedAt: ts, resumedAt: null },
+      { ...base('wp2'), sessionId: 's1', pausedAt: ts, resumedAt: null },
+    ];
+    expect(validate(buildBackup(pauses, SCHEMA, ts, photos()))).toEqual({
+      ok: false,
+      error: 'invalidRow',
+    });
+
+    const notes = sample();
+    notes.exercise_note.push({ ...base('n2'), exerciseId: 'e1', text: 'zweite' });
+    expect(validate(buildBackup(notes, SCHEMA, ts, photos()))).toEqual({
+      ok: false,
+      error: 'invalidRow',
+    });
+    // A deleted second note is fine.
+    notes.exercise_note[1]['deletedAt'] = ts;
+    expect(validate(buildBackup(notes, SCHEMA, ts, photos())).ok).toBe(true);
   });
 
   it('allows workouts without a plan and drops unknown columns', () => {
@@ -313,8 +386,22 @@ describe('validateBackup', () => {
   });
 });
 
+describe('summarizeBackup', () => {
+  it('counts live plans, finished workouts, notes and photos', () => {
+    const data = sample();
+    data.plan.push({ ...base('p2'), name: 'Alt', weekdays: '[]', deletedAt: ts });
+    expect(summarizeBackup(buildBackup(data, SCHEMA, ts, photos()))).toEqual({
+      exportedAt: ts,
+      plans: 1,
+      workouts: 1,
+      notes: 1,
+      photos: 1,
+    });
+  });
+});
+
 describe('backupFileName', () => {
-  it('uses the local date', () => {
-    expect(backupFileName(new Date(2026, 9, 1, 23, 30))).toBe('grynd-backup-2026-10-01.json');
+  it('uses the local date and time', () => {
+    expect(backupFileName(new Date(2026, 9, 1, 23, 5))).toBe('grynd-backup-2026-10-01-2305.json');
   });
 });

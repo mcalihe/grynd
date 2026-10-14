@@ -131,7 +131,7 @@ describe('BackupService', () => {
     backup.data.plan_exercise[0]['exerciseId'] = 'not-in-catalog';
     expect(await backups.parse(JSON.stringify(backup))).toEqual({
       ok: false,
-      error: 'missingReference',
+      error: 'unknownExercise',
     });
     expect(await count('plan')).toBe(1);
   });

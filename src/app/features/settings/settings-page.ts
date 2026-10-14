@@ -7,6 +7,7 @@ import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmSwitch } from '@spartan-ng/helm/switch';
 import { toast } from '@spartan-ng/brain/sonner';
 import { displayVersion } from '../../core/app-info';
+import { MAX_IMPORT_BYTES } from '../../core/backup/backup';
 import { BackupService } from '../../core/backup/backup.service';
 import { ConfirmService } from '../../core/services/confirm.service';
 import { AppLang } from '../../core/i18n/language';
@@ -267,7 +268,10 @@ export class SettingsPage {
     }
     this.busy.set(true);
     try {
-      const result = await this.backups.parse(await file.text());
+      const result =
+        file.size > MAX_IMPORT_BYTES
+          ? ({ ok: false, error: 'tooLarge' } as const)
+          : await this.backups.parse(await file.text());
       if (!result.ok) {
         toast.error(this.transloco.translate('settings.backup.importFailed'), {
           description: this.transloco.translate(`settings.backup.errors.${result.error}`),
