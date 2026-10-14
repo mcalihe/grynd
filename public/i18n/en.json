@@ -285,7 +285,7 @@
       "text": "Starts after every completed set"
     },
     "backup": {
-      "text": "Export a backup as a JSON file or restore one.",
+      "text": "Save all plans, workouts and notes to a file or bring them back.",
       "export": "Export",
       "import": "Import",
       "exported": "Backup exported",
@@ -300,10 +300,15 @@
         "unknownExercise": "The backup uses exercises this app version does not know yet. Update Grynd and try again.",
         "tooLarge": "The file is too large."
       },
-      "confirm": {
-        "title": "Replace data?",
-        "text": "All plans and workouts on this device will be replaced by the backup.",
-        "confirm": "Replace"
+      "merged": "Backup merged",
+      "undone": "Import undone",
+      "undoFailed": "Undo failed",
+      "preview": {
+        "title": "Backup from {{date}}",
+        "titleUndated": "Import backup",
+        "text": "Plans: {{plans}} · Workouts: {{workouts}} · Notes: {{notes}} · Photos: {{photos}}. Merge keeps your data and adds to it, replace first deletes everything on this device.",
+        "merge": "Merge",
+        "replace": "Replace everything"
       }
     },
     "app": "App",
@@ -374,6 +379,10 @@
     "firstRelease": {
       "title": "Grynd is here",
       "text": "Build plans, check off sets with one tap (your numbers from last time are already filled in), rest timer and history. No ads, no account, everything stays on your device."
+    },
+    "backupMerge": {
+      "title": "Merge backups",
+      "text": "When importing, you first see what a backup contains. You can merge it with your data instead of replacing everything, and undo an import right after."
     }
   },
   "common": {
@@ -382,7 +391,8 @@
     "increase": "Increase {{label}}",
     "save": "Save",
     "cancel": "Cancel",
-    "close": "Close"
+    "close": "Close",
+    "undo": "Undo"
   },
   "picker": {
     "search": "Search exercises",

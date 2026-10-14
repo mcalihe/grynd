@@ -14,9 +14,9 @@ import { ConfirmService } from '../../../core/services/confirm.service';
       <hlm-alert-dialog-content *hlmAlertDialogPortal="let ctx">
         @if (confirm.current(); as request) {
           <hlm-alert-dialog-header>
-            <h2 hlmAlertDialogTitle>{{ request.title | transloco }}</h2>
+            <h2 hlmAlertDialogTitle>{{ request.title | transloco: request.params }}</h2>
             @if (request.message) {
-              <p hlmAlertDialogDescription>{{ request.message | transloco }}</p>
+              <p hlmAlertDialogDescription>{{ request.message | transloco: request.params }}</p>
             }
           </hlm-alert-dialog-header>
           <div class="flex flex-col gap-2">

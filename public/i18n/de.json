@@ -285,7 +285,7 @@
       "text": "Startet nach jedem abgehakten Satz"
     },
     "backup": {
-      "text": "Sicherung als JSON-Datei exportieren oder wiederherstellen.",
+      "text": "Sichere alle Pläne, Trainings und Notizen als Datei oder hole sie zurück.",
       "export": "Exportieren",
       "import": "Importieren",
       "exported": "Sicherung exportiert",
@@ -300,10 +300,15 @@
         "unknownExercise": "Die Sicherung verwendet Übungen, die diese App-Version noch nicht kennt. Aktualisiere Grynd und versuche es erneut.",
         "tooLarge": "Die Datei ist zu gross."
       },
-      "confirm": {
-        "title": "Daten ersetzen?",
-        "text": "Alle Pläne und Trainings auf diesem Gerät werden durch die Sicherung ersetzt.",
-        "confirm": "Ersetzen"
+      "merged": "Sicherung zusammengeführt",
+      "undone": "Import rückgängig gemacht",
+      "undoFailed": "Rückgängig machen fehlgeschlagen",
+      "preview": {
+        "title": "Sicherung vom {{date}}",
+        "titleUndated": "Sicherung importieren",
+        "text": "Pläne: {{plans}} · Trainings: {{workouts}} · Notizen: {{notes}} · Fotos: {{photos}}. Zusammenführen behält deine Daten und ergänzt sie, Ersetzen löscht zuerst alles auf diesem Gerät.",
+        "merge": "Zusammenführen",
+        "replace": "Alles ersetzen"
       }
     },
     "app": "App",
@@ -374,6 +379,10 @@
     "firstRelease": {
       "title": "Grynd ist da",
       "text": "Pläne erstellen, Sätze mit einem Tipp abhaken (deine Werte vom letzten Mal sind schon eingetragen), Pausen-Timer und Verlauf. Ohne Werbung, ohne Konto, alles bleibt auf deinem Gerät."
+    },
+    "backupMerge": {
+      "title": "Sicherungen zusammenführen",
+      "text": "Beim Import siehst du zuerst, was in der Sicherung steckt. Du kannst sie mit deinen Daten zusammenführen statt alles zu ersetzen, und ein Import lässt sich gleich danach rückgängig machen."
     }
   },
   "common": {
@@ -382,7 +391,8 @@
     "increase": "{{label}} erhöhen",
     "save": "Speichern",
     "cancel": "Abbrechen",
-    "close": "Schließen"
+    "close": "Schließen",
+    "undo": "Rückgängig"
   },
   "picker": {
     "search": "Übungen durchsuchen",

@@ -22,10 +22,14 @@ import {
   tableColumns,
   validateBackup,
 } from './backup';
+import { mergeBackups } from './merge';
+
+/** How a backup meets the data on this device (decision 0023). */
+export type ImportMode = 'replace' | 'merge';
 
 export const SCHEMA_VERSION = Math.max(...MIGRATIONS.map((m) => m.version));
 
-/** Export to and restore from a JSON file (plan.md §8 «Einstellungen», decision 0013). */
+/** Export to and restore from a JSON file (plan.md §8 «Einstellungen», decisions 0013, 0023). */
 @Injectable({ providedIn: 'root' })
 export class BackupService {
   private readonly database = inject(DatabaseService);
@@ -96,6 +100,18 @@ export class BackupService {
     }
     const exercises = await this.database.driver.query<{ id: string }>('SELECT id FROM exercise');
     return validateBackup(raw, SCHEMA_VERSION, new Set(exercises.map((e) => e.id)));
+  }
+
+  /**
+   * Replaces the data on this device with the backup, or merges both, and returns the data from
+   * before, so the caller can offer «Undo» by restoring it.
+   */
+  async import(backup: Backup, mode: ImportMode): Promise<Backup> {
+    const before = await this.create();
+    await this.restore(
+      mode === 'merge' ? mergeBackups(before, backup, this.clock.nowUtc()) : backup,
+    );
+    return before;
   }
 
   /** Replaces all user data with the backup in one transaction; nothing changes if it fails. */

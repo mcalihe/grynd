@@ -9,9 +9,9 @@ import { toast } from '@spartan-ng/brain/sonner';
 import { displayVersion } from '../../core/app-info';
 import { MAX_IMPORT_BYTES } from '../../core/backup/backup';
 import { BackupService } from '../../core/backup/backup.service';
-import { ConfirmService } from '../../core/services/confirm.service';
 import { AppLang } from '../../core/i18n/language';
 import { SettingsService, ThemeMode, WeightUnit } from '../../core/settings/settings.service';
+import { ImportFlow } from '../../shared/components/import-sheet/import-flow';
 import { PageHeader } from '../../shared/components/page-header/page-header';
 import {
   SegmentedControl,
@@ -159,7 +159,7 @@ export class SettingsPage {
   private readonly translation = toSignal(this.transloco.selectTranslation());
 
   private readonly backups = inject(BackupService);
-  private readonly confirm = inject(ConfirmService);
+  private readonly imports = inject(ImportFlow);
 
   protected readonly settings = this.service.settings;
   protected readonly busy = signal(false);
@@ -194,7 +194,7 @@ export class SettingsPage {
     }
   }
 
-  /** Validate first, then ask: a restore replaces all plans and workouts. */
+  /** Validate first, then show what the file contains and ask how to import it. */
   protected async importBackup(input: HTMLInputElement): Promise<void> {
     const file = input.files?.[0];
     input.value = ''; // picking the same file again must fire «change» again
@@ -213,18 +213,7 @@ export class SettingsPage {
         });
         return;
       }
-      const confirmed = await this.confirm.confirm({
-        title: 'settings.backup.confirm.title',
-        message: 'settings.backup.confirm.text',
-        confirm: 'settings.backup.confirm.confirm',
-        cancel: 'common.cancel',
-        destructive: true,
-      });
-      if (!confirmed) {
-        return;
-      }
-      await this.backups.restore(result.backup);
-      toast.success(this.transloco.translate('settings.backup.imported'));
+      await this.imports.importBackup(result.backup);
     } catch {
       toast.error(this.transloco.translate('settings.backup.importFailed'));
     } finally {
