@@ -124,6 +124,57 @@ describe('BackupService', () => {
     expect(settings.weightStepFor('e1', 'lb')).toBe(2.5);
   });
 
+  it('merges a backup with the data here and can undo it', async () => {
+    const notes = TestBed.inject(ExerciseNotesService);
+    await notes.save('e0', 'Bank flach');
+    const backup = await backups.create();
+
+    // Changes after the backup: a new plan here, the note edited.
+    await plans.save(addExercises({ name: 'Beine', weekdays: [], exercises: [] }, ['e1']));
+    await notes.save('e0', 'Bank schräg');
+    const beforeImport = await backups.create();
+
+    const before = await backups.import(backup, 'merge');
+
+    expect(before).toEqual({ ...beforeImport, exportedAt: expect.any(String) });
+    expect(await count('plan')).toBe(2);
+    // The note edited here is newer than the one in the backup.
+    expect(notes.noteFor('e0')).toBe('Bank schräg');
+
+    await backups.restore(before);
+    expect(await backups.create()).toEqual({ ...beforeImport, exportedAt: expect.any(String) });
+  });
+
+  it('replaces everything and returns what was there for undo', async () => {
+    const backup = await backups.create();
+    await plans.save(addExercises({ name: 'Beine', weekdays: [], exercises: [] }, ['e1']));
+
+    const before = await backups.import(backup, 'replace');
+    expect(await count('plan')).toBe(1);
+
+    await backups.restore(before);
+    expect(await count('plan')).toBe(2);
+  });
+
+  it('merges a backup from another device without losing either side', async () => {
+    const here = await backups.create();
+    // «Another device»: the same history plus a plan with new ids.
+    const other = structuredClone(here);
+    const plan = { ...other.data.plan[0], id: 'other-plan', name: 'Rücken' };
+    other.data.plan.push(plan);
+    other.data.plan_exercise.push({
+      ...other.data.plan_exercise[0],
+      id: 'other-pe',
+      planId: 'other-plan',
+    });
+
+    await backups.import(other, 'merge');
+
+    expect(await count('plan')).toBe(2);
+    expect(await count('plan_exercise')).toBe(3);
+    expect(await count('set_log')).toBe(6);
+  });
+
   it('rejects broken files without touching the data', async () => {
     expect(await backups.parse('{ nope')).toEqual({ ok: false, error: 'format' });
 
