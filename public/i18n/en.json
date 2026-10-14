@@ -58,7 +58,27 @@
     "history": {
       "title": "History",
       "summary": "Last: {{day}} · avg. {{duration}}"
-    }
+    },
+    "share": {
+      "action": "Share plan",
+      "title": "Share plan",
+      "hint": "The plan is shared as a template: exercises, sets, reps and rest. Your workouts stay with you.",
+      "notes": "Include notes",
+      "notesHint": "Only added to exercises the receiver has no note for yet.",
+      "photos": "Include photos",
+      "photosHint": "Makes the file much larger.",
+      "weightSteps": "Include weight steps",
+      "weightStepsHint": "Only used where the receiver has not picked their own.",
+      "asCode": "Share as code",
+      "asFile": "Share as file",
+      "codeHint": "You can send the code in a chat. Paste it in Grynd under Plans → Import plan.",
+      "photosFileOnly": "With photos the code would be too long, so share the plan as a file.",
+      "message": "My Grynd plan “{{name}}”. Copy the whole message and paste it in Grynd under Plans → Import plan:\n\n{{code}}",
+      "copied": "Code copied",
+      "saved": "File saved",
+      "failed": "Sharing failed"
+    },
+    "import": "Import plan"
   },
   "workout": {
     "title": "Workout",
@@ -285,24 +305,13 @@
       "text": "Starts after every completed set"
     },
     "backup": {
-      "text": "Save all plans, workouts and notes to a file or bring them back.",
+      "text": "Save all plans, workouts and notes to a file or bring them back. Share single plans from the plan itself.",
       "export": "Export",
       "import": "Import",
       "exported": "Backup exported",
       "exportFailed": "Export failed",
-      "imported": "Backup restored",
-      "importFailed": "Import failed",
-      "errors": {
-        "format": "This file is not a Grynd backup.",
-        "newerSchema": "The backup comes from a newer app version.",
-        "invalidRow": "The backup contains invalid data.",
-        "missingReference": "The backup is incomplete.",
-        "unknownExercise": "The backup uses exercises this app version does not know yet. Update Grynd and try again.",
-        "tooLarge": "The file is too large."
-      },
+      "replaced": "Backup restored",
       "merged": "Backup merged",
-      "undone": "Import undone",
-      "undoFailed": "Undo failed",
       "preview": {
         "title": "Backup from {{date}}",
         "titleUndated": "Import backup",
@@ -383,6 +392,10 @@
     "backupMerge": {
       "title": "Merge backups",
       "text": "When importing, you first see what a backup contains. You can merge it with your data instead of replacing everything, and undo an import right after."
+    },
+    "sharePlans": {
+      "title": "Share plans",
+      "text": "Send a plan as a code in a chat or as a file, with notes, photos and weight steps if you like. Under Plans → Import plan it is added without overwriting anything."
     }
   },
   "common": {
@@ -433,5 +446,35 @@
     "cable": "Cable",
     "machine": "Machine",
     "bodyweight": "Bodyweight"
+  },
+  "import": {
+    "title": "Import",
+    "titlePlan": "Import plan",
+    "hint": "Choose a file or paste a code you received. Before anything changes, Grynd shows you what is inside.",
+    "chooseFile": "Choose file",
+    "paste": "Paste code or text",
+    "placeholder": "Paste GRYND1:… here",
+    "action": "Import",
+    "failed": "Import failed",
+    "undone": "Import undone",
+    "undoFailed": "Undo failed",
+    "errors": {
+      "empty": "Paste a code first.",
+      "format": "This is neither a Grynd plan nor a Grynd backup.",
+      "damagedCode": "The code is incomplete or damaged. Copy all of it again.",
+      "newerVersion": "This comes from a newer Grynd version. Update the app and try again.",
+      "invalid": "The data contains invalid values.",
+      "missingReference": "The data is incomplete.",
+      "unknownExercise": "It uses exercises this app version does not know yet. Update Grynd and try again.",
+      "tooLarge": "The file is too large."
+    },
+    "plan": {
+      "title": "Add plan “{{name}}”?",
+      "titleMany": "Add {{count}} plans?",
+      "text": "Exercises: {{exercises}} · Notes: {{notes}} · Weight steps: {{weightSteps}}. Your plans, workouts and notes stay as they are.",
+      "confirm": "Add",
+      "done": "“{{name}}” added",
+      "notesKept": "Notes: {{added}} added, {{kept}} of yours kept"
+    }
   }
 }

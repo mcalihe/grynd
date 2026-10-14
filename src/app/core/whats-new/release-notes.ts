@@ -25,6 +25,7 @@ export const RELEASE_NOTES: readonly ReleaseNotes[] = [
     version: '0.8.0',
     items: [
       { id: 'weightStep', icon: 'lucideWeight' },
+      { id: 'sharePlans', icon: 'lucideShare2' },
       { id: 'backupMerge', icon: 'lucideDatabaseBackup' },
     ],
   },

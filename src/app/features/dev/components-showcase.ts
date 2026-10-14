@@ -31,6 +31,8 @@ import { DonutChart, DonutSegment } from '../../shared/components/donut-chart/do
 import { ExerciseNote } from '../../shared/components/exercise-note/exercise-note';
 import { ExerciseNoteSheet } from '../../shared/components/exercise-note/exercise-note-sheet';
 import { WeightStepSheet } from '../../shared/components/weight-step/weight-step-sheet';
+import { ImportSheet } from '../../shared/components/import-sheet/import-sheet';
+import { PlanShareSheet } from '../../shared/components/plan-share/plan-share-sheet';
 import { KeyFigure, KeyFigures } from '../../shared/components/key-figures/key-figures';
 import { NumberStepper } from '../../shared/components/number-stepper/number-stepper';
 import { MonthCalendar } from '../../shared/components/month-calendar/month-calendar';
@@ -79,6 +81,8 @@ import { ExerciseCelebration } from '../workout/exercise-celebration';
     ReleaseNotesList,
     WhatsNewDialog,
     WeightStepSheet,
+    PlanShareSheet,
+    ImportSheet,
     PageHeader,
     PlanCard,
     WeekChart,
@@ -158,6 +162,11 @@ export class ComponentsShowcase {
   // Weight step (decision 0022)
   protected readonly demoStep = signal(2);
   protected readonly stepOpen = signal(false);
+  // Plan share and import (decision 0023)
+  protected readonly shareOpen = signal(false);
+  protected readonly importOpen = signal(false);
+  protected readonly lastShare = signal('');
+  protected readonly JSON = JSON;
   protected readonly monthBars: BarChartBar[] = Array.from({ length: 30 }, (_, i) => {
     const trained = [0, 2, 4, 7, 9, 11, 14, 16, 18, 21, 23, 28].includes(i);
     return {

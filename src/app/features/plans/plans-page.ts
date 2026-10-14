@@ -1,16 +1,27 @@
-import { ChangeDetectionStrategy, Component, computed, inject, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { NgIcon } from '@ng-icons/core';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { PlansService } from '../../core/plans/plans.service';
+import { ImportSheet } from '../../shared/components/import-sheet/import-sheet';
 import { PageHeader } from '../../shared/components/page-header/page-header';
 import { PlanCard } from '../../shared/components/plan-card/plan-card';
 
-/** Plan list (Figma Pläne 37:27416, empty state 84:3262). No primary button on this screen. */
+/**
+ * Plan list (Figma Pläne 37:27416, empty state 84:3262). No primary button on this screen.
+ * «Plan importieren» adds plans someone shared (decision 0023).
+ */
 @Component({
   selector: 'app-plans-page',
-  imports: [PageHeader, PlanCard, HlmButton, NgIcon, TranslocoPipe],
+  imports: [PageHeader, PlanCard, ImportSheet, HlmButton, NgIcon, TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'flex flex-1 flex-col' },
   template: `
@@ -26,6 +37,9 @@ import { PlanCard } from '../../shared/components/plan-card/plan-card';
           <p class="w-64 text-sm text-muted-foreground">{{ 'plans.empty.text' | transloco }}</p>
           <button hlmBtn variant="secondary" class="mt-2" (click)="create()">
             <ng-icon name="lucidePlus" />{{ 'plans.new' | transloco }}
+          </button>
+          <button hlmBtn variant="ghost" data-action="import" (click)="importOpen.set(true)">
+            <ng-icon name="lucideImport" />{{ 'plans.import' | transloco }}
           </button>
         </section>
       } @else {
@@ -61,10 +75,21 @@ import { PlanCard } from '../../shared/components/plan-card/plan-card';
             <button hlmBtn variant="secondary" class="mt-2 w-full" (click)="create()">
               <ng-icon name="lucidePlus" />{{ 'plans.new' | transloco }}
             </button>
+            <button
+              hlmBtn
+              variant="ghost"
+              class="w-full"
+              data-action="import"
+              (click)="importOpen.set(true)"
+            >
+              <ng-icon name="lucideImport" />{{ 'plans.import' | transloco }}
+            </button>
           </section>
         </div>
       }
     }
+
+    <app-import-sheet [(open)]="importOpen" title="import.titlePlan" />
   `,
 })
 export class PlansPage implements OnInit {
@@ -74,6 +99,7 @@ export class PlansPage implements OnInit {
   protected readonly plans = this.service.plans;
   protected readonly today = this.service.todayPlans;
   protected readonly todayIds = computed(() => new Set(this.today().map((p) => p.plan.id)));
+  protected readonly importOpen = signal(false);
 
   ngOnInit(): void {
     void this.service.load();

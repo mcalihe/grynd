@@ -7,11 +7,10 @@ import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmSwitch } from '@spartan-ng/helm/switch';
 import { toast } from '@spartan-ng/brain/sonner';
 import { displayVersion } from '../../core/app-info';
-import { MAX_IMPORT_BYTES } from '../../core/backup/backup';
 import { BackupService } from '../../core/backup/backup.service';
 import { AppLang } from '../../core/i18n/language';
 import { SettingsService, ThemeMode, WeightUnit } from '../../core/settings/settings.service';
-import { ImportFlow } from '../../shared/components/import-sheet/import-flow';
+import { ImportSheet } from '../../shared/components/import-sheet/import-sheet';
 import { PageHeader } from '../../shared/components/page-header/page-header';
 import {
   SegmentedControl,
@@ -24,7 +23,16 @@ import {
  */
 @Component({
   selector: 'app-settings-page',
-  imports: [PageHeader, SegmentedControl, HlmSwitch, HlmButton, NgIcon, RouterLink, TranslocoPipe],
+  imports: [
+    PageHeader,
+    SegmentedControl,
+    ImportSheet,
+    HlmSwitch,
+    HlmButton,
+    NgIcon,
+    RouterLink,
+    TranslocoPipe,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'flex flex-1 flex-col' },
   template: `
@@ -110,18 +118,11 @@ import {
               size="lg"
               data-action="import"
               [disabled]="busy()"
-              (click)="file.click()"
+              (click)="importOpen.set(true)"
             >
               {{ 'settings.backup.import' | transloco }}
             </button>
           </div>
-          <input
-            #file
-            type="file"
-            accept="application/json,.json"
-            class="hidden"
-            (change)="importBackup(file)"
-          />
         </div>
       </section>
 
@@ -150,6 +151,8 @@ import {
 
       <p class="pt-1 text-center text-xs text-muted-foreground">Grynd {{ version }}</p>
     </div>
+
+    <app-import-sheet [(open)]="importOpen" />
   `,
 })
 export class SettingsPage {
@@ -159,10 +162,10 @@ export class SettingsPage {
   private readonly translation = toSignal(this.transloco.selectTranslation());
 
   private readonly backups = inject(BackupService);
-  private readonly imports = inject(ImportFlow);
 
   protected readonly settings = this.service.settings;
   protected readonly busy = signal(false);
+  protected readonly importOpen = signal(false);
   protected readonly version = displayVersion();
 
   protected readonly themeOptions = computed<SegmentedOption<ThemeMode>[]>(() => {
@@ -185,37 +188,11 @@ export class SettingsPage {
   protected async exportBackup(): Promise<void> {
     this.busy.set(true);
     try {
-      await this.backups.export();
-      toast.success(this.transloco.translate('settings.backup.exported'));
+      if ((await this.backups.export()) !== 'cancelled') {
+        toast.success(this.transloco.translate('settings.backup.exported'));
+      }
     } catch {
       toast.error(this.transloco.translate('settings.backup.exportFailed'));
-    } finally {
-      this.busy.set(false);
-    }
-  }
-
-  /** Validate first, then show what the file contains and ask how to import it. */
-  protected async importBackup(input: HTMLInputElement): Promise<void> {
-    const file = input.files?.[0];
-    input.value = ''; // picking the same file again must fire «change» again
-    if (!file) {
-      return;
-    }
-    this.busy.set(true);
-    try {
-      const result =
-        file.size > MAX_IMPORT_BYTES
-          ? ({ ok: false, error: 'tooLarge' } as const)
-          : await this.backups.parse(await file.text());
-      if (!result.ok) {
-        toast.error(this.transloco.translate('settings.backup.importFailed'), {
-          description: this.transloco.translate(`settings.backup.errors.${result.error}`),
-        });
-        return;
-      }
-      await this.imports.importBackup(result.backup);
-    } catch {
-      toast.error(this.transloco.translate('settings.backup.importFailed'));
     } finally {
       this.busy.set(false);
     }
