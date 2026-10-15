@@ -83,6 +83,7 @@ Alle Tabellen haben `id` (UUIDv7), `createdAt`, `updatedAt`, `deletedAt`. Dazu k
 | `plan` | name, weekdays (Liste 0–6, optional) | Ein Plan = ein Training |
 | `plan_exercise` | planId, exerciseId, position, targetSets, repMin, repMax, restSeconds | Feste Reihenfolge über `position`; Standard 3 × 8–12, 90 s |
 | `workout_session` | planId (optional), startedAt, finishedAt, status (active / finished / aborted) | Maximal eine aktive Session |
+| `workout_pause` | sessionId, pausedAt, resumedAt | Pausen eines Trainings; `resumedAt` leer, solange es pausiert ist, höchstens eine offene pro Session ([0023](decisions/0023-pause-workout.md)) |
 | `session_exercise` | sessionId, exerciseId, position, status (open / done), repMin, repMax, restSeconds | Kopie der Plan-Übungen inkl. Ziele beim Start |
 | `exercise_interval` | sessionExerciseId, enteredAt, leftAt | Zeiträume, in denen die Übung angezeigt wurde; beliebig viele |
 | `set_log` | sessionExerciseId, position, weightKg, reps, completedAt, isExtra | Gewicht immer in kg |
