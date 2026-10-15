@@ -71,7 +71,7 @@ Klassen folgen dem Angular-Styleguide 2025 (ohne `Component`-Suffix), Selektor-P
 | Bildbetrachter (Vollbild) | – (nur Code, [0021](../decisions/0021-note-images.md)) | `ImageViewerService` + `ImageViewerHost` (App-Shell, `@defer`, helm Dialog) |
 | Gewichtsschritt wählen (Sheet) | – (nur Code, [0022](../decisions/0022-weight-step.md)) | `WeightStepSheet` (`app-weight-step-sheet`, helm Sheet, Chips als Radio-Gruppe) |
 | Übungszeile im Plan (Detail/Editor, ≡-Handle, Chevron) | `37:27708`, `37:28096` | `PlanExerciseRow` (`app-plan-exercise-row`, features/plans) |
-| Übungs-Listeneintrag + Filter-Chips im Picker | `63:13440` | im `ExercisePickerPage` (features/plans) |
+| Übungs-Listeneintrag + Filter-Chips im Picker | `63:13440` (Filter-Tabs nach [0016](../decisions/0016-exercise-picker-filters.md)) | im `ExercisePickerPage` (features/plans) |
 | «Änderungen verwerfen» / Bestätigungen | `66:1123` | `ConfirmService` + `ConfirmDialogHost` (App-Shell, `@defer`) |
 | Neuigkeiten nach einem Update (Popup) | – (nur Code, [0020](../decisions/0020-whats-new.md); Stil wie Dialog `9:303`) | `WhatsNewDialog` (`app-whats-new-dialog`, helm Alert-Dialog, App-Shell `@defer`) |
 | Liste der Neuerungen (Popup, Einstellungen) | – (nur Code, [0020](../decisions/0020-whats-new.md)) | `ReleaseNotesList` (`app-release-notes-list`) |
