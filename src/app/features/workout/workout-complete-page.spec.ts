@@ -17,6 +17,7 @@ describe('WorkoutCompletePage', () => {
       planName: 'Oberkörper',
       startedAt: '2026-10-01T12:00:00.000Z',
       finishedAt: '2026-10-01T12:54:00.000Z',
+      pausedMs: 0,
       exerciseCount: 1,
       setCount: 2,
       volumeKg: 1300,

@@ -9,6 +9,7 @@ describe('MonthCalendar', () => {
     planName: 'Oberkörper',
     startedAt: new Date(2026, 8, day, 18).toISOString(),
     finishedAt: new Date(2026, 8, day, 19).toISOString(),
+    pausedMs: 0,
     exerciseCount: 6,
     setCount: 18,
     volumeKg: 8420,

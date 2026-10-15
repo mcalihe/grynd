@@ -1,17 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { RollingNumber } from '../rolling-number/rolling-number';
-
-/** Elapsed time counting up: m:ss, from one hour h:mm:ss; partial seconds are dropped. */
-export function formatElapsed(ms: number): string {
-  const totalSeconds = Math.max(0, Math.floor(ms / 1000));
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor(totalSeconds / 60) % 60;
-  const seconds = (totalSeconds % 60).toString().padStart(2, '0');
-  return hours > 0
-    ? `${hours}:${minutes.toString().padStart(2, '0')}:${seconds}`
-    : `${minutes}:${seconds}`;
-}
+import { formatElapsed } from './format-elapsed';
 
 /**
  * Workout clock in the training header (code only, plan.md §Training): the time since the

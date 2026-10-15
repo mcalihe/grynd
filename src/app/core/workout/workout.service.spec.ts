@@ -4,6 +4,7 @@ import { SqlJsDriver } from '../../../testing/sqljs-driver';
 import { createTestDatabase, FakeClock } from '../../../testing/test-database';
 import {
   ExerciseIntervalRepository,
+  WorkoutPauseRepository,
   WorkoutSessionRepository,
 } from '../db/repositories/workout.repository';
 import { addExercises, updateExercise } from '../plans/plan-draft';
@@ -202,6 +203,91 @@ describe('WorkoutService', () => {
       fresh.workout()!.exercises[0].entry.id,
     );
     expect(interval.leftAt).toBe(completedAt);
+  });
+
+  describe('pause', () => {
+    const intervalsOf = (i: number) =>
+      TestBed.inject(ExerciseIntervalRepository).findBySessionExercise(
+        workout().exercises[i].entry.id,
+      );
+    const pauses = () => TestBed.inject(WorkoutPauseRepository).findBySession(workout().session.id);
+
+    it('stops the clock and the exercise time until resumed', async () => {
+      await service.start(planId);
+      await service.setCurrent(0);
+      clock.advance(60_000);
+
+      await service.pause();
+      const pausedAt = clock.nowUtc();
+      expect(service.paused()).toBe(true);
+      expect((await intervalsOf(0)).map((i) => i.leftAt)).toEqual([pausedAt]);
+      expect(await pauses()).toEqual([expect.objectContaining({ pausedAt, resumedAt: null })]);
+
+      clock.advance(600_000);
+      expect(service.elapsedMs(clock.nowUtc())).toBe(60_000);
+
+      await service.resume();
+      expect(service.paused()).toBe(false);
+      expect((await pauses())[0].resumedAt).toBe(clock.nowUtc());
+      expect((await intervalsOf(0)).map((i) => i.leftAt)).toEqual([pausedAt, null]);
+
+      clock.advance(30_000);
+      expect(service.elapsedMs(clock.nowUtc())).toBe(90_000);
+    });
+
+    it('tracks no exercise time while paused', async () => {
+      await service.start(planId);
+      await service.setCurrent(0);
+      await service.pause();
+      clock.advance(60_000);
+
+      await service.setCurrent(1);
+
+      expect(service.current()).toBe(1);
+      expect(await intervalsOf(1)).toEqual([]);
+      await service.resume();
+      expect((await intervalsOf(1)).map((i) => i.leftAt)).toEqual([null]);
+    });
+
+    it('pauses and resumes only once', async () => {
+      await service.start(planId);
+      await service.resume();
+      await service.pause();
+      await service.pause();
+      expect(await pauses()).toHaveLength(1);
+
+      await service.resume();
+      await service.resume();
+      expect((await pauses()).map((p) => p.resumedAt !== null)).toEqual([true]);
+    });
+
+    it('ends an open pause with the workout', async () => {
+      const id = await service.start(planId);
+      clock.advance(60_000);
+      await service.pause();
+      const pauseRows = await pauses();
+      clock.advance(600_000);
+
+      await service.finish();
+
+      const finishedAt = (await TestBed.inject(WorkoutSessionRepository).findById(id))?.finishedAt;
+      const [pause] = await TestBed.inject(WorkoutPauseRepository).findBySession(id);
+      expect(pause.id).toBe(pauseRows[0].id);
+      expect(pause.resumedAt).toBe(finishedAt);
+    });
+
+    it('stays paused after a restart', async () => {
+      await service.start(planId);
+      clock.advance(60_000);
+      await service.pause();
+      clock.advance(600_000);
+
+      const fresh = TestBed.runInInjectionContext(() => new WorkoutService());
+      await fresh.restore();
+
+      expect(fresh.paused()).toBe(true);
+      expect(fresh.elapsedMs(clock.nowUtc())).toBe(60_000);
+    });
   });
 
   it('finishes or aborts the session', async () => {

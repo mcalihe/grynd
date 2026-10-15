@@ -9,6 +9,7 @@ const DEMO: HistoryDetail = {
     planName: 'Oberkörper',
     startedAt: '2026-10-02T17:00:00.000Z',
     finishedAt: '2026-10-02T18:07:00.000Z',
+    pausedMs: 0,
     exerciseCount: 2,
     setCount: 14,
     volumeKg: 8420,

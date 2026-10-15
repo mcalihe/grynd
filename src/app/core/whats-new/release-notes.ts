@@ -23,7 +23,10 @@ export interface ReleaseNotes {
 export const RELEASE_NOTES: readonly ReleaseNotes[] = [
   {
     version: '0.8.0',
-    items: [{ id: 'weightStep', icon: 'lucideWeight' }],
+    items: [
+      { id: 'pauseWorkout', icon: 'lucidePause' },
+      { id: 'weightStep', icon: 'lucideWeight' },
+    ],
   },
   {
     version: '0.7.0',

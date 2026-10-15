@@ -17,6 +17,7 @@ describe('PlanHistoryPage', () => {
     planName: 'Beine',
     startedAt: new Date(2026, 8, day, 18).toISOString(),
     finishedAt: new Date(2026, 8, day, 18, 40).toISOString(),
+    pausedMs: 0,
     exerciseCount: 1,
     setCount: 3,
     volumeKg,

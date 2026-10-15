@@ -34,6 +34,7 @@ const session = (
   planName: 'Oberkörper',
   startedAt: start.toISOString(),
   finishedAt: new Date(start.getTime() + minutes * 60_000).toISOString(),
+  pausedMs: 0,
   exerciseCount: 3,
   setCount: 9,
   volumeKg: 1000,
