@@ -41,6 +41,7 @@ describe('PlanDetailPage', () => {
     planName: 'Oberkörper',
     startedAt: '2026-09-29T12:00:00.000Z',
     finishedAt: '2026-09-29T12:50:00.000Z',
+    pausedMs: 0,
     exerciseCount: 1,
     setCount: 3,
     volumeKg: 1200,

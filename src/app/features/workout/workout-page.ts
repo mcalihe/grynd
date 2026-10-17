@@ -7,6 +7,7 @@ import {
   effect,
   ElementRef,
   inject,
+  Injector,
   signal,
   viewChild,
 } from '@angular/core';
@@ -24,7 +25,7 @@ import { ExerciseSettingsService } from '../../core/exercises/exercise-settings.
 import { SettingsService } from '../../core/settings/settings.service';
 import { RestTimerService } from '../../core/workout/rest-timer.service';
 import { isExerciseDone, WorkoutService, workoutPercent } from '../../core/workout/workout.service';
-import { Clock } from '../../core/utils/time';
+import { Clock, toUtc } from '../../core/utils/time';
 import { ExerciseNoteSheet } from '../../shared/components/exercise-note/exercise-note-sheet';
 import { toastAddImagesResult } from '../../shared/components/exercise-note/note-image-feedback';
 import { WeightStepSheet } from '../../shared/components/weight-step/weight-step-sheet';
@@ -32,9 +33,10 @@ import { RollingNumber } from '../../shared/components/rolling-number/rolling-nu
 import { SegmentProgress } from '../../shared/components/segment-progress/segment-progress';
 import { StickyAction } from '../../shared/components/sticky-action/sticky-action';
 import { TimerBar } from '../../shared/components/timer-bar/timer-bar';
+import { formatElapsed } from '../../shared/components/workout-clock/format-elapsed';
 import { WorkoutClock } from '../../shared/components/workout-clock/workout-clock';
 import { CelebrationService } from '../../shared/motion/celebration.service';
-import { play } from '../../shared/motion/motion';
+import { enter, play } from '../../shared/motion/motion';
 import { ExerciseCelebration } from './exercise-celebration';
 import { ExercisePage } from './exercise-page';
 import { OverviewSheet } from './overview-sheet';
@@ -57,6 +59,8 @@ interface ExerciseMoment {
  * horizontal scroll-snap; header, progress (segments plus the overall percent), timer and the
  * next button stay in place.
  * A finished exercise is celebrated once (decision 0015); when all are done, the finish button pulses.
+ * Paused (decision 0023), the clock stands still, the exercises can't be touched and the user may
+ * leave for the rest of the app until continuing.
  */
 @Component({
   selector: 'app-workout-page',
@@ -82,15 +86,27 @@ interface ExerciseMoment {
       <header class="flex h-13 shrink-0 items-center justify-between px-4">
         <button
           type="button"
-          class="flex h-11 items-center gap-2 rounded-full bg-secondary px-3 text-sm font-semibold text-secondary-foreground"
+          class="flex h-11 items-center gap-2 rounded-full bg-secondary px-3 text-sm font-semibold text-secondary-foreground disabled:opacity-50"
           [attr.aria-label]="'workout.overview' | transloco"
+          [disabled]="paused()"
           (click)="overviewOpen.set(true)"
         >
           <ng-icon name="lucideList" size="18" />
           {{ current() + 1 }} / {{ w.exercises.length }}
           <ng-icon name="lucideChevronDown" size="16" />
         </button>
-        <app-workout-clock [elapsedMs]="elapsedMs()" (stop)="end()" />
+        <div class="flex items-center gap-2">
+          <button
+            type="button"
+            class="flex size-11 items-center justify-center rounded-full bg-secondary text-secondary-foreground"
+            [attr.aria-label]="(paused() ? 'workout.resumeWorkout' : 'workout.pause') | transloco"
+            [disabled]="busy()"
+            (click)="paused() ? resume() : pause()"
+          >
+            <ng-icon [name]="paused() ? 'lucidePlay' : 'lucidePause'" size="18" />
+          </button>
+          <app-workout-clock [elapsedMs]="elapsedMs()" (stop)="end()" />
+        </div>
       </header>
 
       <div
@@ -112,47 +128,76 @@ interface ExerciseMoment {
         />
       </div>
 
-      <div
-        #pager
-        class="flex min-h-0 flex-1 snap-x snap-mandatory [scrollbar-width:none] overflow-x-auto overscroll-x-contain"
-      >
-        @for (item of w.exercises; track item.entry.id; let i = $index) {
-          <section
-            class="w-full shrink-0 snap-start snap-always overflow-y-auto"
-            [attr.data-index]="i"
-            [attr.aria-label]="catalog.nameById(item.entry.exerciseId)"
+      <div class="relative flex min-h-0 flex-1 flex-col">
+        <div
+          #pager
+          class="flex min-h-0 flex-1 snap-x snap-mandatory [scrollbar-width:none] overflow-x-auto overscroll-x-contain"
+          [attr.inert]="paused() ? '' : null"
+        >
+          @for (item of w.exercises; track item.entry.id; let i = $index) {
+            <section
+              class="w-full shrink-0 snap-start snap-always overflow-y-auto"
+              [attr.data-index]="i"
+              [attr.aria-label]="catalog.nameById(item.entry.exerciseId)"
+            >
+              <app-exercise-page
+                [item]="item"
+                [index]="i"
+                [menuSetId]="menuSet()?.id ?? null"
+                [isLast]="i === w.exercises.length - 1"
+                (setMenu)="menuSet.set($event)"
+                (moveBack)="moveBack(i, $event)"
+                (setCompleted)="timer.autoStart($event)"
+                (exerciseCompleted)="exerciseCompleted(i)"
+                (editNote)="editNote(item.entry.exerciseId)"
+                (editWeightStep)="editWeightStep(item.entry.exerciseId)"
+              />
+            </section>
+          }
+        </div>
+
+        <div class="shrink-0 px-4 pb-2" [attr.inert]="paused() ? '' : null">
+          <app-timer-bar
+            [running]="timer.running()"
+            [remainingMs]="timer.remainingMs()"
+            [totalMs]="timer.totalMs()"
+            [durationSec]="restSeconds()"
+            (start)="timer.start(restSeconds())"
+            (stop)="timer.stop()"
+            (adjust)="timer.adjust($event)"
+            (durationChange)="workout.setRestSeconds(current(), $event)"
+          />
+        </div>
+
+        @if (paused()) {
+          <div
+            #pausedPanel
+            class="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-background/90 px-6 text-center backdrop-blur-sm"
           >
-            <app-exercise-page
-              [item]="item"
-              [index]="i"
-              [menuSetId]="menuSet()?.id ?? null"
-              [isLast]="i === w.exercises.length - 1"
-              (setMenu)="menuSet.set($event)"
-              (moveBack)="moveBack(i, $event)"
-              (setCompleted)="timer.autoStart($event)"
-              (exerciseCompleted)="exerciseCompleted(i)"
-              (editNote)="editNote(item.entry.exerciseId)"
-              (editWeightStep)="editWeightStep(item.entry.exerciseId)"
-            />
-          </section>
+            <span
+              class="flex size-16 items-center justify-center rounded-full bg-secondary text-secondary-foreground"
+              aria-hidden="true"
+            >
+              <ng-icon name="lucidePause" size="28" />
+            </span>
+            <h2 class="text-xl font-semibold">{{ 'workout.paused.title' | transloco }}</h2>
+            <p class="text-4xl font-semibold tabular-nums">{{ elapsedText() }}</p>
+            <p class="max-w-72 text-sm text-muted-foreground">
+              {{ 'workout.paused.text' | transloco }}
+            </p>
+            <button hlmBtn variant="secondary" class="mt-3" (click)="leave()">
+              <ng-icon name="lucideClipboardList" />{{ 'workout.paused.leave' | transloco }}
+            </button>
+          </div>
         }
       </div>
 
-      <div class="shrink-0 px-4 pb-2">
-        <app-timer-bar
-          [running]="timer.running()"
-          [remainingMs]="timer.remainingMs()"
-          [totalMs]="timer.totalMs()"
-          [durationSec]="restSeconds()"
-          (start)="timer.start(restSeconds())"
-          (stop)="timer.stop()"
-          (adjust)="timer.adjust($event)"
-          (durationChange)="workout.setRestSeconds(current(), $event)"
-        />
-      </div>
-
       <app-sticky-action [divider]="true">
-        @if (next(); as nextItem) {
+        @if (paused()) {
+          <button hlmBtn size="lg" [disabled]="busy()" (click)="resume()">
+            <ng-icon name="lucidePlay" />{{ 'workout.paused.resume' | transloco }}
+          </button>
+        } @else if (next(); as nextItem) {
           <button #nextButton hlmBtn size="lg" (click)="goTo(current() + 1)">
             <ng-icon name="lucideArrowRight" />
             <span class="truncate">
@@ -223,10 +268,13 @@ export class WorkoutPage {
   private readonly pager = viewChild<ElementRef<HTMLElement>>('pager');
   private readonly progress = viewChild(SegmentProgress);
   private readonly nextButton = viewChild<ElementRef<HTMLElement>>('nextButton');
+  private readonly pausedPanel = viewChild<ElementRef<HTMLElement>>('pausedPanel');
+  private readonly injector = inject(Injector);
   /** Session exercises already celebrated: unchecking and re-checking does not repeat it. */
   private readonly celebrated = new Set<string>();
 
   protected readonly current = this.workout.current;
+  protected readonly paused = this.workout.paused;
   protected readonly menuSet = signal<SetLog | null>(null);
   protected readonly overviewOpen = signal(false);
   /** Exercise whose note the sheet edits; kept after closing so the sheet can save on close. */
@@ -237,13 +285,14 @@ export class WorkoutPage {
   protected readonly stepOpen = signal(false);
   protected readonly busy = signal(false);
   protected readonly moment = signal<ExerciseMoment | null>(null);
-  /** Refreshed every second for the workout clock; the time itself comes from `startedAt`. */
+  /** Refreshed every second for the workout clock; the time itself comes from the timestamps. */
   private readonly now = signal(this.clock.now().getTime());
 
-  protected readonly elapsedMs = computed(() => {
-    const startedAt = this.workout.workout()?.session.startedAt;
-    return startedAt ? this.now() - Date.parse(startedAt) : 0;
-  });
+  /** Since `startedAt` without the pauses, so the clock stands still while paused. */
+  protected readonly elapsedMs = computed(() =>
+    this.workout.elapsedMs(toUtc(new Date(this.now()))),
+  );
+  protected readonly elapsedText = computed(() => formatElapsed(this.elapsedMs()));
 
   protected readonly segments = computed(() =>
     (this.workout.workout()?.exercises ?? []).map(({ sets }) => ({
@@ -272,16 +321,16 @@ export class WorkoutPage {
     void this.exerciseSettings.load();
     const destroyRef = inject(DestroyRef);
 
-    // Android back opens the end dialog instead of leaving the workout.
+    // Android back opens the end dialog instead of leaving the workout; paused, it leaves.
     const backButton = inject(BackButtonService);
-    backButton.setHandler(() => void this.end());
+    backButton.setHandler(() => void (this.paused() ? this.leave() : this.end()));
     destroyRef.onDestroy(() => backButton.setHandler(null));
 
-    // Keep the screen on while training (Wake Lock API in the browser, if supported).
-    void keepAwake(true);
+    // Keep the screen on while training, not while paused (Wake Lock API in the browser).
+    effect(() => void keepAwake(!this.paused()));
     destroyRef.onDestroy(() => void keepAwake(false));
 
-    const tick = setInterval(() => this.now.set(this.clock.now().getTime()), 1000);
+    const tick = setInterval(() => this.tick(), 1000);
     destroyRef.onDestroy(() => clearInterval(tick));
 
     afterNextRender(() => {
@@ -385,6 +434,38 @@ export class WorkoutPage {
     void this.notes.removeImage(this.noteExerciseId(), imageId);
   }
 
+  /** Stops the clock and the rest timer; the overlay offers to continue or to leave. */
+  protected async pause(): Promise<void> {
+    this.busy.set(true);
+    try {
+      this.timer.stop();
+      await this.workout.pause();
+      this.tick(); // freeze the clock at the pause, not at the last tick
+    } finally {
+      this.busy.set(false);
+    }
+    afterNextRender(
+      () =>
+        void enter([...(this.pausedPanel()?.nativeElement.children ?? [])], { y: 12, each: 0.05 }),
+      { injector: this.injector },
+    );
+  }
+
+  protected async resume(): Promise<void> {
+    this.busy.set(true);
+    try {
+      await this.workout.resume();
+      this.tick(); // a stale tick would show the clock a second behind the frozen time
+    } finally {
+      this.busy.set(false);
+    }
+  }
+
+  /** «Zu den Plänen»: the workout stays paused; a bar above the tabs leads back to it. */
+  protected async leave(): Promise<void> {
+    await this.router.navigate(['/plans'], { replaceUrl: true });
+  }
+
   protected async finish(): Promise<void> {
     this.busy.set(true);
     try {
@@ -413,6 +494,10 @@ export class WorkoutPage {
       await this.workout.abort();
       await this.router.navigate(['/plans'], { replaceUrl: true });
     }
+  }
+
+  private tick(): void {
+    this.now.set(this.clock.now().getTime());
   }
 
   private scrollTo(index: number, behavior: ScrollBehavior): void {

@@ -81,6 +81,27 @@ test('plan → workout → history', async ({ page }) => {
     '61',
   );
 
+  // Pause (decision 0023): the sets can't be touched; leave for the app and come back later
+  await page.getByRole('button', { name: 'Training pausieren' }).click();
+  await expect(page.getByRole('heading', { name: 'Training pausiert' })).toBeVisible();
+  await page.getByRole('button', { name: 'Zu den Plänen' }).click();
+  await expect(page).toHaveURL(/\/plans$/);
+  // A paused workout does not reopen on start; it waits above the tabs
+  await page.reload();
+  const pausedBar = page.getByRole('button', { name: /^Pausiertes Training öffnen: E2E Brust/ });
+  await expect(pausedBar).toBeVisible({ timeout: 30_000 });
+  await expect(page).toHaveURL(/\/plans$/);
+  await pausedBar.click();
+  await expect(page).toHaveURL(/\/workout$/);
+  await expect(page.getByRole('heading', { name: 'Training pausiert' })).toBeVisible();
+  // The clock stands still while paused
+  const clock = page.getByRole('button', { name: /^Training beenden/ });
+  const frozen = await clock.getAttribute('aria-label');
+  await page.waitForTimeout(1500);
+  await expect(clock).toHaveAttribute('aria-label', frozen!);
+  await page.getByRole('button', { name: 'Weiter trainieren' }).click();
+  await expect(page.getByRole('heading', { name: 'Training pausiert' })).toBeHidden();
+
   // Finish → celebration (figures count up to their final values) → history detail
   await page.getByRole('button', { name: 'Training abschliessen' }).click();
   await expect(page).toHaveURL(/\/workout\/done\/.+/);

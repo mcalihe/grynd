@@ -28,6 +28,11 @@ export const BACKUP_TABLES = {
     columns: ['planId', 'startedAt', 'finishedAt', 'status'],
     required: ['startedAt', 'status'],
   },
+  workout_pause: {
+    columns: ['sessionId', 'pausedAt', 'resumedAt'],
+    required: ['sessionId', 'pausedAt'],
+    since: 5,
+  },
   session_exercise: {
     columns: ['sessionId', 'exerciseId', 'position', 'status', 'repMin', 'repMax', 'restSeconds'],
     required: ['sessionId', 'exerciseId', 'position', 'status'],
@@ -158,6 +163,7 @@ export function validateBackup(
     ['plan_exercise', 'planId', plans, false],
     ['plan_exercise', 'exerciseId', exerciseIds, false],
     ['workout_session', 'planId', plans, true],
+    ['workout_pause', 'sessionId', sessions, false],
     ['session_exercise', 'sessionId', sessions, false],
     ['session_exercise', 'exerciseId', exerciseIds, false],
     ['exercise_interval', 'sessionExerciseId', sessionExercises, false],

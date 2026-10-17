@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { TranslocoTestingModule } from '@jsverse/transloco';
-import { formatElapsed, WorkoutClock } from './workout-clock';
+import { formatElapsed } from './format-elapsed';
+import { WorkoutClock } from './workout-clock';
 
 describe('formatElapsed', () => {
   it('formats m:ss below an hour and drops partial seconds', () => {

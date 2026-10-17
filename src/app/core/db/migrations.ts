@@ -2,6 +2,7 @@ import { migration001Initial } from './migrations/001-initial';
 import { migration002ExerciseNotes } from './migrations/002-exercise-notes';
 import { migration003NoteImages } from './migrations/003-note-images';
 import { migration004ExerciseSettings } from './migrations/004-exercise-settings';
+import { migration005WorkoutPauses } from './migrations/005-workout-pauses';
 import { SqlDriver } from './sql-driver';
 
 export interface Migration {
@@ -15,6 +16,7 @@ export const MIGRATIONS: readonly Migration[] = [
   migration002ExerciseNotes,
   migration003NoteImages,
   migration004ExerciseSettings,
+  migration005WorkoutPauses,
 ];
 
 export async function getSchemaVersion(driver: SqlDriver): Promise<number> {

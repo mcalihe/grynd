@@ -16,6 +16,7 @@ describe('HistoryPage', () => {
     planName: id,
     startedAt,
     finishedAt: new Date(Date.parse(startedAt) + 54 * 60_000).toISOString(),
+    pausedMs: 0,
     exerciseCount: 6,
     setCount: 18,
     volumeKg: 8420,

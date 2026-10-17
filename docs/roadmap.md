@@ -193,6 +193,10 @@ Umgesetzt in `ccr-c5dece36-vt0o19`, Entscheide in [0021](decisions/0021-note-ima
 
 Umgesetzt in `ccr-cd9d91b1-bugiex`, Entscheide in [0022](decisions/0022-weight-step.md). Der ±-Schritt und die Scrubber-Skala für das Gewicht sind pro Übung wählbar (kg 0,25–10, lb 0,5–10, Standard 2,5), gültig in allen Plänen; Tabelle `exercise_setting` (Migration 4), im Backup ab Schema 4. Änderbar im Training (Übungsmenü) und im Plan-Detail. Ohne Figma-Entwurf, Vorschau unter `/dev/components`.
 
+## Training pausieren ✅
+
+Umgesetzt in `ccr-9fc67d84-p4ss53`, Entscheide in [0023](decisions/0023-pause-workout.md). Pause-Button im Trainingskopf: Uhr und Timer stehen still, die Sätze warten unter einem Overlay mit «Weiter trainieren» und «Zu den Plänen». Ein pausiertes Training wartet auf den Tab-Screens als Leiste über der Navigation und öffnet sich beim Start nicht von selbst. Pausen zählen nicht zur Dauer; Tabelle `workout_pause` (Migration 5), im Backup ab Schema 5. Ohne Figma-Entwurf, Vorschau der Leiste unter `/dev/components`.
+
 ---
 
 ## Entscheide aus M0

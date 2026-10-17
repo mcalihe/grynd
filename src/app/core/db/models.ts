@@ -76,6 +76,14 @@ export interface WorkoutSession extends BaseEntity {
   status: WorkoutSessionStatus;
 }
 
+/** A pause of a workout (decision 0023); the workout duration leaves it out. */
+export interface WorkoutPause extends BaseEntity {
+  sessionId: string;
+  pausedAt: UtcTimestamp;
+  /** Null while the workout is paused. */
+  resumedAt: UtcTimestamp | null;
+}
+
 export interface SessionExercise extends BaseEntity {
   sessionId: string;
   exerciseId: string;

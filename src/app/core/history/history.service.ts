@@ -121,6 +121,11 @@ export class HistoryService {
   private querySummaries(id?: string): Promise<HistorySummary[]> {
     return this.database.driver.query<HistorySummary>(
       `SELECT ws.id, ws.planId, ws.startedAt, ws.finishedAt, coalesce(p.name, '') AS planName,
+              coalesce((
+                SELECT round(sum(max(0, julianday(coalesce(wp.resumedAt, ws.finishedAt))
+                                      - julianday(wp.pausedAt))) * 86400000)
+                  FROM workout_pause wp
+                 WHERE wp.sessionId = ws.id AND wp.deletedAt IS NULL), 0) AS pausedMs,
               count(DISTINCT CASE WHEN sl.id IS NOT NULL THEN se.id END) AS exerciseCount,
               count(sl.id) AS setCount,
               coalesce(sum(coalesce(sl.weightKg, 0) * coalesce(sl.reps, 0)), 0) AS volumeKg
