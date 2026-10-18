@@ -21,9 +21,9 @@ describe('ImportFlow', () => {
     });
   });
 
-  async function run(choice: ConfirmChoice) {
+  async function run(choice: ConfirmChoice, file: Backup = backup) {
     const confirm = TestBed.inject(ConfirmService);
-    const done = TestBed.inject(ImportFlow).importBackup(backup);
+    const done = TestBed.inject(ImportFlow).importBackup(file);
     const request = confirm.current()!;
     confirm.answer(choice);
     return { request, imported: await done };
@@ -40,6 +40,13 @@ describe('ImportFlow', () => {
   it('replaces everything on the destructive choice', async () => {
     await run('alternative');
     expect(backups.import).toHaveBeenCalledWith(backup, 'replace');
+  });
+
+  it('only merges a partial export: replacing would delete what it left out', async () => {
+    const { request } = await run('confirm', { ...backup, complete: false });
+    expect(request.alternative).toBeUndefined();
+    expect(request.message).toBe('settings.backup.preview.textPartial');
+    expect(backups.import).toHaveBeenCalledWith({ ...backup, complete: false }, 'merge');
   });
 
   it('does nothing when cancelled', async () => {

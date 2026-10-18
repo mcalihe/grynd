@@ -68,7 +68,7 @@ export type PlanShareError = 'format' | 'newerVersion' | 'invalid' | 'unknownExe
 export type PlanShareResult = { ok: true; share: PlanShare } | { ok: false; error: PlanShareError };
 
 export function buildPlanShare(
-  draft: PlanDraft,
+  drafts: readonly PlanDraft[],
   exportedAt: string,
   notes: SharedNote[] = [],
   weightSteps: SharedWeightStep[] = [],
@@ -78,20 +78,18 @@ export function buildPlanShare(
     kind: 'plan',
     version: PLAN_SHARE_VERSION,
     exportedAt,
-    plans: [
-      {
-        name: draft.name,
-        weekdays: [...draft.weekdays],
-        exercises: draft.exercises.map((e) => ({
-          exerciseId: e.exerciseId,
-          targetSets: e.targetSets,
-          repMin: e.repMin,
-          repMax: e.repMax,
-          restSeconds: e.restSeconds,
-          targetDurationSec: e.targetDurationSec,
-        })),
-      },
-    ],
+    plans: drafts.map((draft) => ({
+      name: draft.name,
+      weekdays: [...draft.weekdays],
+      exercises: draft.exercises.map((e) => ({
+        exerciseId: e.exerciseId,
+        targetSets: e.targetSets,
+        repMin: e.repMin,
+        repMax: e.repMax,
+        restSeconds: e.restSeconds,
+        targetDurationSec: e.targetDurationSec,
+      })),
+    })),
     notes,
     weightSteps,
   };

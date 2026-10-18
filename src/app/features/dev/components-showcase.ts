@@ -15,6 +15,7 @@ import { HlmDropdownMenuImports } from '@spartan-ng/helm/dropdown-menu';
 import { HlmInput } from '@spartan-ng/helm/input';
 import { HlmPopoverImports } from '@spartan-ng/helm/popover';
 import { HlmSheetImports } from '@spartan-ng/helm/sheet';
+import { HlmCheckbox } from '@spartan-ng/helm/checkbox';
 import { HlmSwitchImports } from '@spartan-ng/helm/switch';
 import { HlmToggleGroupImports } from '@spartan-ng/helm/toggle-group';
 import { NoteImage } from '../../core/exercises/exercise-notes.service';
@@ -33,7 +34,7 @@ import { ExerciseNoteSheet } from '../../shared/components/exercise-note/exercis
 import { WeightStepSheet } from '../../shared/components/weight-step/weight-step-sheet';
 import { RestDurationSheet } from '../../shared/components/rest-duration/rest-duration-sheet';
 import { ImportSheet } from '../../shared/components/import-sheet/import-sheet';
-import { PlanShareSheet } from '../../shared/components/plan-share/plan-share-sheet';
+import { ExportSheet } from '../../shared/components/export-sheet/export-sheet';
 import { KeyFigure, KeyFigures } from '../../shared/components/key-figures/key-figures';
 import { NumberStepper } from '../../shared/components/number-stepper/number-stepper';
 import { DURATION_FORMAT } from '../../shared/components/number-stepper/number-stepper.logic';
@@ -72,6 +73,7 @@ import { ExerciseCelebration } from '../workout/exercise-celebration';
     HlmBadge,
     HlmInput,
     HlmSwitchImports,
+    HlmCheckbox,
     HlmToggleGroupImports,
     HlmDropdownMenuImports,
     HlmPopoverImports,
@@ -93,7 +95,7 @@ import { ExerciseCelebration } from '../workout/exercise-celebration';
     WhatsNewDialog,
     WeightStepSheet,
     RestDurationSheet,
-    PlanShareSheet,
+    ExportSheet,
     ImportSheet,
     PageHeader,
     PlanCard,
@@ -186,11 +188,9 @@ export class ComponentsShowcase {
   // Rest per exercise in a workout (decision 0026)
   protected readonly demoRest = signal(90);
   protected readonly restOpen = signal(false);
-  // Plan share and import (decision 0027)
+  // Export and import (decision 0027)
   protected readonly shareOpen = signal(false);
   protected readonly importOpen = signal(false);
-  protected readonly lastShare = signal('');
-  protected readonly JSON = JSON;
   protected readonly monthBars: BarChartBar[] = Array.from({ length: 30 }, (_, i) => {
     const trained = [0, 2, 4, 7, 9, 11, 14, 16, 18, 21, 23, 28].includes(i);
     return {

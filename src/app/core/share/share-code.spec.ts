@@ -30,7 +30,8 @@ describe('share codes', () => {
     const code = await encodeShareCode('{"a":1}');
     expect(await decodeShareCode(findShareCode(code)!.slice(0, -3))).toBeNull();
 
-    const bomb = await encodeShareCode('x'.repeat(SHARE_CODE_MAX_BYTES + 1));
-    expect(await decodeShareCode(findShareCode(bomb)!)).toBeNull();
+    const bomb = await encodeShareCode('x'.repeat(1001));
+    expect(await decodeShareCode(findShareCode(bomb)!, 1000)).toBeNull();
+    expect(SHARE_CODE_MAX_BYTES).toBe(50 * 1024 * 1024);
   });
 });

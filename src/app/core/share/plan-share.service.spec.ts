@@ -54,7 +54,7 @@ describe('PlanShareService', () => {
   const all = { notes: true, photos: true, weightSteps: true };
 
   it('shares the plan with the chosen extras of its exercises only', async () => {
-    const share = (await service.create(planId, all))!;
+    const share = await service.create([planId], all);
 
     expect(share.plans).toEqual([
       {
@@ -83,7 +83,7 @@ describe('PlanShareService', () => {
     expect(share.notes).toEqual([{ exerciseId: 'e0', text: 'Bank flach', images: [btoa('sitz')] }]);
     expect(share.weightSteps).toEqual([{ exerciseId: 'e1', kg: 5, lb: null }]);
 
-    const bare = (await service.create(planId, {
+    const bare = (await service.create([planId], {
       notes: false,
       photos: false,
       weightSteps: false,
@@ -91,12 +91,12 @@ describe('PlanShareService', () => {
     expect(bare.notes).toEqual([]);
     expect(bare.weightSteps).toEqual([]);
 
-    const textOnly = (await service.create(planId, { ...all, photos: false }))!;
+    const textOnly = (await service.create([planId], { ...all, photos: false }))!;
     expect(textOnly.notes[0].images).toEqual([]);
   });
 
   it('adds a shared plan next to the existing one, keeping own notes and steps', async () => {
-    const share = (await service.create(planId, all))!;
+    const share = await service.create([planId], all);
     // The receiver has an own note on e0 and an own lb step on e1.
     await notes.save('e0', 'Meine Notiz');
     await steps.setWeightStep('e1', 'lb', 10);
@@ -126,7 +126,7 @@ describe('PlanShareService', () => {
   });
 
   it('keeps the target duration of cardio exercises', async () => {
-    const share = (await service.create(planId, all))!;
+    const share = await service.create([planId], all);
     share.plans[0].exercises[1] = { ...share.plans[0].exercises[1], targetDurationSec: 1200 };
 
     const { names } = await service.import(share);
@@ -137,7 +137,7 @@ describe('PlanShareService', () => {
   });
 
   it('brings photos and steps to exercises without own ones', async () => {
-    const share = (await service.create(planId, all))!;
+    const share = await service.create([planId], all);
     await notes.removeImage('e0', notes.imagesFor('e0')[0].id);
     await notes.save('e0', '');
     await steps.setWeightStep('e1', 'kg', 2.5);
@@ -151,7 +151,7 @@ describe('PlanShareService', () => {
   });
 
   it('removes written photos when the import fails', async () => {
-    const share = (await service.create(planId, all))!;
+    const share = await service.create([planId], all);
     await notes.removeImage('e0', notes.imagesFor('e0')[0].id);
     await notes.save('e0', '');
     files.files.clear();
@@ -168,7 +168,7 @@ describe('PlanShareService', () => {
   });
 
   it('reads a shared plan from a code in a chat message and from a file', async () => {
-    const share = (await service.create(planId, { ...all, photos: false }))!;
+    const share = (await service.create([planId], { ...all, photos: false }))!;
     const reader = TestBed.inject(ImportReader);
     const code = await encodeShareCode(JSON.stringify(share));
 
@@ -181,7 +181,7 @@ describe('PlanShareService', () => {
 
   it('tells what is wrong with a paste or file', async () => {
     const reader = TestBed.inject(ImportReader);
-    const share = (await service.create(planId, { ...all, photos: false }))!;
+    const share = (await service.create([planId], { ...all, photos: false }))!;
     const code = await encodeShareCode(JSON.stringify(share));
 
     expect(await reader.read('  ')).toEqual({ kind: 'error', error: 'empty' });

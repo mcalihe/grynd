@@ -1,11 +1,14 @@
 /**
- * Text codes for sharing a plan in a chat or via the clipboard (decision 0027):
+ * Text codes to copy an export and paste it elsewhere (decision 0027):
  * `GRYND1:` + base64url of the deflate-compressed JSON. Built on the browser's
  * CompressionStream, so no dependency is needed.
  */
 export const SHARE_CODE_PREFIX = 'GRYND1:';
-/** Decompressed JSON larger than this is refused, so a crafted code cannot exhaust memory. */
-export const SHARE_CODE_MAX_BYTES = 1024 * 1024;
+/**
+ * Decompressed JSON larger than this is refused, so a crafted code cannot exhaust memory. Codes
+ * can carry workout history, which stays far below this without photos.
+ */
+export const SHARE_CODE_MAX_BYTES = 50 * 1024 * 1024;
 
 const CODE = new RegExp(`${SHARE_CODE_PREFIX}([A-Za-z0-9_-]+)`);
 
@@ -23,7 +26,10 @@ export function findShareCode(text: string): string | null {
 }
 
 /** The JSON inside a code (without prefix); null when it is damaged or too large. */
-export async function decodeShareCode(code: string): Promise<string | null> {
+export async function decodeShareCode(
+  code: string,
+  maxBytes = SHARE_CODE_MAX_BYTES,
+): Promise<string | null> {
   try {
     const stream = streamOf(fromBase64Url(code)).pipeThrough(
       new DecompressionStream('deflate-raw'),
@@ -37,7 +43,7 @@ export async function decodeShareCode(code: string): Promise<string | null> {
         break;
       }
       size += value.length;
-      if (size > SHARE_CODE_MAX_BYTES) {
+      if (size > maxBytes) {
         await reader.cancel();
         return null;
       }
