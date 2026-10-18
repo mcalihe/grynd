@@ -3,6 +3,7 @@ import {
   durationParts,
   groupByWeek,
   HistorySummary,
+  sessionDurationMs,
   startOfWeek,
   volumeKg,
   weekBars,
@@ -19,6 +20,7 @@ const session = (id: string, start: Date, minutes: number): HistorySummary => ({
   planName: id,
   startedAt: start.toISOString(),
   finishedAt: new Date(start.getTime() + minutes * 60_000).toISOString(),
+  pausedMs: 0,
   exerciseCount: 3,
   setCount: 9,
   volumeKg: 1000,
@@ -80,6 +82,12 @@ describe('weekBars and totals', () => {
       durationMs: 120 * 60_000,
       previousCount: 1,
     });
+  });
+
+  it('counts training time without the pauses', () => {
+    const paused = { ...session('p', local(2026, 9, 30), 70), pausedMs: 25 * 60_000 };
+    expect(sessionDurationMs(paused)).toBe(45 * 60_000);
+    expect(weekTotals([paused], now).durationMs).toBe(45 * 60_000);
   });
 });
 

@@ -62,6 +62,8 @@ Klassen folgen dem Angular-Styleguide 2025 (ohne `Component`-Suffix), Selektor-P
 | Übungsmenü | `56:48305` | helm Dropdown-Menü in `ExercisePage` (`app-exercise-page`) |
 | Übersicht-Sheet | `56:48605` | `OverviewSheet` (`app-overview-sheet`, helm Sheet + CDK Drag) |
 | Trainingsuhr (Beenden) | – (nur Code; Figma-Frames zeigen noch den Ghost-Button «Beenden») | `WorkoutClock` (`app-workout-clock`) |
+| Pause-Button und Pause-Overlay | – (nur Code, [0023](../decisions/0023-pause-workout.md)) | in `WorkoutPage` (`app-workout-page`) |
+| Leiste «Training pausiert» über der Navigation | – (nur Code, [0023](../decisions/0023-pause-workout.md)) | `PausedWorkoutBar` (`app-paused-workout-bar`) in der App-Shell |
 | Beenden-Dialog | – | `ConfirmDialogHost` über `ConfirmService.choose()` (drei Aktionen) |
 | Wochentage | `37:28125` | `WeekdayChips` (`app-weekday-chips`) |
 | Satz-Stepper | `56:48064` | `NumberStepper` (`app-number-stepper`, Wert als Spinbutton) |
@@ -111,6 +113,7 @@ Klassen folgen dem Angular-Styleguide 2025 (ohne `Component`-Suffix), Selektor-P
 | Training · Timer-Dauer | `/workout` | `79:2663` | `79:2832` |
 | Training · Letzte Übung | `/workout` | `84:3791` | `84:4068` |
 | Training · Übung geschafft (Overlay `ExerciseCelebration`) | `/workout` | – (nur Code, [0015](../decisions/0015-celebrations.md)) | – |
+| Training · Pausiert | `/workout` | – (nur Code, [0023](../decisions/0023-pause-workout.md)) | – |
 | Training geschafft (`WorkoutCompletePage`) | `/workout/done/:sessionId` | – (nur Code, [0015](../decisions/0015-celebrations.md)) | – |
 | Verlauf | `/history` | `37:29734` | `37:29861` |
 | Verlauf · Leer | `/history` | `106:1654` | `106:1764` |

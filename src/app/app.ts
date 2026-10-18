@@ -14,12 +14,14 @@ import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { TranslocoService } from '@jsverse/transloco';
 import { filter, map, take } from 'rxjs';
 import { displayTitle } from './core/app-info';
+import { Clock } from './core/utils/time';
 import { ThemeService } from './core/services/theme.service';
 import { WhatsNewService } from './core/whats-new/whats-new.service';
 import { WorkoutService } from './core/workout/workout.service';
 import { BottomNavigation } from './shared/components/bottom-navigation/bottom-navigation';
 import { ConfirmDialogHost } from './shared/components/confirm-dialog/confirm-dialog-host';
 import { ImageViewerHost } from './shared/components/image-viewer/image-viewer-host';
+import { PausedWorkoutBar } from './shared/components/paused-workout-bar/paused-workout-bar';
 import { WhatsNewDialog } from './shared/components/whats-new/whats-new-dialog';
 import { HlmToaster } from '@spartan-ng/helm/sonner';
 
@@ -33,6 +35,7 @@ const TAB_ROUTES = ['/plans', '/history', '/settings'];
     BottomNavigation,
     ConfirmDialogHost,
     ImageViewerHost,
+    PausedWorkoutBar,
     WhatsNewDialog,
     HlmToaster,
   ],
@@ -53,6 +56,12 @@ export class App {
 
   protected readonly showNav = computed(() => TAB_ROUTES.includes(this.url()));
 
+  protected readonly workout = inject(WorkoutService);
+  private readonly clock = inject(Clock);
+  /** A paused workout waits above the tabs (decision 0023); its time stands still. */
+  protected readonly showPausedWorkout = computed(() => this.showNav() && this.workout.paused());
+  protected readonly pausedElapsedMs = computed(() => this.workout.elapsedMs(this.clock.nowUtc()));
+
   protected readonly whatsNew = inject(WhatsNewService);
   /** After an update, on a tab screen only: never in the middle of a workout or an editor. */
   protected readonly showWhatsNew = computed(
@@ -68,7 +77,7 @@ export class App {
     });
 
     // An active session survives restarts: open it again on startup (plan.md §7 «Fortsetzen»).
-    const workout = inject(WorkoutService);
+    // A paused one stays in the background, the user left it on purpose (decision 0023).
     this.router.events
       .pipe(
         filter((event) => event instanceof NavigationEnd),
@@ -76,7 +85,11 @@ export class App {
         takeUntilDestroyed(),
       )
       .subscribe((event) => {
-        if (workout.isActive() && !event.urlAfterRedirects.startsWith('/workout')) {
+        if (
+          this.workout.isActive() &&
+          !this.workout.paused() &&
+          !event.urlAfterRedirects.startsWith('/workout')
+        ) {
           void this.router.navigateByUrl('/workout', { replaceUrl: true });
         }
       });
@@ -92,5 +105,9 @@ export class App {
     inject(TranslocoService)
       .langChanges$.pipe(takeUntilDestroyed())
       .subscribe((lang) => (document.documentElement.lang = lang));
+  }
+
+  protected openWorkout(): void {
+    void this.router.navigate(['/workout']);
   }
 }

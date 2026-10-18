@@ -22,12 +22,19 @@ export interface ReleaseNotes {
  */
 export const RELEASE_NOTES: readonly ReleaseNotes[] = [
   {
-    version: '0.8.0',
+    version: '0.10.0',
     items: [
-      { id: 'weightStep', icon: 'lucideWeight' },
       { id: 'sharePlans', icon: 'lucideShare2' },
       { id: 'backupMerge', icon: 'lucideDatabaseBackup' },
     ],
+  },
+  {
+    version: '0.9.0',
+    items: [{ id: 'pauseWorkout', icon: 'lucidePause' }],
+  },
+  {
+    version: '0.8.0',
+    items: [{ id: 'weightStep', icon: 'lucideWeight' }],
   },
   {
     version: '0.7.0',

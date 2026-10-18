@@ -37,7 +37,7 @@ export interface PlanImportResult {
   weightStepsAdded: number;
 }
 
-/** Sharing plans as templates and adding shared plans (decision 0023). */
+/** Sharing plans as templates and adding shared plans (decision 0024). */
 @Injectable({ providedIn: 'root' })
 export class PlanShareService {
   private readonly database = inject(DatabaseService);

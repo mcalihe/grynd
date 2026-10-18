@@ -83,6 +83,7 @@ Alle Tabellen haben `id` (UUIDv7), `createdAt`, `updatedAt`, `deletedAt`. Dazu k
 | `plan` | name, weekdays (Liste 0–6, optional) | Ein Plan = ein Training |
 | `plan_exercise` | planId, exerciseId, position, targetSets, repMin, repMax, restSeconds | Feste Reihenfolge über `position`; Standard 3 × 8–12, 90 s |
 | `workout_session` | planId (optional), startedAt, finishedAt, status (active / finished / aborted) | Maximal eine aktive Session |
+| `workout_pause` | sessionId, pausedAt, resumedAt | Pausen eines Trainings; `resumedAt` leer, solange es pausiert ist, höchstens eine offene pro Session ([0023](decisions/0023-pause-workout.md)) |
 | `session_exercise` | sessionId, exerciseId, position, status (open / done), repMin, repMax, restSeconds | Kopie der Plan-Übungen inkl. Ziele beim Start |
 | `exercise_interval` | sessionExerciseId, enteredAt, leftAt | Zeiträume, in denen die Übung angezeigt wurde; beliebig viele |
 | `set_log` | sessionExerciseId, position, weightKg, reps, completedAt, isExtra | Gewicht immer in kg |
@@ -95,13 +96,14 @@ Alle Tabellen haben `id` (UUIDv7), `createdAt`, `updatedAt`, `deletedAt`. Dazu k
 - **Vorbefüllung:** Gewicht und Wiederholungen pro Satzposition aus der letzten abgeschlossenen Session mit derselben Übung; fehlt eine Position, gelten die Werte des letzten Vorsatzes; sonst Gewicht leer und Wdh. = Plan-Minimum. Verworfene Trainings zählen nicht.
 - **Extra-Satz:** «+ Satz» übernimmt die Werte des letzten Satzes und setzt `isExtra = true`. Wurde in dieser Session ein geplanter Satz gelöscht, kommt stattdessen dieser zurück (offen, mit den neuen Werten), bis die Satzzahl des Plans wieder erreicht ist; das gilt auch für «Satz duplizieren».
 - **Heute:** alle Pläne, deren `weekdays` den aktuellen Wochentag enthalten (mehrere möglich).
-- **Fortsetzen:** Eine aktive Session überlebt App-Neustarts; die App öffnet sie beim Start wieder.
+- **Fortsetzen:** Eine aktive Session überlebt App-Neustarts; die App öffnet sie beim Start wieder, ausser sie ist pausiert ([0023](decisions/0023-pause-workout.md)).
+- **Pausieren:** Ein Training lässt sich pausieren; danach kann man die App normal nutzen, es bleibt das einzige aktive Training. Pausen zählen nicht zur Trainingsdauer ([0023](decisions/0023-pause-workout.md)).
 - **Rekord:** Ein Satz ist ein PR, wenn sein geschätztes 1RM (Epley: kg × (1 + reps / 30)) über allen bisherigen abgehakten Sätzen dieser Übung liegt (abgeschlossene Sessions und frühere Sätze der laufenden). Ohne Basis und bei Gleichstand kein PR. Wird zur Laufzeit berechnet, nicht gespeichert.
 - **Beenden/Abschliessen:** siehe [0011](decisions/0011-workout-flow.md). «Beenden und speichern» → `finished`, «Training verwerfen» → `aborted` (nicht im Verlauf).
 - **Einheiten:** intern kg, Umrechnung in lb nur für die Anzeige (auf 0,1 gerundet; eingegebene lb bleiben exakt erhalten). Schritt pro Übung wählbar, getrennt für kg (0,25–10) und lb (0,5–10), Standard 2,5 ([0022](decisions/0022-weight-step.md)).
 - **Zeiterfassung:**
-  - Training: `startedAt` beim Start, `finishedAt` bei «Training abschliessen».
-  - Übung: Jedes Mal, wenn eine Übung zur aktuellen Seite wird, beginnt ein Intervall (`enteredAt`); beim Wegwischen oder Abschliessen wird es geschlossen (`leftAt`). Zeit pro Übung = Summe der Intervalle.
+  - Training: `startedAt` beim Start, `finishedAt` bei «Training abschliessen». Dauer = `finishedAt` − `startedAt` − Pausen (`workout_pause`, je `pausedAt` bis `resumedAt`).
+  - Übung: Jedes Mal, wenn eine Übung zur aktuellen Seite wird, beginnt ein Intervall (`enteredAt`); beim Wegwischen, Pausieren oder Abschliessen wird es geschlossen (`leftAt`). Zeit pro Übung = Summe der Intervalle.
   - Intervalle unter ca. 3 Sekunden werden nicht gespeichert.
   - Wird die App beendet, schliesst sie offene Intervalle beim nächsten Start mit dem Zeitpunkt des letzten abgehakten Satzes.
   - Satz: `completedAt` beim Abhaken.
@@ -114,6 +116,7 @@ Alle Tabellen haben `id` (UUIDv7), `createdAt`, `updatedAt`, `deletedAt`. Dazu k
 - Plan-Karte: Name, Anzahl Übungen, Wochentage als Chips, rechts Pfeil-Button (44 px). Karte und Pfeil öffnen den Plan; gestartet wird im Plan-Detail. Pfeil beim heutigen Plan in `primary`, sonst `secondary`.
 - Kein Primary-Button unten. «Neuer Plan» als Secondary-Button in der Liste.
 - Bottom-Navigation: Pläne, Verlauf, Einstellungen. Ein laufendes Training ist ein Vollbild ohne Navigation und wird über den Plan gestartet (kein Training-Tab).
+- Ein pausiertes Training steht auf den Tab-Screens als Leiste über der Navigation (Planname, «Pausiert · 23:14»); ein Tap öffnet es ([0023](decisions/0023-pause-workout.md)).
 
 ### Plan-Detail, Plan bearbeiten, Plan erstellen (`/plans/:id`, `/plans/:id/edit`, `/plans/new`)
 - **Plan-Detail ist eine Ansicht** ([0010](decisions/0010-plan-detail-and-editor.md)): Wochentage und Reihenfolge nur angezeigt, Chevron klappt die Ziele auf; «Bearbeiten» oben rechts, «Training starten» als Primary.
@@ -142,11 +145,12 @@ Alle Tabellen haben `id` (UUIDv7), `createdAt`, `updatedAt`, `deletedAt`. Dazu k
 - **«+ Satz»** unter den Sätzen; Extra-Sätze mit Label «Extra».
 - **Timer:** neutraler Timer als feste Leiste über dem Weiter-Button (kein Sheet). Bereit: Standarddauer + Chevron + Play. Läuft: Restzeit, Fortschrittslinie, −15 / +15, Stopp. Letzte 10 s in `warning`. Tippen auf die Zeit öffnet ein Popover mit 0:30, 1:00, 1:30, 2:00, 3:00. Startet automatisch nach dem Abhaken eines Satzes (abschaltbar). Speichert die Endzeit, nicht einen Zähler. Bei Ablauf: Haptik und eine lokale Benachrichtigung mit Standardton (auch im Hintergrund, [0014](decisions/0014-native-polish.md)).
 - **Weiter-Button:** «Weiter zu {Übungsname}», einzeilig mit Ellipsis; bei der letzten Übung «Training abschliessen».
-- **Beenden:** Trainingsuhr rechts im Kopf, gleich wie die Übersicht-Pill: laufende Trainingsdauer (aus `startedAt`, h:mm:ss ab einer Stunde) mit Stopp-Symbol. Tippen öffnet den Dialog «Training beenden?» mit «Beenden und speichern», «Training verwerfen» (destructive), «Weiter trainieren». Android-Zurück öffnet denselben Dialog ([0011](decisions/0011-workout-flow.md)).
+- **Pausieren** ([0023](decisions/0023-pause-workout.md)): runder Pause-Button links neben der Trainingsuhr. Pausiert stehen Uhr und Timer still, Sätze und Timer sind nicht bedienbar, ein Overlay zeigt «Training pausiert» mit der Zeit und «Zu den Plänen»; der Button unten wird zu «Weiter trainieren». Android-Zurück führt pausiert zu den Plänen.
+- **Beenden:** Trainingsuhr rechts im Kopf, gleich wie die Übersicht-Pill: Trainingsdauer ohne Pausen (aus `startedAt` und den Pausen, h:mm:ss ab einer Stunde) mit Stopp-Symbol. Tippen öffnet den Dialog «Training beenden?» mit «Beenden und speichern», «Training verwerfen» (destructive), «Weiter trainieren». Android-Zurück öffnet denselben Dialog ([0011](decisions/0011-workout-flow.md)).
 - **Belohnungen** ([0015](decisions/0015-celebrations.md)): Satz abhaken = Haken federt auf mit Funken; Rekord = Sterne und «PR»-Badge; Übung fertig = Badge mit Lob und Konfetti, das ins Fortschrittssegment fliegt (einmal pro Übung); alle Übungen erledigt = «Training abschliessen» pulsiert. Nie blockierend, ohne Ton.
 - **Abschliessen** (auch «Beenden und speichern») führt zum Feier-Screen `/workout/done/:id` (Pokal, Konfetti, Kennzahlen zählen hoch) und mit «Weiter» zum Verlaufs-Detail `/history/:id`.
 - «Training starten» bei laufendem Training fragt «Laufendes Training fortsetzen?» und führt zu `/workout`.
-- Bildschirm bleibt an, solange `/workout` offen ist (`@capacitor-community/keep-awake`).
+- Bildschirm bleibt an, solange `/workout` offen ist und das Training läuft (`@capacitor-community/keep-awake`).
 
 ### Verlauf (`/history`, `/history/:sessionId`, `/history/plans/:planId`)
 - Drei Ansichten über ein Segmented Control: **Liste** (Standard, wie unten), **Kalender** (Monat mit Trainingstagen, Monatszahlen, Serie) und **Statistik** (Woche/Monat/Jahr mit Kennzahlen und Diagramm, Kraft, Muskelgruppen als Ring, Konstanz, Pläne). Details in [0016](decisions/0016-history-statistics.md).
@@ -161,8 +165,8 @@ Alle Tabellen haben `id` (UUIDv7), `createdAt`, `updatedAt`, `deletedAt`. Dazu k
 - Letzter Tab der Bottom-Navigation (Zahnrad).
 - Theme (Automatisch/Hell/Dunkel), Einheiten (kg/lb), Sprache (Deutsch/English, bis zur Wahl die Gerätesprache), Timer-Autostart, JSON-Export/Import als Backup (inkl. Notiz-Bilder als Base64, [0021](decisions/0021-note-images.md)), «Neuigkeiten», Version.
 - Gespeichert mit `@capacitor/preferences`, wirksam sofort ([0013](decisions/0013-settings-units-swipe-backup.md)).
-- **Import** nach Prüfung der Datei und einer Vorschau (Datum, Anzahl Pläne, Trainings, Notizen, Fotos): **zusammenführen** (Standard, die neuere Änderung pro Zeile gewinnt) oder **alles ersetzen**; danach 10 s «Rückgängig» ([0023](decisions/0023-plan-sharing-and-backup-merge.md)). Export als Download bzw. über das Teilen-Menü.
-- **Pläne teilen** im Plan-Detail als Vorlage (ohne Verlauf), wahlweise mit Notizen, Fotos und Gewichtsschritten, als Code für den Chat oder als Datei. «Plan importieren» auf dem Pläne-Screen fügt ihn hinzu, ohne etwas zu überschreiben ([0023](decisions/0023-plan-sharing-and-backup-merge.md)).
+- **Import** nach Prüfung der Datei und einer Vorschau (Datum, Anzahl Pläne, Trainings, Notizen, Fotos): **zusammenführen** (Standard, die neuere Änderung pro Zeile gewinnt) oder **alles ersetzen**; danach 10 s «Rückgängig» ([0024](decisions/0024-plan-sharing-and-backup-merge.md)). Export als Download bzw. über das Teilen-Menü.
+- **Pläne teilen** im Plan-Detail als Vorlage (ohne Verlauf), wahlweise mit Notizen, Fotos und Gewichtsschritten, als Code für den Chat oder als Datei. «Plan importieren» auf dem Pläne-Screen fügt ihn hinzu, ohne etwas zu überschreiben ([0024](decisions/0024-plan-sharing-and-backup-merge.md)).
 
 ### Neuigkeiten (Popup und `/settings/whats-new`)
 - Nach einem Update erscheint einmal ein Popup «Neu in Grynd {{version}}» mit den Neuerungen seit der zuletzt gesehenen Version (auch übersprungene), nur auf den Tab-Screens, nie im Training. Neuinstallationen sehen es nicht ([0020](decisions/0020-whats-new.md)).

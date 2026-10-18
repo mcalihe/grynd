@@ -102,6 +102,18 @@
     },
     "overview": "Übersicht",
     "end": "Training beenden ({{time}})",
+    "pause": "Training pausieren",
+    "resumeWorkout": "Training fortsetzen",
+    "paused": {
+      "title": "Training pausiert",
+      "text": "Die Trainingsuhr steht still und der Timer ist gestoppt. Die Zeit bis zum Weitertrainieren zählt nicht zum Training.",
+      "resume": "Weiter trainieren",
+      "leave": "Zu den Plänen"
+    },
+    "pausedBar": {
+      "status": "Pausiert · {{time}}",
+      "label": "Pausiertes Training öffnen: {{name}}, {{time}}"
+    },
     "next": "Weiter zu {{name}}",
     "finish": "Training abschliessen",
     "addSet": "Satz",
@@ -344,6 +356,10 @@
     "whatsNew": {
       "title": "Neuigkeiten auf einen Blick",
       "text": "Nach einem Update zeigt dir Grynd kurz, was neu ist. Alle Neuerungen findest du jederzeit in den Einstellungen unter «Neuigkeiten»."
+    },
+    "pauseWorkout": {
+      "title": "Training pausieren",
+      "text": "Kurz weg? Tippe oben auf Pause: Die Trainingsuhr steht still, bis du weitermachst. In der Zwischenzeit kannst du die App normal nutzen, dein Training wartet über der Navigation auf dich."
     },
     "weightStep": {
       "title": "Eigener Gewichtsschritt pro Übung",

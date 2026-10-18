@@ -12,6 +12,7 @@ const TABLES = [
   'plan_exercise',
   'session_exercise',
   'set_log',
+  'workout_pause',
   'workout_session',
 ];
 
@@ -73,6 +74,7 @@ describe('migrate', () => {
     expect(await driver.query('SELECT * FROM exercise_note')).toEqual([]);
     expect(await driver.query('SELECT * FROM exercise_note_image')).toEqual([]);
     expect(await driver.query('SELECT * FROM exercise_setting')).toEqual([]);
+    expect(await driver.query('SELECT * FROM workout_pause')).toEqual([]);
   });
 
   it('upgrades a database of version 2 and keeps its notes', async () => {
@@ -123,5 +125,17 @@ describe('migrate', () => {
       VALUES (?, '2026-01-01T00:00:00.000Z', 'active', 'x', 'x')`;
     await driver.run(insert, ['a']);
     await expect(driver.run(insert, ['b'])).rejects.toThrow();
+  });
+
+  it('allows only one open pause per workout, apart from ended and deleted ones', async () => {
+    await migrate(driver);
+    await driver.run(`INSERT INTO workout_session (id, startedAt, status, createdAt, updatedAt)
+      VALUES ('s', '2026-01-01T00:00:00.000Z', 'active', 'x', 'x')`);
+    const insert = `INSERT INTO workout_pause (id, sessionId, pausedAt, resumedAt, createdAt, updatedAt, deletedAt)
+      VALUES (?, 's', '2026-01-01T00:10:00.000Z', ?, 'x', 'x', ?)`;
+    await driver.run(insert, ['ended', '2026-01-01T00:15:00.000Z', null]);
+    await driver.run(insert, ['deleted', null, 'x']);
+    await driver.run(insert, ['a', null, null]);
+    await expect(driver.run(insert, ['b', null, null])).rejects.toThrow();
   });
 });

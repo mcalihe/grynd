@@ -22,12 +22,12 @@ import {
 } from './backup';
 import { mergeBackups } from './merge';
 
-/** How a backup meets the data on this device (decision 0023). */
+/** How a backup meets the data on this device (decision 0024). */
 export type ImportMode = 'replace' | 'merge';
 
 export const SCHEMA_VERSION = Math.max(...MIGRATIONS.map((m) => m.version));
 
-/** Export to and restore from a JSON file (plan.md §8 «Einstellungen», decisions 0013, 0023). */
+/** Export to and restore from a JSON file (plan.md §8 «Einstellungen», decisions 0013, 0024). */
 @Injectable({ providedIn: 'root' })
 export class BackupService {
   private readonly database = inject(DatabaseService);

@@ -22,7 +22,7 @@ export interface PlanShareRequest {
 }
 
 /**
- * Bottom sheet to share a plan as a template (decision 0023): switches for the extras the plan
+ * Bottom sheet to share a plan as a template (decision 0024): switches for the extras the plan
  * has (notes, their photos, weight steps), then «as code» for chats or «as file». Photos make
  * the content too long for a code, so with photos only the file is offered.
  */

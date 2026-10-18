@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.9.0](https://github.com/mcalihe/grynd/compare/v0.8.0...v0.9.0) (2026-10-17)
+
+
+### Features
+
+* **workout:** pause and resume training (decision 0023) ([#40](https://github.com/mcalihe/grynd/issues/40)) ([1c6d930](https://github.com/mcalihe/grynd/commit/1c6d930ff85e180e9a6b20b718b401d6a537698a))
+
+## [0.8.0](https://github.com/mcalihe/grynd/compare/v0.7.0...v0.8.0) (2026-10-14)
+
+
+### Features
+
+* **db:** keep a weight step per exercise in the database and backups ([#38](https://github.com/mcalihe/grynd/issues/38)) ([63604e2](https://github.com/mcalihe/grynd/commit/63604e23f02e01516cdab2ab6103dfddec03f555))
+
 ## [0.7.0](https://github.com/mcalihe/grynd/compare/v0.6.0...v0.7.0) (2026-10-13)
 
 

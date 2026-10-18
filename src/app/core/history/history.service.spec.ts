@@ -6,6 +6,7 @@ import { addExercises } from '../plans/plan-draft';
 import { PlansService } from '../plans/plans.service';
 import { WorkoutService } from '../workout/workout.service';
 import { recordsBySession } from './history-insights';
+import { sessionDurationMs } from './history-stats';
 import { HistoryService } from './history.service';
 
 describe('HistoryService', () => {
@@ -64,6 +65,22 @@ describe('HistoryService', () => {
     expect(Date.parse(history.summaries()[1].finishedAt)).toBe(
       Date.parse(history.summaries()[1].startedAt) + 3 * 60_000,
     );
+  });
+
+  it('leaves the pauses out of the duration, also one still open at the end', async () => {
+    const id = await workout.start(planId);
+    clock.advance(10 * 60_000);
+    await workout.pause();
+    clock.advance(5 * 60_000);
+    await workout.resume();
+    clock.advance(20 * 60_000);
+    await workout.pause();
+    clock.advance(60 * 60_000);
+    await workout.finish();
+
+    const { summary } = (await history.detail(id))!;
+    expect(summary.pausedMs).toBe(65 * 60_000);
+    expect(sessionDurationMs(summary)).toBe(30 * 60_000);
   });
 
   it('shows completed sets with records measured against earlier sessions only', async () => {

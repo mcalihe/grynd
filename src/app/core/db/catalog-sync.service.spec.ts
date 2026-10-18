@@ -48,7 +48,9 @@ describe('DatabaseService + CatalogSyncService', () => {
       .then(() => TestBed.inject(CatalogSyncService).sync());
     if (respond) {
       // The request is issued after the migrations ran.
-      await vi.waitFor(() => http.expectOne('data/exercises.json').flush(catalog));
+      await vi.waitFor(() =>
+        http.expectOne(`data/exercises.json?v=${CATALOG_VERSION}`).flush(catalog),
+      );
     }
     await done;
   }

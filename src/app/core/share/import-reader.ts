@@ -38,7 +38,7 @@ const PLAN_ERRORS: Record<PlanShareError, ImportError> = {
 };
 
 /**
- * Reads what the user wants to import, without touching the data (decision 0023): a backup or
+ * Reads what the user wants to import, without touching the data (decision 0024): a backup or
  * shared plan as a file or pasted JSON, or a shared plan's code anywhere in a pasted text.
  */
 @Injectable({ providedIn: 'root' })

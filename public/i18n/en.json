@@ -102,6 +102,18 @@
     },
     "overview": "Overview",
     "end": "End workout ({{time}})",
+    "pause": "Pause workout",
+    "resumeWorkout": "Resume workout",
+    "paused": {
+      "title": "Workout paused",
+      "text": "The workout clock stands still and the rest timer is stopped. The time until you continue doesn’t count toward your workout.",
+      "resume": "Keep training",
+      "leave": "Go to plans"
+    },
+    "pausedBar": {
+      "status": "Paused · {{time}}",
+      "label": "Open paused workout: {{name}}, {{time}}"
+    },
     "next": "Next: {{name}}",
     "finish": "Finish workout",
     "addSet": "Set",
@@ -344,6 +356,10 @@
     "whatsNew": {
       "title": "What’s new at a glance",
       "text": "After an update, Grynd briefly shows you what’s new. You can find all changes any time in the settings under “What’s new”."
+    },
+    "pauseWorkout": {
+      "title": "Pause your workout",
+      "text": "Need a break? Tap pause at the top: the workout clock stands still until you continue. In the meantime you can use the app as usual; your workout waits for you above the navigation."
     },
     "weightStep": {
       "title": "Your own weight step per exercise",

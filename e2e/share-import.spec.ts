@@ -1,7 +1,7 @@
 import { expect, Page, test } from '@playwright/test';
 
 /**
- * Sharing a plan and importing backups (decision 0023). The browser has no share sheet here, so
+ * Sharing a plan and importing backups (decision 0024). The browser has no share sheet here, so
  * a code lands in the clipboard and a file is downloaded.
  */
 test.use({ permissions: ['clipboard-read', 'clipboard-write'] });

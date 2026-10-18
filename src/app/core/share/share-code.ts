@@ -1,5 +1,5 @@
 /**
- * Text codes for sharing a plan in a chat or via the clipboard (decision 0023):
+ * Text codes for sharing a plan in a chat or via the clipboard (decision 0024):
  * `GRYND1:` + base64url of the deflate-compressed JSON. Built on the browser's
  * CompressionStream, so no dependency is needed.
  */

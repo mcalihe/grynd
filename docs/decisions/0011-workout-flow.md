@@ -18,6 +18,8 @@ Figma zeigt «Beenden» als Ghost-Button im Trainingskopf und «Training abschli
 
 **Nachtrag 2026-10-04:** Der Ghost-Button «× Beenden» wirkte neben der Übersicht-Pill unausgewogen, und das × liest sich wie «verwerfen». «Beenden» ist jetzt die Trainingsuhr (`WorkoutClock`): eine Pill mit der laufenden Trainingsdauer und einem Stopp-Symbol. Sie öffnet denselben Dialog.
 
+**Nachtrag 2026-10-15:** Ein Training lässt sich pausieren und aus der Pause heraus verlassen ([0023](0023-pause-workout.md)). Pausiert führt Android-Zurück zu den Plänen statt zum Dialog; die Uhr öffnet ihn weiterhin.
+
 ## Später
 - Vibration, Ton und lokale Benachrichtigung beim Timer-Ende kommen mit den nativen Plugins in M8. Bis dahin nutzt der Timer `navigator.vibrate`, falls vorhanden.
 - Der Timer-Autostart ist immer an; die Einstellung folgt in M7.

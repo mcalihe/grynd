@@ -7,14 +7,15 @@ const newer = (a: BackupRow, b: BackupRow) =>
   (a['updatedAt'] as string) > (b['updatedAt'] as string);
 
 /**
- * Merges a backup into the data on this device (decision 0023). Rows are matched by id, which is
+ * Merges a backup into the data on this device (decision 0024). Rows are matched by id, which is
  * a UUIDv7 made on the device that created the row, so the same plan or workout from two devices
  * is one row. Per row the newer `updatedAt` wins (ties keep the device's row); soft deletes
  * travel like any other change. Nothing is ever dropped, so references stay intact.
  *
- * Two rules keep the database's unique indexes: of two live notes or weight steps for the same
- * exercise the newer one stays and the other is deleted, and of two active workouts the one on
- * this device stays active while the incoming one is stored as aborted.
+ * Three rules keep the database's unique indexes: of two live notes or weight steps for the same
+ * exercise, or of two open pauses of the same workout, the newer one stays and the other is
+ * deleted; of two active workouts the one on this device stays active while the incoming one is
+ * stored as aborted.
  */
 export function mergeBackups(local: Backup, incoming: Backup, now: string): Backup {
   const data = {} as Record<BackupTable, BackupRow[]>;
@@ -39,21 +40,30 @@ export function mergeBackups(local: Backup, incoming: Backup, now: string): Back
     updatedAt: now,
   });
 
-  for (const table of ONE_PER_EXERCISE) {
+  /** Of several live rows with the same key, the newest stays and the others are deleted. */
+  const keepNewest = (table: BackupTable, key: (row: BackupRow) => string | null) => {
     const winners = new Map<string, BackupRow>();
     for (const row of data[table].filter(isLive)) {
-      const exerciseId = row['exerciseId'] as string;
-      const current = winners.get(exerciseId);
-      if (!current || newer(row, current)) {
-        winners.set(exerciseId, row);
+      const k = key(row);
+      const current = k === null ? undefined : winners.get(k);
+      if (k !== null && (!current || newer(row, current))) {
+        winners.set(k, row);
       }
     }
-    data[table] = data[table].map((row) =>
-      isLive(row) && winners.get(row['exerciseId'] as string) !== row
+    data[table] = data[table].map((row) => {
+      const k = key(row);
+      return isLive(row) && k !== null && winners.get(k) !== row
         ? changed(row, { deletedAt: now })
-        : row,
-    );
+        : row;
+    });
+  };
+  for (const table of ONE_PER_EXERCISE) {
+    keepNewest(table, (row) => row['exerciseId'] as string);
   }
+  // A workout is paused at most once at a time (migration 5).
+  keepNewest('workout_pause', (row) =>
+    row['resumedAt'] === null ? (row['sessionId'] as string) : null,
+  );
 
   const active = data.workout_session.filter((row) => isLive(row) && row['status'] === 'active');
   if (active.length > 1) {

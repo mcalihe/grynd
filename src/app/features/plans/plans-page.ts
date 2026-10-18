@@ -17,7 +17,7 @@ import { PlanCard } from '../../shared/components/plan-card/plan-card';
 
 /**
  * Plan list (Figma Pläne 37:27416, empty state 84:3262). No primary button on this screen.
- * «Plan importieren» adds plans someone shared (decision 0023).
+ * «Plan importieren» adds plans someone shared (decision 0024).
  */
 @Component({
   selector: 'app-plans-page',

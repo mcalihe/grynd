@@ -17,7 +17,7 @@ import { ImportContent, ImportError, ImportReader } from '../../../core/share/im
 import { ImportFlow } from './import-flow';
 
 /**
- * Bottom sheet to import a shared plan or a backup (decision 0023): pick a file, or paste a code
+ * Bottom sheet to import a shared plan or a backup (decision 0024): pick a file, or paste a code
  * or JSON. What it is shows up only after reading it; problems appear right under the field, so
  * a wrong paste can be fixed without starting over.
  */

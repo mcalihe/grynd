@@ -87,6 +87,20 @@ describe('mergeBackups', () => {
     expect(settings['s-here']['deletedAt']).toBe(now);
   });
 
+  it('keeps one open pause per workout: the newer one', () => {
+    const pause = { sessionId: 's1', pausedAt: t1, resumedAt: null };
+    const local = backup({ workout_pause: [row('wp-here', t1, pause)] });
+    const incoming = backup({
+      workout_pause: [row('wp-there', t2, pause), row('wp-old', t1, { ...pause, resumedAt: t1 })],
+    });
+
+    const pauses = byId(mergeBackups(local, incoming, now).data.workout_pause);
+
+    expect(pauses['wp-there']['deletedAt']).toBeNull();
+    expect(pauses['wp-here']['deletedAt']).toBe(now);
+    expect(pauses['wp-old']['deletedAt']).toBeNull();
+  });
+
   it('keeps the workout running here active and stores the incoming one as aborted', () => {
     const session = { planId: null, startedAt: t1, finishedAt: null, status: 'active' };
     const local = backup({ workout_session: [row('here', t1, session)] });

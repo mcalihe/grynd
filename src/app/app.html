@@ -5,6 +5,14 @@
 
   @if (showNav()) {
     <div class="sticky bottom-0 bg-background pt-2 pb-[calc(env(safe-area-inset-bottom)+16px)]">
+      @if (showPausedWorkout()) {
+        <app-paused-workout-bar
+          class="mb-2"
+          [planName]="workout.workout()?.planName ?? ''"
+          [elapsedMs]="pausedElapsedMs()"
+          (open)="openWorkout()"
+        />
+      }
       <app-bottom-navigation />
     </div>
   }

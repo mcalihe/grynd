@@ -46,6 +46,7 @@ import { StickyAction } from '../../shared/components/sticky-action/sticky-actio
 import { TimerBar } from '../../shared/components/timer-bar/timer-bar';
 import { WeekdayChips } from '../../shared/components/weekday-chips/weekday-chips';
 import { ValueScrubber } from '../../shared/components/value-scrubber/value-scrubber';
+import { PausedWorkoutBar } from '../../shared/components/paused-workout-bar/paused-workout-bar';
 import { WorkoutClock } from '../../shared/components/workout-clock/workout-clock';
 import { ReleaseNotesList } from '../../shared/components/whats-new/release-notes-list';
 import { WhatsNewDialog } from '../../shared/components/whats-new/whats-new-dialog';
@@ -76,6 +77,7 @@ import { ExerciseCelebration } from '../workout/exercise-celebration';
     SegmentProgress,
     TimerBar,
     WorkoutClock,
+    PausedWorkoutBar,
     ExerciseNote,
     ExerciseNoteSheet,
     ReleaseNotesList,
@@ -162,7 +164,7 @@ export class ComponentsShowcase {
   // Weight step (decision 0022)
   protected readonly demoStep = signal(2);
   protected readonly stepOpen = signal(false);
-  // Plan share and import (decision 0023)
+  // Plan share and import (decision 0024)
   protected readonly shareOpen = signal(false);
   protected readonly importOpen = signal(false);
   protected readonly lastShare = signal('');
@@ -186,6 +188,7 @@ export class ComponentsShowcase {
       planName: 'Oberkörper',
       startedAt: new Date(2026, 8, day, 18).toISOString(),
       finishedAt: new Date(2026, 8, day, 19).toISOString(),
+      pausedMs: 0,
       exerciseCount: 6,
       setCount: 18,
       volumeKg: 8420,

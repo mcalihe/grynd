@@ -11,7 +11,7 @@ import { PlanShareService } from '../../../core/share/plan-share.service';
 const UNDO_MS = 10_000;
 
 /**
- * The steps after a file or code was read and checked (decision 0023): show what it contains,
+ * The steps after a file or code was read and checked (decision 0024): show what it contains,
  * ask how to import, import, and offer «Undo». Used by the import sheet on the plans and
  * settings screens.
  */

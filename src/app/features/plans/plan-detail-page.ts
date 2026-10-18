@@ -46,7 +46,7 @@ import { PlanExerciseRow, targetSummary } from './plan-exercise-row';
 /**
  * Read-only plan view with «Bearbeiten» and «Training starten» (Figma 37:27708, decision 0010).
  * Exercise notes and weight steps are not plan data, so they can be edited here directly
- * (decisions 0019, 0021, 0022). The header shares the plan as a template (decision 0023).
+ * (decisions 0019, 0021, 0022). The header shares the plan as a template (decision 0024).
  */
 @Component({
   selector: 'app-plan-detail-page',

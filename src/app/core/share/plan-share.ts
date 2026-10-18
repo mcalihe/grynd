@@ -1,5 +1,5 @@
 /**
- * A plan shared as a template (decision 0023): what to train, never how it went. No ids or
+ * A plan shared as a template (decision 0024): what to train, never how it went. No ids or
  * timestamps of the sender travel; the receiver gets new rows. Notes and weight steps are
  * optional extras the sender picks.
  */

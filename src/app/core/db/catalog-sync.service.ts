@@ -6,7 +6,8 @@ import { DatabaseService } from './database.service';
 import { Exercise, NewEntity } from './models';
 import { ExerciseRepository } from './repositories/exercise.repository';
 
-const CATALOG_URL = 'data/exercises.json';
+/** The version in the URL skips a copy cached before the catalog changed. */
+const CATALOG_URL = `data/exercises.json?v=${CATALOG_VERSION}`;
 
 export interface CatalogFile {
   version: string;

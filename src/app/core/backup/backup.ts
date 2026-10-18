@@ -1,5 +1,5 @@
 /**
- * JSON backup of the user's data (decisions 0013, 0023). The exercise catalog ships with the app
+ * JSON backup of the user's data (decisions 0013, 0024). The exercise catalog ships with the app
  * and is not part of a backup; rows only reference it by id.
  */
 import { NOTE_MAX_IMAGES } from '../exercises/note-image';
@@ -93,6 +93,14 @@ export const BACKUP_TABLES = {
       finishedAt: optional(timestamp),
       status: required(oneOf('active', 'finished', 'aborted')),
     },
+  },
+  workout_pause: {
+    columns: {
+      sessionId: required(id),
+      pausedAt: required(timestamp),
+      resumedAt: optional(timestamp),
+    },
+    since: 5,
   },
   session_exercise: {
     columns: {
@@ -246,8 +254,10 @@ function breaksUniqueness(data: Record<BackupTable, BackupRow[]>): boolean {
     }
     return Math.max(0, ...counts.values());
   };
+  const openPauses = live('workout_pause').filter((row) => row['resumedAt'] === null);
   return (
     live('workout_session').filter((row) => row['status'] === 'active').length > 1 ||
+    new Set(openPauses.map((row) => row['sessionId'])).size !== openPauses.length ||
     perExercise('exercise_note') > 1 ||
     perExercise('exercise_setting') > 1 ||
     perExercise('exercise_note_image') > NOTE_MAX_IMAGES
@@ -299,6 +309,7 @@ export function validateBackup(
   const refs: [BackupTable, string, ReadonlySet<SqlRowValue>, boolean][] = [
     ['plan_exercise', 'planId', plans, false],
     ['workout_session', 'planId', plans, true],
+    ['workout_pause', 'sessionId', sessions, false],
     ['session_exercise', 'sessionId', sessions, false],
     ['exercise_interval', 'sessionExerciseId', sessionExercises, false],
     ['set_log', 'sessionExerciseId', sessionExercises, false],
