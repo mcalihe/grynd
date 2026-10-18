@@ -189,26 +189,17 @@
 
   <section class="flex flex-col gap-3">
     <h2 class="text-sm font-semibold text-muted-foreground">
-      Plan share · Import · code only (decision 0024)
+      Export · Import · code only (decision 0024)
     </h2>
     <div class="flex flex-wrap gap-2">
       <button hlmBtn variant="secondary" size="sm" (click)="shareOpen.set(true)">
-        Plan teilen (alle Extras)
+        Exportieren
       </button>
       <button hlmBtn variant="secondary" size="sm" (click)="importOpen.set(true)">
         Importieren
       </button>
     </div>
-    @if (lastShare(); as request) {
-      <p class="text-xs text-muted-foreground">{{ request }}</p>
-    }
-    <app-plan-share-sheet
-      [(open)]="shareOpen"
-      [hasNotes]="true"
-      [hasPhotos]="true"
-      [hasWeightSteps]="true"
-      (share)="lastShare.set(JSON.stringify($event))"
-    />
+    <app-export-sheet [(open)]="shareOpen" />
     <app-import-sheet [(open)]="importOpen" />
   </section>
 
@@ -329,6 +320,15 @@
       <hlm-switch />
       <hlm-switch [checked]="true" />
       <hlm-switch [disabled]="true" />
+    </div>
+  </section>
+
+  <section class="flex flex-col gap-3">
+    <h2 class="text-sm font-semibold text-muted-foreground">Checkbox · Figma 9:295</h2>
+    <div class="flex gap-4">
+      <hlm-checkbox aria-label="Leer" />
+      <hlm-checkbox aria-label="Gewählt" [checked]="true" />
+      <hlm-checkbox aria-label="Deaktiviert" [disabled]="true" />
     </div>
   </section>
 

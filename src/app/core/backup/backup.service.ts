@@ -5,13 +5,11 @@ import { ExerciseNotesService } from '../exercises/exercise-notes.service';
 import { NoteImageStore } from '../exercises/note-image-store';
 import { ExerciseSettingsService } from '../exercises/exercise-settings.service';
 import { PlansService } from '../plans/plans.service';
-import { ShareOutcome, ShareService } from '../share/share.service';
 import { Clock } from '../utils/time';
 import { RestTimerService } from '../workout/rest-timer.service';
 import { WorkoutService } from '../workout/workout.service';
 import {
   Backup,
-  backupFileName,
   BackupResult,
   BackupRow,
   BackupTable,
@@ -37,7 +35,6 @@ export class BackupService {
   private readonly imageFiles = inject(NoteImageStore);
   private readonly exerciseSettings = inject(ExerciseSettingsService);
   private readonly clock = inject(Clock);
-  private readonly share = inject(ShareService);
   private readonly plans = inject(PlansService);
 
   /** All user data, including soft-deleted rows, and the files of live note photos. */
@@ -65,12 +62,6 @@ export class BackupService {
     }
     data.exercise_note_image = photos;
     return buildBackup(data, SCHEMA_VERSION, this.clock.nowUtc(), images);
-  }
-
-  /** Browser: download. App: write to the cache and open the share sheet. */
-  async export(): Promise<ShareOutcome> {
-    const json = JSON.stringify(await this.create(), null, 2);
-    return this.share.file(backupFileName(this.clock.now()), json);
   }
 
   /** Parses and validates file contents without touching the database. */

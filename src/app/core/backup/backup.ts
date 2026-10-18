@@ -163,6 +163,11 @@ export interface Backup {
   data: Record<BackupTable, BackupRow[]>;
   /** Photo files of exercise notes (decision 0021): image id → JPEG as base64, live rows only. */
   images: Record<string, string>;
+  /**
+   * All plans and all kinds of data (decision 0024). Only a complete backup may replace the data
+   * on a device; a partial export is merged. Files from before the export selection are complete.
+   */
+  complete: boolean;
 }
 
 export type BackupError =
@@ -180,20 +185,87 @@ export function buildBackup(
   schemaVersion: number,
   exportedAt: string,
   images: Record<string, string> = {},
+  complete = true,
 ): Backup {
-  return { app: 'grynd', schemaVersion, exportedAt, data, images };
+  return { app: 'grynd', schemaVersion, exportedAt, complete, data, images };
 }
 
-/** `grynd-backup-2026-10-01-0930.json` in local time. */
-export function backupFileName(date: Date): string {
+/** `grynd-backup-2026-10-01-0930.json` in local time; other prefixes for partial exports. */
+export function backupFileName(date: Date, prefix = 'grynd-backup'): string {
   const pad = (n: number) => String(n).padStart(2, '0');
   const day = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
-  return `grynd-backup-${day}-${pad(date.getHours())}${pad(date.getMinutes())}.json`;
+  return `${prefix}-${day}-${pad(date.getHours())}${pad(date.getMinutes())}.json`;
+}
+
+/** What goes into an export (decision 0024). */
+export interface ExportSelection {
+  /** Plan ids, or 'all' for every plan including deleted ones and workouts without a plan. */
+  plans: readonly string[] | 'all';
+  history: boolean;
+  notes: boolean;
+  /** Only together with notes. */
+  photos: boolean;
+  weightSteps: boolean;
+}
+
+/**
+ * The part of a backup an export selection asks for. Plans bring their exercises; with history
+ * their workouts and everything below them (soft-deleted rows too, so a merge carries deletes).
+ * Notes, photos and weight steps are limited to exercises the exported rows use.
+ */
+export function selectBackup(backup: Backup, selection: ExportSelection): Backup {
+  const all = selection.plans === 'all';
+  const photos = selection.notes && selection.photos;
+  const complete = all && selection.history && selection.notes && photos && selection.weightSteps;
+  if (complete) {
+    return { ...backup, complete: true };
+  }
+  const d = backup.data;
+  const planIds = new Set(all ? d.plan.map((row) => row['id']) : selection.plans);
+  const of = (rows: BackupRow[], column: string, ids: ReadonlySet<SqlRowValue>) =>
+    rows.filter((row) => ids.has(row[column]));
+  const ids = (rows: BackupRow[]) => new Set(rows.map((row) => row['id']));
+
+  const plan = all ? d.plan : of(d.plan, 'id', planIds);
+  const plan_exercise = all ? d.plan_exercise : of(d.plan_exercise, 'planId', planIds);
+  const workout_session = !selection.history
+    ? []
+    : all
+      ? d.workout_session
+      : of(d.workout_session, 'planId', planIds);
+  const sessions = ids(workout_session);
+  const session_exercise = of(d.session_exercise, 'sessionId', sessions);
+  const sessionExercises = ids(session_exercise);
+
+  const exercises = new Set<SqlRowValue>(
+    [...plan_exercise, ...session_exercise].map((row) => row['exerciseId']),
+  );
+  const forExercises = (rows: BackupRow[]) => (all ? rows : of(rows, 'exerciseId', exercises));
+  const exercise_note_image = photos ? forExercises(d.exercise_note_image) : [];
+  const liveImages = ids(exercise_note_image);
+  const images = Object.fromEntries(
+    Object.entries(backup.images).filter(([id]) => liveImages.has(id)),
+  );
+
+  const data: Record<BackupTable, BackupRow[]> = {
+    plan,
+    plan_exercise,
+    workout_session,
+    workout_pause: of(d.workout_pause, 'sessionId', sessions),
+    session_exercise,
+    exercise_interval: of(d.exercise_interval, 'sessionExerciseId', sessionExercises),
+    set_log: of(d.set_log, 'sessionExerciseId', sessionExercises),
+    exercise_note: selection.notes ? forExercises(d.exercise_note) : [],
+    exercise_note_image,
+    exercise_setting: selection.weightSteps ? forExercises(d.exercise_setting) : [],
+  };
+  return buildBackup(data, backup.schemaVersion, backup.exportedAt, images, false);
 }
 
 /** What the confirm dialog tells about a backup before it is restored. */
 export interface BackupSummary {
   exportedAt: string;
+  complete: boolean;
   plans: number;
   workouts: number;
   notes: number;
@@ -205,6 +277,7 @@ export function summarizeBackup(backup: Backup): BackupSummary {
     backup.data[table].filter((row) => row['deletedAt'] === null);
   return {
     exportedAt: backup.exportedAt,
+    complete: backup.complete,
     plans: live('plan').length,
     workouts: live('workout_session').filter((row) => row['status'] === 'finished').length,
     notes: live('exercise_note').length,
@@ -356,5 +429,6 @@ export function validateBackup(
   }
 
   const exportedAt = typeof raw['exportedAt'] === 'string' ? raw['exportedAt'] : '';
-  return { ok: true, backup: { app: 'grynd', schemaVersion, exportedAt, data, images } };
+  const complete = raw['complete'] !== false;
+  return { ok: true, backup: buildBackup(data, schemaVersion, exportedAt, images, complete) };
 }

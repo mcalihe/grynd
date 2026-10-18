@@ -60,23 +60,7 @@
       "summary": "Zuletzt: {{day}} · Ø {{duration}}"
     },
     "share": {
-      "action": "Plan teilen",
-      "title": "Plan teilen",
-      "hint": "Geteilt wird der Plan als Vorlage: Übungen, Sätze, Wiederholungen und Pausen. Deine Trainings bleiben bei dir.",
-      "notes": "Notizen mitsenden",
-      "notesHint": "Kommen nur zu Übungen, für die es beim Empfänger noch keine Notiz gibt.",
-      "photos": "Fotos mitsenden",
-      "photosHint": "Macht die Datei deutlich grösser.",
-      "weightSteps": "Gewichtsschritte mitsenden",
-      "weightStepsHint": "Gelten nur, wo der Empfänger keinen eigenen gewählt hat.",
-      "asCode": "Als Code teilen",
-      "asFile": "Als Datei teilen",
-      "codeHint": "Den Code kannst du im Chat schicken. Eingefügt wird er in Grynd unter Pläne → Plan importieren.",
-      "photosFileOnly": "Mit Fotos wäre der Code zu lang, teile den Plan deshalb als Datei.",
-      "message": "Mein Grynd-Plan «{{name}}». Kopiere die ganze Nachricht und füge sie in Grynd unter Pläne → Plan importieren ein:\n\n{{code}}",
-      "copied": "Code kopiert",
-      "saved": "Datei gespeichert",
-      "failed": "Teilen fehlgeschlagen"
+      "action": "Plan teilen"
     },
     "import": "Plan importieren"
   },
@@ -317,17 +301,16 @@
       "text": "Startet nach jedem abgehakten Satz"
     },
     "backup": {
-      "text": "Sichere alle Pläne, Trainings und Notizen als Datei oder hole sie zurück. Pläne teilst du direkt im Plan.",
+      "text": "Exportiere Pläne, Trainings und Notizen als Code oder Datei, oder hole sie zurück.",
       "export": "Exportieren",
       "import": "Importieren",
-      "exported": "Sicherung exportiert",
-      "exportFailed": "Export fehlgeschlagen",
       "replaced": "Sicherung wiederhergestellt",
       "merged": "Sicherung zusammengeführt",
       "preview": {
         "title": "Sicherung vom {{date}}",
         "titleUndated": "Sicherung importieren",
         "text": "Pläne: {{plans}} · Trainings: {{workouts}} · Notizen: {{notes}} · Fotos: {{photos}}. Zusammenführen behält deine Daten und ergänzt sie, Ersetzen löscht zuerst alles auf diesem Gerät.",
+        "textPartial": "Pläne: {{plans}} · Trainings: {{workouts}} · Notizen: {{notes}} · Fotos: {{photos}}. Ein Teil-Export wird mit deinen Daten zusammengeführt, gelöscht wird nichts.",
         "merge": "Zusammenführen",
         "replace": "Alles ersetzen"
       }
@@ -410,8 +393,8 @@
       "text": "Beim Import siehst du zuerst, was in der Sicherung steckt. Du kannst sie mit deinen Daten zusammenführen statt alles zu ersetzen, und ein Import lässt sich gleich danach rückgängig machen."
     },
     "sharePlans": {
-      "title": "Pläne teilen",
-      "text": "Schick einen Plan als Code im Chat oder als Datei, auf Wunsch mit Notizen, Fotos und Gewichtsschritten. Unter Pläne → Plan importieren kommt er dazu, ohne etwas zu überschreiben."
+      "title": "Exportieren nach Wahl",
+      "text": "Wähle beim Exportieren, welche Pläne und ob Trainings, Notizen, Fotos und Gewichtsschritte mitkommen. Kopiere einen Code oder speichere eine Datei. Ein Plan ohne Verlauf kommt beim Import als Kopie dazu, ohne etwas zu überschreiben."
     }
   },
   "common": {
@@ -492,5 +475,44 @@
       "done": "«{{name}}» hinzugefügt",
       "notesKept": "Notizen: {{added}} übernommen, {{kept}} eigene behalten"
     }
+  },
+  "export": {
+    "title": "Exportieren",
+    "hint": "Wähle, was mitkommt. Den Code kopierst du und fügst ihn auf dem anderen Gerät unter Importieren ein, die Datei speicherst du.",
+    "plans": "Pläne",
+    "scope": {
+      "all": "Alle",
+      "pick": "Auswählen"
+    },
+    "noPlans": "Noch keine Pläne.",
+    "include": "Mitnehmen",
+    "extras": {
+      "history": {
+        "title": "Trainings (Verlauf)",
+        "text": "Ohne Verlauf ist es eine Vorlage: Beim Import kommen die Pläne als Kopie dazu. Mit Verlauf wird zusammengeführt."
+      },
+      "notes": {
+        "title": "Notizen",
+        "text": "Nur zu Übungen ohne eigene Notiz, wenn als Vorlage importiert."
+      },
+      "photos": {
+        "title": "Fotos",
+        "text": "Macht die Datei deutlich grösser; dann gibt es keinen Code."
+      },
+      "weightSteps": {
+        "title": "Gewichtsschritte",
+        "text": "Dein ±-Schritt pro Übung."
+      }
+    },
+    "code": "Code",
+    "building": "Code wird erstellt …",
+    "nothingSelected": "Wähle mindestens einen Plan.",
+    "photosFileOnly": "Mit Fotos geht es nur als Datei.",
+    "copy": "Code kopieren",
+    "copied": "Code kopiert",
+    "copyFailed": "Kopieren nicht möglich. Markiere den Code und kopiere ihn von Hand.",
+    "save": "Datei speichern",
+    "saved": "Datei gespeichert",
+    "failed": "Export fehlgeschlagen"
   }
 }

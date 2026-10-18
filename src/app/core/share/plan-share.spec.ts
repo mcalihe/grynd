@@ -33,7 +33,7 @@ const draft = {
 
 function sample(): PlanShare {
   return buildPlanShare(
-    draft,
+    [draft],
     ts,
     [{ exerciseId: 'e1', text: 'Bank flach', images: [btoa('jpeg')] }],
     [{ exerciseId: 'e2', kg: 5, lb: null }],

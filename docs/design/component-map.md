@@ -30,7 +30,7 @@ Klassen folgen dem Angular-Styleguide 2025 (ohne `Component`-Suffix), Selektor-P
 | Number Input | `9:244` | default/focus/error | im Set-Row-Layout: `NumberStepper` (`app-number-stepper`, 121×44, auf schmalen Phones schmaler, Entscheid [0009](../decisions/0009-set-row.md)) | shared/components/number-stepper |
 | Badge | `9:265` | default/secondary/success/warning/destructive | helm `hlmBadge` (32 px Pill) | shared/ui/badge |
 | Switch | `9:284` | checked × default/disabled | helm `hlm-switch` (52×32) | shared/ui/switch |
-| Checkbox | `9:295` | checked × default/disabled | noch nicht generiert (bei Bedarf) | – |
+| Checkbox | `9:295` | checked × default/disabled | helm `hlm-checkbox` (Planauswahl im Export-Sheet) | shared/ui/checkbox |
 | Separator | `9:298` | horizontal/vertical | noch nicht generiert, Linien über `border-b` | – |
 | Toast | `9:326` | default/success/destructive | helm `hlm-toaster` (sonner, in der App-Shell, `toast()` aus `@spartan-ng/brain/sonner`) | shared/ui/sonner |
 | Card | `9:266` | – | kein helm card; Karten als `bg-card rounded-lg border` | – |

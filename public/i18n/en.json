@@ -60,23 +60,7 @@
       "summary": "Last: {{day}} · avg. {{duration}}"
     },
     "share": {
-      "action": "Share plan",
-      "title": "Share plan",
-      "hint": "The plan is shared as a template: exercises, sets, reps and rest. Your workouts stay with you.",
-      "notes": "Include notes",
-      "notesHint": "Only added to exercises the receiver has no note for yet.",
-      "photos": "Include photos",
-      "photosHint": "Makes the file much larger.",
-      "weightSteps": "Include weight steps",
-      "weightStepsHint": "Only used where the receiver has not picked their own.",
-      "asCode": "Share as code",
-      "asFile": "Share as file",
-      "codeHint": "You can send the code in a chat. Paste it in Grynd under Plans → Import plan.",
-      "photosFileOnly": "With photos the code would be too long, so share the plan as a file.",
-      "message": "My Grynd plan “{{name}}”. Copy the whole message and paste it in Grynd under Plans → Import plan:\n\n{{code}}",
-      "copied": "Code copied",
-      "saved": "File saved",
-      "failed": "Sharing failed"
+      "action": "Share plan"
     },
     "import": "Import plan"
   },
@@ -317,17 +301,16 @@
       "text": "Starts after every completed set"
     },
     "backup": {
-      "text": "Save all plans, workouts and notes to a file or bring them back. Share single plans from the plan itself.",
+      "text": "Export plans, workouts and notes as a code or file, or bring them back.",
       "export": "Export",
       "import": "Import",
-      "exported": "Backup exported",
-      "exportFailed": "Export failed",
       "replaced": "Backup restored",
       "merged": "Backup merged",
       "preview": {
         "title": "Backup from {{date}}",
         "titleUndated": "Import backup",
         "text": "Plans: {{plans}} · Workouts: {{workouts}} · Notes: {{notes}} · Photos: {{photos}}. Merge keeps your data and adds to it, replace first deletes everything on this device.",
+        "textPartial": "Plans: {{plans}} · Workouts: {{workouts}} · Notes: {{notes}} · Photos: {{photos}}. A partial export is merged with your data; nothing is deleted.",
         "merge": "Merge",
         "replace": "Replace everything"
       }
@@ -410,8 +393,8 @@
       "text": "When importing, you first see what a backup contains. You can merge it with your data instead of replacing everything, and undo an import right after."
     },
     "sharePlans": {
-      "title": "Share plans",
-      "text": "Send a plan as a code in a chat or as a file, with notes, photos and weight steps if you like. Under Plans → Import plan it is added without overwriting anything."
+      "title": "Export what you choose",
+      "text": "Choose which plans to export and whether workouts, notes, photos and weight steps come along. Copy a code or save a file. A plan without history is added as a copy on import, without overwriting anything."
     }
   },
   "common": {
@@ -492,5 +475,44 @@
       "done": "“{{name}}” added",
       "notesKept": "Notes: {{added}} added, {{kept}} of yours kept"
     }
+  },
+  "export": {
+    "title": "Export",
+    "hint": "Choose what comes along. Copy the code and paste it under Import on the other device, or save the file.",
+    "plans": "Plans",
+    "scope": {
+      "all": "All",
+      "pick": "Choose"
+    },
+    "noPlans": "No plans yet.",
+    "include": "Include",
+    "extras": {
+      "history": {
+        "title": "Workouts (history)",
+        "text": "Without history it is a template: importing adds the plans as copies. With history it is merged."
+      },
+      "notes": {
+        "title": "Notes",
+        "text": "Imported as a template, only for exercises without a note of their own."
+      },
+      "photos": {
+        "title": "Photos",
+        "text": "Makes the file much larger; then there is no code."
+      },
+      "weightSteps": {
+        "title": "Weight steps",
+        "text": "Your ± step per exercise."
+      }
+    },
+    "code": "Code",
+    "building": "Creating code …",
+    "nothingSelected": "Choose at least one plan.",
+    "photosFileOnly": "With photos, only a file works.",
+    "copy": "Copy code",
+    "copied": "Code copied",
+    "copyFailed": "Copying is not possible here. Select the code and copy it by hand.",
+    "save": "Save file",
+    "saved": "File saved",
+    "failed": "Export failed"
   }
 }

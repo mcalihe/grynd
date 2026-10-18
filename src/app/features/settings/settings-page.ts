@@ -5,11 +5,10 @@ import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { NgIcon } from '@ng-icons/core';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmSwitch } from '@spartan-ng/helm/switch';
-import { toast } from '@spartan-ng/brain/sonner';
 import { displayVersion } from '../../core/app-info';
-import { BackupService } from '../../core/backup/backup.service';
 import { AppLang } from '../../core/i18n/language';
 import { SettingsService, ThemeMode, WeightUnit } from '../../core/settings/settings.service';
+import { ExportSheet } from '../../shared/components/export-sheet/export-sheet';
 import { ImportSheet } from '../../shared/components/import-sheet/import-sheet';
 import { PageHeader } from '../../shared/components/page-header/page-header';
 import {
@@ -26,6 +25,7 @@ import {
   imports: [
     PageHeader,
     SegmentedControl,
+    ExportSheet,
     ImportSheet,
     HlmSwitch,
     HlmButton,
@@ -107,8 +107,7 @@ import {
               variant="secondary"
               size="lg"
               data-action="export"
-              [disabled]="busy()"
-              (click)="exportBackup()"
+              (click)="exportOpen.set(true)"
             >
               {{ 'settings.backup.export' | transloco }}
             </button>
@@ -117,7 +116,6 @@ import {
               variant="secondary"
               size="lg"
               data-action="import"
-              [disabled]="busy()"
               (click)="importOpen.set(true)"
             >
               {{ 'settings.backup.import' | transloco }}
@@ -152,6 +150,7 @@ import {
       <p class="pt-1 text-center text-xs text-muted-foreground">Grynd {{ version }}</p>
     </div>
 
+    <app-export-sheet [(open)]="exportOpen" />
     <app-import-sheet [(open)]="importOpen" />
   `,
 })
@@ -161,10 +160,8 @@ export class SettingsPage {
   /** Emits once the translation file is loaded and on every language change. */
   private readonly translation = toSignal(this.transloco.selectTranslation());
 
-  private readonly backups = inject(BackupService);
-
   protected readonly settings = this.service.settings;
-  protected readonly busy = signal(false);
+  protected readonly exportOpen = signal(false);
   protected readonly importOpen = signal(false);
   protected readonly version = displayVersion();
 
@@ -184,19 +181,6 @@ export class SettingsPage {
     { value: 'de', label: 'Deutsch' },
     { value: 'en', label: 'English' },
   ];
-
-  protected async exportBackup(): Promise<void> {
-    this.busy.set(true);
-    try {
-      if ((await this.backups.export()) !== 'cancelled') {
-        toast.success(this.transloco.translate('settings.backup.exported'));
-      }
-    } catch {
-      toast.error(this.transloco.translate('settings.backup.exportFailed'));
-    } finally {
-      this.busy.set(false);
-    }
-  }
 
   protected update(patch: Parameters<SettingsService['update']>[0]): void {
     void this.service.update(patch);

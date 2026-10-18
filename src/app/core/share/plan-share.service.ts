@@ -51,13 +51,14 @@ export class PlanShareService {
   private readonly settingRepo = inject(ExerciseSettingRepository);
   private readonly clock = inject(Clock);
 
-  /** The plan as a template, with the chosen extras; undefined when the plan is gone. */
-  async create(planId: string, options: PlanShareOptions): Promise<PlanShare | undefined> {
-    const draft = await this.plans.getDraft(planId);
-    if (!draft) {
-      return undefined;
-    }
-    const exerciseIds = [...new Set(draft.exercises.map((e) => e.exerciseId))];
+  /** The plans as templates, with the chosen extras; plans that are gone are left out. */
+  async create(planIds: readonly string[], options: PlanShareOptions): Promise<PlanShare> {
+    const drafts = (await Promise.all(planIds.map((id) => this.plans.getDraft(id)))).filter(
+      (draft) => draft !== undefined,
+    );
+    const exerciseIds = [
+      ...new Set(drafts.flatMap((draft) => draft.exercises.map((e) => e.exerciseId))),
+    ];
     const notes: SharedNote[] = [];
     const weightSteps: SharedWeightStep[] = [];
     if (options.notes) {
@@ -78,7 +79,7 @@ export class PlanShareService {
         }
       }
     }
-    return buildPlanShare(draft, this.clock.nowUtc(), notes, weightSteps);
+    return buildPlanShare(drafts, this.clock.nowUtc(), notes, weightSteps);
   }
 
   /**

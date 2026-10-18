@@ -11,7 +11,6 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { NgIcon } from '@ng-icons/core';
-import { toast } from '@spartan-ng/brain/sonner';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { ExerciseCatalogService } from '../../core/exercises/exercise-catalog.service';
 import { ExerciseNotesService } from '../../core/exercises/exercise-notes.service';
@@ -22,11 +21,7 @@ import { PlanDraft } from '../../core/plans/plan-draft';
 import { PlansService } from '../../core/plans/plans.service';
 import { ConfirmService } from '../../core/services/confirm.service';
 import { SettingsService } from '../../core/settings/settings.service';
-import { planShareFileName } from '../../core/share/plan-share';
-import { PlanShareService } from '../../core/share/plan-share.service';
-import { encodeShareCode } from '../../core/share/share-code';
-import { ShareService } from '../../core/share/share.service';
-import { WEIGHT_STEP, weightStepLabel } from '../../core/units/weight';
+import { weightStepLabel } from '../../core/units/weight';
 import { Clock } from '../../core/utils/time';
 import { WorkoutService } from '../../core/workout/workout.service';
 import { ExerciseNote } from '../../shared/components/exercise-note/exercise-note';
@@ -35,10 +30,7 @@ import { toastAddImagesResult } from '../../shared/components/exercise-note/note
 import { PageHeader } from '../../shared/components/page-header/page-header';
 import { StickyAction } from '../../shared/components/sticky-action/sticky-action';
 import { WeekdayChips } from '../../shared/components/weekday-chips/weekday-chips';
-import {
-  PlanShareRequest,
-  PlanShareSheet,
-} from '../../shared/components/plan-share/plan-share-sheet';
+import { ExportSheet } from '../../shared/components/export-sheet/export-sheet';
 import { WeightStepSheet } from '../../shared/components/weight-step/weight-step-sheet';
 import { HistoryFormat } from '../history/history-format';
 import { PlanExerciseRow, targetSummary } from './plan-exercise-row';
@@ -46,7 +38,7 @@ import { PlanExerciseRow, targetSummary } from './plan-exercise-row';
 /**
  * Read-only plan view with «Bearbeiten» and «Training starten» (Figma 37:27708, decision 0010).
  * Exercise notes and weight steps are not plan data, so they can be edited here directly
- * (decisions 0019, 0021, 0022). The header shares the plan as a template (decision 0024).
+ * (decisions 0019, 0021, 0022). The share icon exports the plan (decision 0024).
  */
 @Component({
   selector: 'app-plan-detail-page',
@@ -58,7 +50,7 @@ import { PlanExerciseRow, targetSummary } from './plan-exercise-row';
     ExerciseNote,
     ExerciseNoteSheet,
     WeightStepSheet,
-    PlanShareSheet,
+    ExportSheet,
     HlmButton,
     NgIcon,
     TranslocoPipe,
@@ -194,14 +186,7 @@ import { PlanExerciseRow, targetSummary } from './plan-exercise-row';
         (pick)="exerciseSettings.setWeightStep(stepExerciseId(), unit(), $event)"
       />
 
-      <app-plan-share-sheet
-        [(open)]="shareOpen"
-        [hasNotes]="shareExtras().notes"
-        [hasPhotos]="shareExtras().photos"
-        [hasWeightSteps]="shareExtras().weightSteps"
-        [busy]="sharing()"
-        (share)="share($event)"
-      />
+      <app-export-sheet [(open)]="shareOpen" [planId]="id()" />
     }
   `,
 })
@@ -222,9 +207,6 @@ export class PlanDetailPage implements OnInit {
     initialValue: 'de',
   });
 
-  private readonly planShare = inject(PlanShareService);
-  private readonly shareTarget = inject(ShareService);
-
   private readonly history = inject(HistoryService);
   private readonly format = inject(HistoryFormat);
   private readonly clock = inject(Clock);
@@ -237,21 +219,6 @@ export class PlanDetailPage implements OnInit {
   protected readonly stepOpen = signal(false);
   protected readonly unit = computed(() => this.settings.settings().unit);
   protected readonly shareOpen = signal(false);
-  protected readonly sharing = signal(false);
-
-  /** Which extras the share sheet offers: only what the plan's exercises have. */
-  protected readonly shareExtras = computed(() => {
-    const ids = (this.plan()?.exercises ?? []).map((e) => e.exerciseId);
-    return {
-      notes: ids.some((id) => this.notes.hasNote(id)),
-      photos: ids.some((id) => this.notes.imagesFor(id).length > 0),
-      weightSteps: ids.some(
-        (id) =>
-          this.exerciseSettings.weightStepFor(id, 'kg') !== WEIGHT_STEP ||
-          this.exerciseSettings.weightStepFor(id, 'lb') !== WEIGHT_STEP,
-      ),
-    };
-  });
 
   /** Entry to the plan history: number of workouts, the last one and the average time. */
   protected readonly planHistory = computed(() => {
@@ -322,39 +289,6 @@ export class PlanDetailPage implements OnInit {
   protected editWeightStep(exerciseId: string): void {
     this.stepExerciseId.set(exerciseId);
     this.stepOpen.set(true);
-  }
-
-  protected async share({ format, options }: PlanShareRequest): Promise<void> {
-    this.sharing.set(true);
-    try {
-      const share = await this.planShare.create(this.id(), options);
-      if (!share) {
-        return;
-      }
-      const name = share.plans[0].name;
-      const json = JSON.stringify(share);
-      const outcome =
-        format === 'file'
-          ? await this.shareTarget.file(planShareFileName(name), json)
-          : await this.shareTarget.text(
-              this.transloco.translate('plans.share.message', {
-                name,
-                code: await encodeShareCode(json),
-              }),
-            );
-      if (outcome === 'copied' || outcome === 'downloaded') {
-        toast.success(
-          this.transloco.translate(`plans.share.${outcome === 'copied' ? 'copied' : 'saved'}`),
-        );
-      }
-      if (outcome !== 'cancelled') {
-        this.shareOpen.set(false);
-      }
-    } catch {
-      toast.error(this.transloco.translate('plans.share.failed'));
-    } finally {
-      this.sharing.set(false);
-    }
   }
 
   protected edit(): void {

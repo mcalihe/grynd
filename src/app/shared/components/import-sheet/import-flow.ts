@@ -23,7 +23,10 @@ export class ImportFlow {
   private readonly transloco = inject(TranslocoService);
   private undoToast?: string | number;
 
-  /** Preview, then merge (default) or replace; false when the user cancelled. */
+  /**
+   * Preview, then merge (default) or replace; false when the user cancelled. Only a complete
+   * backup can replace: a partial export would delete everything it left out.
+   */
   async importBackup(backup: Backup): Promise<boolean> {
     const summary = summarizeBackup(backup);
     const exported = Date.parse(summary.exportedAt);
@@ -31,10 +34,12 @@ export class ImportFlow {
       title: isNaN(exported)
         ? 'settings.backup.preview.titleUndated'
         : 'settings.backup.preview.title',
-      message: 'settings.backup.preview.text',
+      message: summary.complete
+        ? 'settings.backup.preview.text'
+        : 'settings.backup.preview.textPartial',
       params: { ...summary, date: isNaN(exported) ? '' : this.dateTime(new Date(exported)) },
       confirm: 'settings.backup.preview.merge',
-      alternative: 'settings.backup.preview.replace',
+      alternative: summary.complete ? 'settings.backup.preview.replace' : undefined,
       alternativeDestructive: true,
       cancel: 'common.cancel',
     });
