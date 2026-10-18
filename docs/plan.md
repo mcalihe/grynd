@@ -165,7 +165,8 @@ Alle Tabellen haben `id` (UUIDv7), `createdAt`, `updatedAt`, `deletedAt`. Dazu k
 - Letzter Tab der Bottom-Navigation (Zahnrad).
 - Theme (Automatisch/Hell/Dunkel), Einheiten (kg/lb), Sprache (Deutsch/English, bis zur Wahl die Gerätesprache), Timer-Autostart, JSON-Export/Import als Backup (inkl. Notiz-Bilder als Base64, [0021](decisions/0021-note-images.md)), «Neuigkeiten», Version.
 - Gespeichert mit `@capacitor/preferences`, wirksam sofort ([0013](decisions/0013-settings-units-swipe-backup.md)).
-- **Import ersetzt alle Pläne und Trainings** nach Prüfung der Datei und Bestätigung; Export als Download bzw. über das Teilen-Menü.
+- **Import** nach Prüfung der Datei und einer Vorschau (Datum, Anzahl Pläne, Trainings, Notizen, Fotos): **zusammenführen** (Standard, die neuere Änderung pro Zeile gewinnt) oder **alles ersetzen**; danach 10 s «Rückgängig» ([0024](decisions/0024-plan-sharing-and-backup-merge.md)). Nur ein vollständiges Backup kann ersetzen.
+- **Exportieren** mit Auswahl (Einstellungen und Teilen-Icon im Plan-Detail): alle oder einzelne Pläne, dazu Trainings, Notizen, Fotos, Gewichtsschritte; als Code zum Kopieren oder als Datei (Browser: Download, App: System-Menü). Ohne Verlauf ist es eine Vorlage, die beim Import als Kopie dazukommt, ohne etwas zu überschreiben; mit Verlauf ein Backup zum Zusammenführen ([0024](decisions/0024-plan-sharing-and-backup-merge.md)).
 
 ### Neuigkeiten (Popup und `/settings/whats-new`)
 - Nach einem Update erscheint einmal ein Popup «Neu in Grynd {{version}}» mit den Neuerungen seit der zuletzt gesehenen Version (auch übersprungene), nur auf den Tab-Screens, nie im Training. Neuinstallationen sehen es nicht ([0020](decisions/0020-whats-new.md)).

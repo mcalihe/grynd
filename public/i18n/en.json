@@ -58,7 +58,11 @@
     "history": {
       "title": "History",
       "summary": "Last: {{day}} · avg. {{duration}}"
-    }
+    },
+    "share": {
+      "action": "Share plan"
+    },
+    "import": "Import plan"
   },
   "workout": {
     "title": "Workout",
@@ -297,23 +301,18 @@
       "text": "Starts after every completed set"
     },
     "backup": {
-      "text": "Export a backup as a JSON file or restore one.",
+      "text": "Export plans, workouts and notes as a code or file, or bring them back.",
       "export": "Export",
       "import": "Import",
-      "exported": "Backup exported",
-      "exportFailed": "Export failed",
-      "imported": "Backup restored",
-      "importFailed": "Import failed",
-      "errors": {
-        "format": "This file is not a Grynd backup.",
-        "newerSchema": "The backup comes from a newer app version.",
-        "invalidRow": "The backup contains invalid data.",
-        "missingReference": "The backup is incomplete or refers to unknown exercises."
-      },
-      "confirm": {
-        "title": "Replace data?",
-        "text": "All plans and workouts on this device will be replaced by the backup.",
-        "confirm": "Replace"
+      "replaced": "Backup restored",
+      "merged": "Backup merged",
+      "preview": {
+        "title": "Backup from {{date}}",
+        "titleUndated": "Import backup",
+        "text": "Plans: {{plans}} · Workouts: {{workouts}} · Notes: {{notes}} · Photos: {{photos}}. Merge keeps your data and adds to it, replace first deletes everything on this device.",
+        "textPartial": "Plans: {{plans}} · Workouts: {{workouts}} · Notes: {{notes}} · Photos: {{photos}}. A partial export is merged with your data; nothing is deleted.",
+        "merge": "Merge",
+        "replace": "Replace everything"
       }
     },
     "app": "App",
@@ -388,6 +387,14 @@
     "firstRelease": {
       "title": "Grynd is here",
       "text": "Build plans, check off sets with one tap (your numbers from last time are already filled in), rest timer and history. No ads, no account, everything stays on your device."
+    },
+    "backupMerge": {
+      "title": "Merge backups",
+      "text": "When importing, you first see what a backup contains. You can merge it with your data instead of replacing everything, and undo an import right after."
+    },
+    "sharePlans": {
+      "title": "Export what you choose",
+      "text": "Choose which plans to export and whether workouts, notes, photos and weight steps come along. Copy a code or save a file. A plan without history is added as a copy on import, without overwriting anything."
     }
   },
   "common": {
@@ -396,7 +403,8 @@
     "increase": "Increase {{label}}",
     "save": "Save",
     "cancel": "Cancel",
-    "close": "Close"
+    "close": "Close",
+    "undo": "Undo"
   },
   "picker": {
     "search": "Search exercises",
@@ -437,5 +445,74 @@
     "cable": "Cable",
     "machine": "Machine",
     "bodyweight": "Bodyweight"
+  },
+  "import": {
+    "title": "Import",
+    "titlePlan": "Import plan",
+    "hint": "Choose a file or paste a code you received. Before anything changes, Grynd shows you what is inside.",
+    "chooseFile": "Choose file",
+    "paste": "Paste code or text",
+    "placeholder": "Paste GRYND1:… here",
+    "action": "Import",
+    "failed": "Import failed",
+    "undone": "Import undone",
+    "undoFailed": "Undo failed",
+    "errors": {
+      "empty": "Paste a code first.",
+      "format": "This is neither a Grynd plan nor a Grynd backup.",
+      "damagedCode": "The code is incomplete or damaged. Copy all of it again.",
+      "newerVersion": "This comes from a newer Grynd version. Update the app and try again.",
+      "invalid": "The data contains invalid values.",
+      "missingReference": "The data is incomplete.",
+      "unknownExercise": "It uses exercises this app version does not know yet. Update Grynd and try again.",
+      "tooLarge": "The file is too large."
+    },
+    "plan": {
+      "title": "Add plan “{{name}}”?",
+      "titleMany": "Add {{count}} plans?",
+      "text": "Exercises: {{exercises}} · Notes: {{notes}} · Weight steps: {{weightSteps}}. Your plans, workouts and notes stay as they are.",
+      "confirm": "Add",
+      "done": "“{{name}}” added",
+      "notesKept": "Notes: {{added}} added, {{kept}} of yours kept"
+    }
+  },
+  "export": {
+    "title": "Export",
+    "hint": "Choose what comes along. Copy the code and paste it under Import on the other device, or save the file.",
+    "plans": "Plans",
+    "scope": {
+      "all": "All",
+      "pick": "Choose"
+    },
+    "noPlans": "No plans yet.",
+    "include": "Include",
+    "extras": {
+      "history": {
+        "title": "Workouts (history)",
+        "text": "Without history it is a template: importing adds the plans as copies. With history it is merged."
+      },
+      "notes": {
+        "title": "Notes",
+        "text": "Imported as a template, only for exercises without a note of their own."
+      },
+      "photos": {
+        "title": "Photos",
+        "text": "Makes the file much larger; then there is no code."
+      },
+      "weightSteps": {
+        "title": "Weight steps",
+        "text": "Your ± step per exercise."
+      }
+    },
+    "code": "Code",
+    "building": "Creating code …",
+    "nothingSelected": "Choose at least one plan.",
+    "photosFileOnly": "With photos, only a file works.",
+    "copy": "Copy code",
+    "copied": "Code copied",
+    "copyFailed": "Copying is not possible here. Select the code and copy it by hand.",
+    "save": "Save file",
+    "saved": "File saved",
+    "failed": "Export failed"
   }
 }

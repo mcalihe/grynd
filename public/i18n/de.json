@@ -58,7 +58,11 @@
     "history": {
       "title": "Verlauf",
       "summary": "Zuletzt: {{day}} · Ø {{duration}}"
-    }
+    },
+    "share": {
+      "action": "Plan teilen"
+    },
+    "import": "Plan importieren"
   },
   "workout": {
     "title": "Training",
@@ -297,23 +301,18 @@
       "text": "Startet nach jedem abgehakten Satz"
     },
     "backup": {
-      "text": "Sicherung als JSON-Datei exportieren oder wiederherstellen.",
+      "text": "Exportiere Pläne, Trainings und Notizen als Code oder Datei, oder hole sie zurück.",
       "export": "Exportieren",
       "import": "Importieren",
-      "exported": "Sicherung exportiert",
-      "exportFailed": "Export fehlgeschlagen",
-      "imported": "Sicherung wiederhergestellt",
-      "importFailed": "Import fehlgeschlagen",
-      "errors": {
-        "format": "Die Datei ist keine Grynd-Sicherung.",
-        "newerSchema": "Die Sicherung stammt aus einer neueren App-Version.",
-        "invalidRow": "Die Sicherung enthält ungültige Daten.",
-        "missingReference": "Die Sicherung ist unvollständig oder verweist auf unbekannte Übungen."
-      },
-      "confirm": {
-        "title": "Daten ersetzen?",
-        "text": "Alle Pläne und Trainings auf diesem Gerät werden durch die Sicherung ersetzt.",
-        "confirm": "Ersetzen"
+      "replaced": "Sicherung wiederhergestellt",
+      "merged": "Sicherung zusammengeführt",
+      "preview": {
+        "title": "Sicherung vom {{date}}",
+        "titleUndated": "Sicherung importieren",
+        "text": "Pläne: {{plans}} · Trainings: {{workouts}} · Notizen: {{notes}} · Fotos: {{photos}}. Zusammenführen behält deine Daten und ergänzt sie, Ersetzen löscht zuerst alles auf diesem Gerät.",
+        "textPartial": "Pläne: {{plans}} · Trainings: {{workouts}} · Notizen: {{notes}} · Fotos: {{photos}}. Ein Teil-Export wird mit deinen Daten zusammengeführt, gelöscht wird nichts.",
+        "merge": "Zusammenführen",
+        "replace": "Alles ersetzen"
       }
     },
     "app": "App",
@@ -388,6 +387,14 @@
     "firstRelease": {
       "title": "Grynd ist da",
       "text": "Pläne erstellen, Sätze mit einem Tipp abhaken (deine Werte vom letzten Mal sind schon eingetragen), Pausen-Timer und Verlauf. Ohne Werbung, ohne Konto, alles bleibt auf deinem Gerät."
+    },
+    "backupMerge": {
+      "title": "Sicherungen zusammenführen",
+      "text": "Beim Import siehst du zuerst, was in der Sicherung steckt. Du kannst sie mit deinen Daten zusammenführen statt alles zu ersetzen, und ein Import lässt sich gleich danach rückgängig machen."
+    },
+    "sharePlans": {
+      "title": "Exportieren nach Wahl",
+      "text": "Wähle beim Exportieren, welche Pläne und ob Trainings, Notizen, Fotos und Gewichtsschritte mitkommen. Kopiere einen Code oder speichere eine Datei. Ein Plan ohne Verlauf kommt beim Import als Kopie dazu, ohne etwas zu überschreiben."
     }
   },
   "common": {
@@ -396,7 +403,8 @@
     "increase": "{{label}} erhöhen",
     "save": "Speichern",
     "cancel": "Abbrechen",
-    "close": "Schließen"
+    "close": "Schließen",
+    "undo": "Rückgängig"
   },
   "picker": {
     "search": "Übungen durchsuchen",
@@ -437,5 +445,74 @@
     "cable": "Kabel",
     "machine": "Maschine",
     "bodyweight": "Körpergewicht"
+  },
+  "import": {
+    "title": "Importieren",
+    "titlePlan": "Plan importieren",
+    "hint": "Wähle eine Datei oder füge einen Code ein, den du bekommen hast. Bevor sich etwas ändert, zeigt Grynd dir, was drin ist.",
+    "chooseFile": "Datei wählen",
+    "paste": "Code oder Text einfügen",
+    "placeholder": "GRYND1:… hier einfügen",
+    "action": "Importieren",
+    "failed": "Import fehlgeschlagen",
+    "undone": "Import rückgängig gemacht",
+    "undoFailed": "Rückgängig machen fehlgeschlagen",
+    "errors": {
+      "empty": "Füge zuerst einen Code ein.",
+      "format": "Das ist weder ein Grynd-Plan noch eine Grynd-Sicherung.",
+      "damagedCode": "Der Code ist unvollständig oder beschädigt. Kopiere ihn nochmals ganz.",
+      "newerVersion": "Das stammt aus einer neueren Grynd-Version. Aktualisiere die App und versuche es erneut.",
+      "invalid": "Die Daten enthalten ungültige Werte.",
+      "missingReference": "Die Daten sind unvollständig.",
+      "unknownExercise": "Darin kommen Übungen vor, die diese App-Version noch nicht kennt. Aktualisiere Grynd und versuche es erneut.",
+      "tooLarge": "Die Datei ist zu gross."
+    },
+    "plan": {
+      "title": "Plan «{{name}}» hinzufügen?",
+      "titleMany": "{{count}} Pläne hinzufügen?",
+      "text": "Übungen: {{exercises}} · Notizen: {{notes}} · Gewichtsschritte: {{weightSteps}}. Deine Pläne, Trainings und Notizen bleiben, wie sie sind.",
+      "confirm": "Hinzufügen",
+      "done": "«{{name}}» hinzugefügt",
+      "notesKept": "Notizen: {{added}} übernommen, {{kept}} eigene behalten"
+    }
+  },
+  "export": {
+    "title": "Exportieren",
+    "hint": "Wähle, was mitkommt. Den Code kopierst du und fügst ihn auf dem anderen Gerät unter Importieren ein, die Datei speicherst du.",
+    "plans": "Pläne",
+    "scope": {
+      "all": "Alle",
+      "pick": "Auswählen"
+    },
+    "noPlans": "Noch keine Pläne.",
+    "include": "Mitnehmen",
+    "extras": {
+      "history": {
+        "title": "Trainings (Verlauf)",
+        "text": "Ohne Verlauf ist es eine Vorlage: Beim Import kommen die Pläne als Kopie dazu. Mit Verlauf wird zusammengeführt."
+      },
+      "notes": {
+        "title": "Notizen",
+        "text": "Nur zu Übungen ohne eigene Notiz, wenn als Vorlage importiert."
+      },
+      "photos": {
+        "title": "Fotos",
+        "text": "Macht die Datei deutlich grösser; dann gibt es keinen Code."
+      },
+      "weightSteps": {
+        "title": "Gewichtsschritte",
+        "text": "Dein ±-Schritt pro Übung."
+      }
+    },
+    "code": "Code",
+    "building": "Code wird erstellt …",
+    "nothingSelected": "Wähle mindestens einen Plan.",
+    "photosFileOnly": "Mit Fotos geht es nur als Datei.",
+    "copy": "Code kopieren",
+    "copied": "Code kopiert",
+    "copyFailed": "Kopieren nicht möglich. Markiere den Code und kopiere ihn von Hand.",
+    "save": "Datei speichern",
+    "saved": "Datei gespeichert",
+    "failed": "Export fehlgeschlagen"
   }
 }

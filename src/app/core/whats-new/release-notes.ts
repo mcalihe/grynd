@@ -22,6 +22,13 @@ export interface ReleaseNotes {
  */
 export const RELEASE_NOTES: readonly ReleaseNotes[] = [
   {
+    version: '0.10.0',
+    items: [
+      { id: 'sharePlans', icon: 'lucideShare2' },
+      { id: 'backupMerge', icon: 'lucideDatabaseBackup' },
+    ],
+  },
+  {
     version: '0.9.0',
     items: [{ id: 'pauseWorkout', icon: 'lucidePause' }],
   },
