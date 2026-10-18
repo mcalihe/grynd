@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.1](https://github.com/mcalihe/grynd/compare/v0.9.0...v0.9.1) (2026-10-18)
+
+
+### Bug Fixes
+
+* **i18n:** show new texts right after an update instead of their keys ([#42](https://github.com/mcalihe/grynd/issues/42)) ([2726240](https://github.com/mcalihe/grynd/commit/2726240251a53c01349fc8a6efd8c1e4a903832b))
+
 ## [0.9.0](https://github.com/mcalihe/grynd/compare/v0.8.0...v0.9.0) (2026-10-17)
 
 
