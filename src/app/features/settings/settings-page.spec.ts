@@ -1,8 +1,9 @@
 import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { TranslocoTestingModule } from '@jsverse/transloco';
 import packageJson from '../../../../package.json';
 import { provideMemorySettings } from '../../../testing/settings';
-import { APP_VERSION } from '../../core/app-info';
+import { APP_VERSION, displayVersion } from '../../core/app-info';
 import { SettingsService } from '../../core/settings/settings.service';
 import { SettingsPage } from './settings-page';
 
@@ -22,7 +23,7 @@ describe('SettingsPage', () => {
           translocoConfig: { availableLangs: ['de', 'en'], defaultLang: 'de' },
         }),
       ],
-      providers: [provideMemorySettings()],
+      providers: [provideMemorySettings(), provideRouter([])],
     });
     const settings = TestBed.inject(SettingsService);
     await settings.init();
@@ -49,8 +50,14 @@ describe('SettingsPage', () => {
     expect(settings.settings().timerAutostart).toBe(false);
   });
 
+  it('links to the release notes', async () => {
+    const { el } = await render();
+    const link = el.querySelector<HTMLAnchorElement>('[data-action=whats-new]')!;
+    expect(link.getAttribute('href')).toBe('/settings/whats-new');
+  });
+
   it('shows the version', async () => {
     const { el } = await render();
-    expect(el.textContent).toContain(`Grynd ${APP_VERSION}`);
+    expect(el.textContent).toContain(`Grynd ${displayVersion()}`);
   });
 });

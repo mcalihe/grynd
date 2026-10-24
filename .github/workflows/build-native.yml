@@ -2,10 +2,10 @@ name: Native builds
 
 # Unsigned builds until the Apple and Google accounts exist (roadmap 8.5a, docs/release.md):
 # an installable Android debug APK and an iOS simulator build that proves the project compiles.
+# Called by the release workflow for every release; versions come from package.json.
 on:
   workflow_dispatch:
-  push:
-    tags: ['v*']
+  workflow_call:
   pull_request:
     paths:
       - 'android/**'
@@ -64,6 +64,14 @@ jobs:
       - run: pnpm build
       - run: pnpm exec cap sync ios
 
+      # Same scheme as versionCode in android/app/build.gradle: major * 1000000 + minor * 1000 + patch.
+      - name: Read the version from package.json
+        run: |
+          version=$(node -p "require('./package.json').version")
+          IFS=. read -r major minor patch <<< "${version%%-*}"
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+          echo "BUILD_NUMBER=$((major * 1000000 + minor * 1000 + patch))" >> "$GITHUB_ENV"
+
       # Simulator build: no signing needed, proves the project and its Swift packages compile.
       - name: Build for the iOS simulator
         run: >
@@ -74,4 +82,6 @@ jobs:
           -sdk iphonesimulator
           -destination 'generic/platform=iOS Simulator'
           CODE_SIGNING_ALLOWED=NO
+          MARKETING_VERSION="$VERSION"
+          CURRENT_PROJECT_VERSION="$BUILD_NUMBER"
           build

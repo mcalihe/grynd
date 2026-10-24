@@ -17,7 +17,7 @@ App id: `com.michaelisler.grynd`. The developer has no Mac: iOS builds run in CI
 - Never hardcode colors, spacing or radii. Use Tailwind classes backed by the design tokens (`--primary`, `--muted-foreground`, …).
 - Progress is always `primary`. `success` is only for status messages (badges, toasts, trends).
 - Never hardcode user-facing text; everything goes through Transloco (de and en).
-- State with signals in services. No new dependencies without asking first.
+- State with signals in services. No new dependencies without asking first, and only with permissive licenses (MIT, Apache, BSD, ISC, …; no GPL/AGPL): Grynd is source-available under PolyForm Strict (`LICENSE`, decision 0017).
 - Max one primary button per screen, fixed at the bottom, full width (exception: Plans screen has none).
 - Every table: UUIDv7 `id` generated in the app, `createdAt`, `updatedAt`, `deletedAt` (soft delete).
 - Weights are stored in kg only; lb is display-only.
@@ -46,9 +46,23 @@ docs/
 
 ## Conventions
 
-- Code, comments and commits in English; Conventional Commits (`feat:`, `fix:`, …).
+- Code, comments and commits in English; Conventional Commits, see «Commits and PRs».
 - Component names mirror Figma (e.g. Figma `Grynd/Set Row` with `State=open|completed|record|menu-open` → `SetRow` (`app-set-row`) with `state: 'open' | 'completed' | 'record' | 'menu-open'`).
 - Write unit tests for business logic (session copy, prefill, PR detection, intervals, unsaved-changes detection).
+
+## Commits and PRs
+
+Releases are automatic (release-please, `docs/release.md`): the commits on `main` decide the next version and become the changelog in the GitHub release. PRs are squash-merged with the **PR title** as the commit subject, so the PR title matters most and is checked in CI.
+
+- Format: `type(scope): subject`, e.g. `feat(workout): show the previous set while logging`.
+- Types: `feat` (new user-facing behavior → minor), `fix` (user-facing bug fix → patch), `perf` (→ patch), `revert`; no release and not in the changelog: `refactor`, `docs`, `style`, `test`, `build`, `ci`, `chore`. Pick the type by what the user notices: a fix to code that was never released is not a `fix`.
+- Scope (optional, one): `plans`, `workout`, `history`, `settings`, `timer`, `db`, `ui`, `native`, `i18n`, `catalog`, `ci`, `deps`.
+- Subject: imperative, lowercase start, no final period, at most 72 characters for the whole header. For `feat`, `fix` and `perf` write it for users, it is a line in the release notes.
+- Body (wrapped at 72): why the change was made and anything non-obvious; not a file list.
+- Breaking change (e.g. backup format or DB migration without upgrade path): `feat!:` plus a `BREAKING CHANGE: …` footer.
+- One logical change per commit; on a branch every commit follows these rules too. The PR title summarizes the whole PR in the same format.
+- Never edit the version (`package.json`, `app-info.ts`, `.release-please-manifest.json`) or `CHANGELOG.md` by hand. To force a version, add a `Release-As: x.y.z` footer.
+- Release notes for users (decision 0020): a `feat` or `fix` users notice also adds an entry to `RELEASE_NOTES` (`src/app/core/whats-new/release-notes.ts`) under the next version (`feat` → next minor, only fixes → next patch; extend the entry if it exists) with title and text in `public/i18n/de.json` and `en.json` (`releaseNotes.<id>`). Write for everyone: what they can do now, short, no technical terms, Swiss spelling (ss) in German. Skip what users would not care about. The release PR fails CI until its version has an entry (`items: []` if there is nothing to tell); the app shows the notes once after the update and in Settings → What's new.
 
 ## Workflow
 
@@ -71,10 +85,13 @@ Node 24 (`.nvmrc`), pnpm via `corepack enable` (version pinned in `package.json`
 - Regenerate app icons and splash screens from `assets/` (exported from Figma page «App Icon – Fitness», frames «Export · …»): `pnpm assets:generate`, then `pnpm exec cap sync`
 - Rebuild the exercise catalog (free-exercise-db → `public/data/exercises.json`, thumbnails, `catalog-version.ts`): `pnpm catalog:import`
 - Add a Spartan helm component: `pnpm ng g @spartan-ng/cli:ui <name>` (goes to `src/app/shared/ui`, then align it with the Figma component)
+- README screenshots (light/dark, English, demo data, frozen clock): with `pnpm start` running, `node scripts/readme-screenshots.mjs` → `docs/readme/screenshots/*.webp`; rerun when a screen in the README changes visibly
 - Component showcase (dev only): http://localhost:4200/dev/components – every shared component in all states; add new ones there
 - CI (`.github/workflows/ci.yml`) runs format check, lint, test and build, plus the E2E job, on every push and PR.
+- Release (`.github/workflows/release.yml`): release-please keeps a release PR open on `main`; merging it tags `vX.Y.Z`, publishes the GitHub release with the changelog and attaches the debug APK. PR titles are checked by `.github/workflows/pr-title.yml`.
+- Web deploy (`.github/workflows/deploy.yml`): production only for releases (after CI on the release commit); every merge to `main` goes to staging (`/main/` on the preview host); every PR except the release PR gets its own preview.
 - Native builds (`.github/workflows/build-native.yml`): Android debug APK artifact and an unsigned iOS simulator build; manual, on `v*` tags and on PRs touching native files. Release and signing notes: `docs/release.md`.
-- Web deploy (`.github/workflows/deploy.yml`): FTPS via `lftp` (`scripts/deploy-ftp.sh`, Apache config in `deploy/`). Production `https://fit.michael-isler.com` after green CI on `main`; every PR gets a preview at `https://fit-preview.michael-isler.com/pr-<n>/`, removed on close. GitHub environments `Production`/`Preview` each hold `FTP_HOST`, `FTP_USER`, `FTP_PASSWORD` + var `SITE_URL`.
+- Web deploy (`.github/workflows/deploy.yml`): FTPS via `lftp` (`scripts/deploy-ftp.sh`, Apache config in `deploy/`). Production `https://fit.michael-isler.com` after green CI on `main`; every PR (except the release PR) gets a preview at `https://fit-preview.michael-isler.com/pr-<n>/`, removed on close. GitHub environments `Production`/`Preview` each hold `FTP_HOST`, `FTP_USER`, `FTP_PASSWORD` + var `SITE_URL`.
 
 ## Tools
 

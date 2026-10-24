@@ -6,7 +6,7 @@ Figma-Datei: [grynd](https://www.figma.com/design/iCoAOIvfyeCFYFU4Og7rVf/grynd).
 
 Vor dem Bau von UI hier nachsehen. Neue eigene Komponenten hier ergänzen.
 
-## Figma-Bestand (Stand 2026-09-30)
+## Figma-Bestand (Stand 2026-10-04)
 
 | Seite | ID | Inhalt |
 | --- | --- | --- |
@@ -16,7 +16,7 @@ Vor dem Bau von UI hier nachsehen. Neue eigene Komponenten hier ergänzen.
 | Components | `9:5` | Alle Komponenten im Frame `9:6` |
 | Screens | `25:1442` | 44 Frames à 393×852, jeweils Light und Dark. Neue Frames ab y=16184 |
 
-**Variablen** (alle Semantic- und Radius-Variablen haben Web-Code-Syntax, siehe [Entscheid](../decisions/0004-token-names.md)): `Primitives` (31: brand/50–950, neutral/50–950, green/amber/red, white), `Semantic` (27, Modi Light/Dark, Code-Syntax `var(--…)`), `Layout` (spacing 4/8/12/16/24/32/48, radius base/lg/xl/pill).
+**Variablen** (alle Semantic- und Radius-Variablen haben Web-Code-Syntax, siehe [Entscheid](../decisions/0004-token-names.md)): `Primitives` (43: brand/50–950, neutral/50–950, green/amber/red, white, blue/orange/aqua/violet/yellow/magenta für die Muskelgruppen), `Semantic` (34, inkl. `muscle-*`, Modi Light/Dark, Code-Syntax `var(--…)`), `Layout` (spacing 4/8/12/16/24/32/48, radius base/lg/xl/pill).
 
 ## Komponenten
 
@@ -26,7 +26,8 @@ Klassen folgen dem Angular-Styleguide 2025 (ohne `Component`-Suffix), Selektor-P
 | --- | --- | --- | --- | --- |
 | Button | `9:206` | default/secondary/outline/ghost/destructive × sm/default/lg × default/pressed/disabled | helm `hlmBtn`, Größen 44/48/56, Icon `icon`/`icon-lg` | shared/ui/button |
 | Input | `9:219` | default/focus/error | helm `hlmInput` (48 px, Radius 16) | shared/ui/input |
-| Number Input | `9:244` | default/focus/error | im Set-Row-Layout: `NumberStepper` (`app-number-stepper`, 121×44) | shared/components/number-stepper |
+| (Textfeld, mehrzeilig) | – (nur Code) | – | helm `hlmTextarea`, Stil wie `hlmInput`, wächst mit dem Inhalt | shared/ui/textarea |
+| Number Input | `9:244` | default/focus/error | im Set-Row-Layout: `NumberStepper` (`app-number-stepper`, 121×44, auf schmalen Phones schmaler, Entscheid [0009](../decisions/0009-set-row.md)) | shared/components/number-stepper |
 | Badge | `9:265` | default/secondary/success/warning/destructive | helm `hlmBadge` (32 px Pill) | shared/ui/badge |
 | Switch | `9:284` | checked × default/disabled | helm `hlm-switch` (52×32) | shared/ui/switch |
 | Checkbox | `9:295` | checked × default/disabled | noch nicht generiert (bei Bedarf) | – |
@@ -60,15 +61,33 @@ Klassen folgen dem Angular-Styleguide 2025 (ohne `Component`-Suffix), Selektor-P
 | Satzmenü-Popover | `56:49683` | `SetMenu` (`app-set-menu`, `features/workout`) |
 | Übungsmenü | `56:48305` | helm Dropdown-Menü in `ExercisePage` (`app-exercise-page`) |
 | Übersicht-Sheet | `56:48605` | `OverviewSheet` (`app-overview-sheet`, helm Sheet + CDK Drag) |
+| Trainingsuhr (Beenden) | – (nur Code; Figma-Frames zeigen noch den Ghost-Button «Beenden») | `WorkoutClock` (`app-workout-clock`) |
+| Pause-Button und Pause-Overlay | – (nur Code, [0023](../decisions/0023-pause-workout.md)) | in `WorkoutPage` (`app-workout-page`) |
+| Leiste «Training pausiert» über der Navigation | – (nur Code, [0023](../decisions/0023-pause-workout.md)) | `PausedWorkoutBar` (`app-paused-workout-bar`) in der App-Shell |
 | Beenden-Dialog | – | `ConfirmDialogHost` über `ConfirmService.choose()` (drei Aktionen) |
 | Wochentage | `37:28125` | `WeekdayChips` (`app-weekday-chips`) |
-| Satz-Stepper | `56:48064` | `NumberStepper` (`app-number-stepper`) |
+| Satz-Stepper | `56:48064` | `NumberStepper` (`app-number-stepper`, Wert als Spinbutton) |
+| Lineal beim Ziehen über einen Stepper | – (nur Code, [0018](../decisions/0018-value-scrubber.md)) | `ValueScrubber` (`app-value-scrubber`, per CDK Overlay aus `NumberStepper`) |
+| Notiz einer Übung (Karte) | – (nur Code, [0019](../decisions/0019-exercise-notes.md), [0021](../decisions/0021-note-images.md)) | `ExerciseNote` (`app-exercise-note`, Text und Vorschaubilder) im Training und Plan-Detail |
+| Notiz bearbeiten (Sheet) | – (nur Code, [0019](../decisions/0019-exercise-notes.md), [0021](../decisions/0021-note-images.md)) | `ExerciseNoteSheet` (`app-exercise-note-sheet`, helm Sheet + `hlmTextarea`, Bilder per Datei-Input) |
+| Bildbetrachter (Vollbild) | – (nur Code, [0021](../decisions/0021-note-images.md)) | `ImageViewerService` + `ImageViewerHost` (App-Shell, `@defer`, helm Dialog) |
+| Gewichtsschritt wählen (Sheet) | – (nur Code, [0022](../decisions/0022-weight-step.md)) | `WeightStepSheet` (`app-weight-step-sheet`, helm Sheet, Chips als Radio-Gruppe) |
 | Übungszeile im Plan (Detail/Editor, ≡-Handle, Chevron) | `37:27708`, `37:28096` | `PlanExerciseRow` (`app-plan-exercise-row`, features/plans) |
 | Übungs-Listeneintrag + Filter-Chips im Picker | `63:13440` (Filter-Tabs nach [0016](../decisions/0016-exercise-picker-filters.md)) | im `ExercisePickerPage` (features/plans) |
 | «Änderungen verwerfen» / Bestätigungen | `66:1123` | `ConfirmService` + `ConfirmDialogHost` (App-Shell, `@defer`) |
-| Wochenübersicht (Balkendiagramm) | `37:29739` | `WeekChart` (`app-week-chart`) |
+| Neuigkeiten nach einem Update (Popup) | – (nur Code, [0020](../decisions/0020-whats-new.md); Stil wie Dialog `9:303`) | `WhatsNewDialog` (`app-whats-new-dialog`, helm Alert-Dialog, App-Shell `@defer`) |
+| Liste der Neuerungen (Popup, Einstellungen) | – (nur Code, [0020](../decisions/0020-whats-new.md)) | `ReleaseNotesList` (`app-release-notes-list`) |
+| Wochenübersicht (Balkendiagramm) | `37:29739` | `WeekChart` (`app-week-chart`), Balken über `BarChart` |
+| Balkendiagramm (Statistik, Plan-Verlauf) | `120:1844`, `122:1931` | `BarChart` (`app-bar-chart`, optional antippbar) |
 | Trainingseintrag im Verlauf | `37:29769` | `HistoryRow` (`app-history-row`) |
-| Kennzahlen, Übungskarte im Verlauf-Detail | `84:3425`, `84:3501` | im `HistoryDetailPage` (features/history) |
+| Kennzahlen (auch als wählbare Kacheln) | `84:3425`, `121:1946`, `120:1844` | `KeyFigures` (`app-key-figures`, `selectable`) |
+| Übungskarte im Verlauf-Detail | `84:3501` | im `HistoryDetailPage` (features/history) |
+| Zeitraum ‹ September 2026 › | `119:1818`, `120:1844` | `PeriodPager` (`app-period-pager`) |
+| Monatskalender | `119:1818` | `MonthCalendar` (`app-month-calendar`) |
+| Muskelgruppen (Ring mit Legende) | `121:1841` | `DonutChart` (`app-donut-chart`) |
+| Kraft-Trend pro Übung | `122:3253` | `Sparkline` (`app-sparkline`) |
+| Kraft, Konstanz, Pläne (Statistik) | `121:1796`, `121:1880`, `121:1896` | im `HistoryStatsView` (features/history) |
+| Planverlauf-Link (Detail, Plan-Detail) | `121:2022`, `122:3374` | im `HistoryDetailPage` / `PlanDetailPage` |
 
 ## Screens
 
@@ -94,13 +113,20 @@ Klassen folgen dem Angular-Styleguide 2025 (ohne `Component`-Suffix), Selektor-P
 | Training · Timer-Dauer | `/workout` | `79:2663` | `79:2832` |
 | Training · Letzte Übung | `/workout` | `84:3791` | `84:4068` |
 | Training · Übung geschafft (Overlay `ExerciseCelebration`) | `/workout` | – (nur Code, [0015](../decisions/0015-celebrations.md)) | – |
+| Training · Pausiert | `/workout` | – (nur Code, [0023](../decisions/0023-pause-workout.md)) | – |
 | Training geschafft (`WorkoutCompletePage`) | `/workout/done/:sessionId` | – (nur Code, [0015](../decisions/0015-celebrations.md)) | – |
 | Verlauf | `/history` | `37:29734` | `37:29861` |
 | Verlauf · Leer | `/history` | `106:1654` | `106:1764` |
 | Verlauf-Detail | `/history/:sessionId` | `84:3364` (Menü `106:1648`) | `84:4001` (Menü `106:1651`) |
+| Verlauf · Liste (`HistoryListView`) | `/history` | `118:1692` | `122:3429` |
+| Verlauf · Kalender (`HistoryCalendarView`) | `/history?view=calendar` | `119:1728` | `122:3501` |
+| Verlauf · Statistik (`HistoryStatsView`) | `/history?view=stats` | `120:1760` | `122:3651` |
+| Verlauf-Detail · Vergleich | `/history/:sessionId` | `121:1935` | `122:3846` |
+| Plan-Verlauf (`PlanHistoryPage`) | `/history/plans/:planId` | `122:1825` | `122:3939` |
+| Plan-Detail · Verlauf | `/plans/:id` | `122:3315` | `122:4037` |
 | Einstellungen | `/settings` (`SettingsPage`, features/settings) | `84:2796` | `84:3950` |
 
-Hinweis: «Training · Timer-Dauer» lag über «Verlauf» und liegt jetzt bei y=19992. «Verlauf · Leer» liegt bei y=20944.
+Hinweis: «Training · Timer-Dauer» lag über «Verlauf» und liegt jetzt bei y=19992. «Verlauf · Leer» liegt bei y=20944. Die Statistik-Frames ([0016](../decisions/0016-history-statistics.md)) beginnen bei y=21896; «Verlauf · Statistik» und «Plan-Verlauf» sind höher als 852 px (scrollende Inhalte).
 
 ## App-Icon und Splash
 

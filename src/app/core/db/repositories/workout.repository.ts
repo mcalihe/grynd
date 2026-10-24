@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { ExerciseInterval, SessionExercise, SetLog, WorkoutSession } from '../models';
+import { ExerciseInterval, SessionExercise, SetLog, WorkoutPause, WorkoutSession } from '../models';
 import { BaseRepository } from './base.repository';
 
 @Injectable({ providedIn: 'root' })
@@ -16,6 +16,17 @@ export class WorkoutSessionRepository extends BaseRepository<WorkoutSession> {
   /** Finished sessions, newest first. */
   findFinished(): Promise<WorkoutSession[]> {
     return this.findWhere("status = 'finished' AND deletedAt IS NULL", [], 'startedAt DESC');
+  }
+}
+
+@Injectable({ providedIn: 'root' })
+export class WorkoutPauseRepository extends BaseRepository<WorkoutPause> {
+  constructor() {
+    super('workout_pause', { columns: ['sessionId', 'pausedAt', 'resumedAt'] });
+  }
+
+  findBySession(sessionId: string): Promise<WorkoutPause[]> {
+    return this.findWhere('sessionId = ? AND deletedAt IS NULL', [sessionId], 'pausedAt');
   }
 }
 
@@ -77,6 +88,17 @@ export class SetLogRepository extends BaseRepository<SetLog> {
       [sessionExerciseId],
       'position',
     );
+  }
+
+  /** The most recently deleted planned (non-extra) set of the session exercise. */
+  async findDeletedPlanned(sessionExerciseId: string): Promise<SetLog | undefined> {
+    const [row] = await this.findWhere(
+      'sessionExerciseId = ? AND isExtra = 0 AND deletedAt IS NOT NULL',
+      [sessionExerciseId],
+      'deletedAt DESC',
+      1,
+    );
+    return row;
   }
 
   /**

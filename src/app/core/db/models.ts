@@ -31,6 +31,26 @@ export interface Exercise extends BaseEntity {
   images: string[];
 }
 
+/** The user's note on a catalog exercise, shared by all plans (decision 0019). */
+export interface ExerciseNote extends BaseEntity {
+  exerciseId: string;
+  text: string;
+}
+
+/** A photo in the note of an exercise (decision 0021); the file is named after the id. */
+export interface ExerciseNoteImage extends BaseEntity {
+  exerciseId: string;
+}
+
+/** The user's settings for a catalog exercise, shared by all plans (decision 0022). */
+export interface ExerciseSetting extends BaseEntity {
+  exerciseId: string;
+  /** ± step of the weight stepper when weights are shown in kg; null = default. */
+  weightStepKg: number | null;
+  /** Same in lb; kept apart because converted steps would be odd (2.5 kg ≈ 5.51 lb). */
+  weightStepLb: number | null;
+}
+
 export interface Plan extends BaseEntity {
   name: string;
   /** 0 = Sunday … 6 = Saturday (Date#getDay). */
@@ -54,6 +74,14 @@ export interface WorkoutSession extends BaseEntity {
   startedAt: UtcTimestamp;
   finishedAt: UtcTimestamp | null;
   status: WorkoutSessionStatus;
+}
+
+/** A pause of a workout (decision 0023); the workout duration leaves it out. */
+export interface WorkoutPause extends BaseEntity {
+  sessionId: string;
+  pausedAt: UtcTimestamp;
+  /** Null while the workout is paused. */
+  resumedAt: UtcTimestamp | null;
 }
 
 export interface SessionExercise extends BaseEntity {

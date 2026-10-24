@@ -54,6 +54,10 @@
       "text": "Your changes to this plan will be lost.",
       "confirm": "Discard",
       "cancel": "Keep editing"
+    },
+    "history": {
+      "title": "History",
+      "summary": "Last: {{day}} · avg. {{duration}}"
     }
   },
   "workout": {
@@ -62,9 +66,8 @@
       "kg": "KG",
       "reps": "REPS",
       "extra": "Extra",
-      "number": "Set {{number}}",
       "complete": "Complete set",
-      "menu": "Set menu",
+      "menu": "Menu for set {{number}}",
       "record": "PR",
       "lb": "LB"
     },
@@ -78,11 +81,25 @@
       "doneText": "Time for the next set."
     },
     "overview": "Overview",
-    "end": "End",
+    "end": "End workout ({{time}})",
+    "pause": "Pause workout",
+    "resumeWorkout": "Resume workout",
+    "paused": {
+      "title": "Workout paused",
+      "text": "The workout clock stands still and the rest timer is stopped. The time until you continue doesn’t count toward your workout.",
+      "resume": "Keep training",
+      "leave": "Go to plans"
+    },
+    "pausedBar": {
+      "status": "Paused · {{time}}",
+      "label": "Open paused workout: {{name}}, {{time}}"
+    },
     "next": "Next: {{name}}",
     "finish": "Finish workout",
     "addSet": "Set",
     "setProgress": "Set {{current}} of {{total}}",
+    "progress": "Workout progress",
+    "percent": "{{percent}}%",
     "targetLine": "{{sets}} sets · target {{reps}} reps",
     "resume": {
       "title": "Workout in progress",
@@ -122,6 +139,37 @@
       "continue": "Continue"
     }
   },
+  "exerciseNote": {
+    "label": "Note",
+    "add": "Add note",
+    "edit": "Edit note",
+    "hint": "Applies to this exercise in all plans.",
+    "placeholder": "e.g. seat on 4, feet high, lower slowly",
+    "done": "Done",
+    "images": "Photos",
+    "chooseImages": "Choose photos",
+    "takePhoto": "Take photo",
+    "imagesHint": "Up to {{max}} photos. They stay on your device and are just for you.",
+    "imageLoading": "Adding photo",
+    "imageFailed": "A photo could not be added.",
+    "imageLimit": "Up to {{max}} photos per exercise."
+  },
+  "imageViewer": {
+    "position": "{{index}} / {{count}}",
+    "image": "Photo {{index}} of {{count}}",
+    "delete": "Delete photo",
+    "deleteConfirm": {
+      "title": "Delete photo?",
+      "text": "The photo will be removed from this device.",
+      "confirm": "Delete"
+    }
+  },
+  "weightStep": {
+    "label": "Weight step",
+    "menu": "Weight step: {{step}}",
+    "hint": "Step for ± and the scale when setting the weight. Applies to this exercise in all plans.",
+    "detail": "Weight step {{step}}"
+  },
   "history": {
     "title": "History",
     "detail": "Workout",
@@ -146,7 +194,37 @@
     "stats": {
       "duration": "Duration",
       "volume": "Volume",
-      "sets": "Sets"
+      "sets": "Sets",
+      "trainings": "Workouts",
+      "records": "Records",
+      "avgDuration": "Avg. duration",
+      "avgVolume": "Avg. volume",
+      "chart": "{{metric}} · {{period}}",
+      "barDay": "{{day}}: {{value}}",
+      "empty": "No workouts in this period",
+      "strength": {
+        "title": "Strength",
+        "subtitle": "Best estimated 1RM in the period",
+        "recordOne": "1 record",
+        "records": "{{count}} records",
+        "showAll": "Show all {{count}} exercises",
+        "showLess": "Show less"
+      },
+      "muscles": {
+        "title": "Muscle groups",
+        "subtitle": "Sets · {{period}}",
+        "total": "sets"
+      },
+      "consistency": {
+        "title": "Consistency",
+        "current": "Current streak",
+        "longest": "Longest streak",
+        "perWeek": "Workouts per week"
+      },
+      "plans": {
+        "title": "Plans",
+        "details": "{{workouts}} · avg. {{duration}}"
+      }
     },
     "record": "Record",
     "extra": "Extra",
@@ -156,6 +234,50 @@
       "title": "Delete workout?",
       "text": "The workout disappears from your history and no longer counts for prefill and records.",
       "confirm": "Delete"
+    },
+    "views": {
+      "label": "View",
+      "list": "List",
+      "calendar": "Calendar",
+      "stats": "Statistics"
+    },
+    "weekOne": "1 week",
+    "weeks": "{{count}} weeks",
+    "setOne": "1 set",
+    "setCount": "{{count}} sets",
+    "period": {
+      "label": "Period",
+      "week": "Week",
+      "month": "Month",
+      "year": "Year",
+      "previous": "Previous period",
+      "next": "Next period"
+    },
+    "calendar": {
+      "previous": "Previous month",
+      "next": "Next month",
+      "vsLastMonth": "{{delta}} vs. last month",
+      "streak": "Streak",
+      "longestStreak": "Longest streak",
+      "empty": "No workouts this month",
+      "day": "{{day}}: {{workouts}}"
+    },
+    "compare": "Compared with last time: {{day}}",
+    "exerciseVolume": "Volume {{volume}}",
+    "planLink": {
+      "title": "All workouts of {{plan}}",
+      "details": "{{workouts}} · progress per exercise"
+    },
+    "plan": {
+      "subtitle": "{{workouts}} · since {{since}}",
+      "lastWorkout": "Last workout",
+      "trend": "{{delta}} since {{since}}",
+      "strength": "Strength per exercise",
+      "strengthSubtitle": "Estimated 1RM per workout",
+      "oneRepMax": "1RM {{value}}",
+      "best": "Best {{value}}",
+      "all": "All workouts",
+      "chart": "{{metric}} of recent workouts"
     }
   },
   "settings": {
@@ -193,6 +315,79 @@
         "text": "All plans and workouts on this device will be replaced by the backup.",
         "confirm": "Replace"
       }
+    },
+    "app": "App",
+    "whatsNew": {
+      "title": "What’s new",
+      "text": "What changed in recent versions"
+    }
+  },
+  "whatsNew": {
+    "title": "New in Grynd {{version}}",
+    "text": "Here’s what changed with this update.",
+    "done": "Let’s go",
+    "page": {
+      "title": "What’s new",
+      "version": "Version {{version}}",
+      "current": "Current"
+    }
+  },
+  "releaseNotes": {
+    "notePhotos": {
+      "title": "Photos in notes",
+      "text": "Add up to six photos to an exercise note, like your seat setting. They stay on your device and are just for you."
+    },
+    "whatsNew": {
+      "title": "What’s new at a glance",
+      "text": "After an update, Grynd briefly shows you what’s new. You can find all changes any time in the settings under “What’s new”."
+    },
+    "pauseWorkout": {
+      "title": "Pause your workout",
+      "text": "Need a break? Tap pause at the top: the workout clock stands still until you continue. In the meantime you can use the app as usual; your workout waits for you above the navigation."
+    },
+    "weightStep": {
+      "title": "Your own weight step per exercise",
+      "text": "Dumbbells in 2 kg steps, machines in 5 kg? Choose per exercise how much + and − change the weight, from the exercise menu during a workout or in the plan."
+    },
+    "exerciseNotes": {
+      "title": "Exercise notes",
+      "text": "Jot down seat settings, grip or technique tips for an exercise. The note shows up right above your sets during the workout, in every plan with that exercise."
+    },
+    "workoutPercent": {
+      "title": "Progress in percent",
+      "text": "The top of the workout screen now shows how much you’ve already done."
+    },
+    "valueScrubber": {
+      "title": "Drag to change values",
+      "text": "Slide your finger sideways over weight or reps. A ruler shows every step, so you hit the right value quickly and precisely."
+    },
+    "setMenu": {
+      "title": "Adjust sets faster",
+      "text": "Tap the set number to duplicate or delete a set. Deleted a planned set? “+ Set” brings it back."
+    },
+    "narrowPhones": {
+      "title": "Fits small phones too",
+      "text": "Sets now fit on very narrow screens without anything being cut off."
+    },
+    "workoutClock": {
+      "title": "Workout clock",
+      "text": "The top right shows how long you’ve been training. Tap it when you want to end your workout."
+    },
+    "historyStats": {
+      "title": "Statistics in your history",
+      "text": "A calendar of your training days, numbers per week, month and year, your strength progress per exercise and which muscle groups you train."
+    },
+    "compareWorkouts": {
+      "title": "Compare workouts",
+      "text": "Every workout shows what changed since the last time you did the same plan. You can also see all workouts of a plan at a glance."
+    },
+    "celebrations": {
+      "title": "Little celebrations",
+      "text": "A check mark that pops, stars for new records and confetti when you finish an exercise or your whole workout."
+    },
+    "firstRelease": {
+      "title": "Grynd is here",
+      "text": "Build plans, check off sets with one tap (your numbers from last time are already filled in), rest timer and history. No ads, no account, everything stays on your device."
     }
   },
   "common": {

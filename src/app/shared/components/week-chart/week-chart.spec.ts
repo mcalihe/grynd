@@ -18,7 +18,7 @@ describe('WeekChart', () => {
       (b) => b.style.height,
     );
     expect(heights).toEqual(['98px', '49px', '12px', '16px']);
-    expect(el.querySelectorAll('[data-trained]')).toHaveLength(3);
+    expect(el.querySelectorAll('[data-filled]')).toHaveLength(3);
   });
 
   it('shows the trend only when it differs from last week', () => {

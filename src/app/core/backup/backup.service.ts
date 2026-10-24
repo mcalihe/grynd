@@ -5,6 +5,9 @@ import { Directory, Encoding, Filesystem } from '@capacitor/filesystem';
 import { Share } from '@capacitor/share';
 import { DatabaseService } from '../db/database.service';
 import { MIGRATIONS } from '../db/migrations';
+import { ExerciseNotesService } from '../exercises/exercise-notes.service';
+import { NoteImageStore } from '../exercises/note-image-store';
+import { ExerciseSettingsService } from '../exercises/exercise-settings.service';
 import { Clock } from '../utils/time';
 import { RestTimerService } from '../workout/rest-timer.service';
 import { WorkoutService } from '../workout/workout.service';
@@ -28,10 +31,13 @@ export class BackupService {
   private readonly database = inject(DatabaseService);
   private readonly workout = inject(WorkoutService);
   private readonly timer = inject(RestTimerService);
+  private readonly notes = inject(ExerciseNotesService);
+  private readonly imageFiles = inject(NoteImageStore);
+  private readonly exerciseSettings = inject(ExerciseSettingsService);
   private readonly clock = inject(Clock);
   private readonly document = inject(DOCUMENT);
 
-  /** All user data, including soft-deleted rows. */
+  /** All user data, including soft-deleted rows, and the files of live note photos. */
   async create(): Promise<Backup> {
     const data = {} as Record<BackupTable, BackupRow[]>;
     for (const table of BACKUP_TABLE_NAMES) {
@@ -39,7 +45,23 @@ export class BackupService {
         `SELECT ${tableColumns(table).join(', ')} FROM ${table} ORDER BY createdAt, id`,
       );
     }
-    return buildBackup(data, SCHEMA_VERSION, this.clock.nowUtc());
+    const images: Record<string, string> = {};
+    const photos: BackupRow[] = [];
+    for (const row of data.exercise_note_image) {
+      const id = row['id'] as string;
+      if (row['deletedAt'] !== null) {
+        photos.push(row);
+        continue;
+      }
+      try {
+        images[id] = await this.imageFiles.read(id);
+        photos.push(row);
+      } catch {
+        // The file is gone, so the app does not show the photo either; the backup leaves it out.
+      }
+    }
+    data.exercise_note_image = photos;
+    return buildBackup(data, SCHEMA_VERSION, this.clock.nowUtc(), images);
   }
 
   /** Browser: download. App: write to the cache and open the share sheet. */
@@ -94,6 +116,13 @@ export class BackupService {
         }
       }
     });
+    // Files cannot join the transaction; they follow once the rows are in.
+    await this.imageFiles.clear();
+    for (const [id, file] of Object.entries(backup.images)) {
+      await this.imageFiles.write(id, file);
+    }
+    await this.notes.reload();
+    await this.exerciseSettings.reload();
     // A running workout may have been replaced (or brought back by the backup).
     if (!(await this.workout.restore())) {
       this.timer.stop();

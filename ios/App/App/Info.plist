@@ -24,6 +24,10 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Grynd uses the camera when you add a photo to an exercise note. Photos stay on your device.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Grynd lets you pick photos for your exercise notes. Photos stay on your device.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

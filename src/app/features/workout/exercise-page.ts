@@ -1,17 +1,22 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
-import { TranslocoPipe } from '@jsverse/transloco';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { NgIcon } from '@ng-icons/core';
 import { HlmBadge } from '@spartan-ng/helm/badge';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmDropdownMenuImports } from '@spartan-ng/helm/dropdown-menu';
 import { SetLog } from '../../core/db/models';
 import { ExerciseCatalogService } from '../../core/exercises/exercise-catalog.service';
+import { ExerciseNotesService } from '../../core/exercises/exercise-notes.service';
+import { ExerciseSettingsService } from '../../core/exercises/exercise-settings.service';
 import { SettingsService } from '../../core/settings/settings.service';
+import { weightStepLabel } from '../../core/units/weight';
 import {
   exerciseJustDone,
   WorkoutExercise,
   WorkoutService,
 } from '../../core/workout/workout.service';
+import { ExerciseNote } from '../../shared/components/exercise-note/exercise-note';
 import { SetRow, SetRowState } from '../../shared/components/set-row/set-row';
 import { SetMenu } from './set-menu';
 
@@ -25,11 +30,21 @@ export function repTarget(repMin: number | null, repMax: number | null): string 
 
 /**
  * One exercise page in the workout pager (Figma Training · Normal 56:48015): header with name,
- * set progress, muscle badge and menu, the target line, set rows and «+ Satz».
+ * set progress, muscle badge and menu, the target line, the exercise note (decisions 0019, 0021),
+ * set rows and «+ Satz». The menu also picks the weight step of the exercise (decision 0022).
  */
 @Component({
   selector: 'app-exercise-page',
-  imports: [SetRow, SetMenu, HlmBadge, HlmButton, HlmDropdownMenuImports, NgIcon, TranslocoPipe],
+  imports: [
+    SetRow,
+    SetMenu,
+    ExerciseNote,
+    HlmBadge,
+    HlmButton,
+    HlmDropdownMenuImports,
+    NgIcon,
+    TranslocoPipe,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'flex flex-col gap-2 px-4 pt-4 pb-6' },
   template: `
@@ -56,6 +71,13 @@ export function repTarget(repMin: number | null, repMax: number | null): string 
       </button>
       <ng-template #exerciseMenu>
         <hlm-dropdown-menu class="w-60">
+          <button hlmDropdownMenuItem (click)="editNote.emit()">
+            {{ (hasNote() ? 'exerciseNote.edit' : 'exerciseNote.add') | transloco }}
+          </button>
+          <button hlmDropdownMenuItem (click)="editWeightStep.emit()">
+            {{ 'weightStep.menu' | transloco: { step: weightStepLabel() } }}
+          </button>
+          <hlm-dropdown-menu-separator />
           <button hlmDropdownMenuItem [disabled]="isLast()" (click)="moveBack.emit(1)">
             {{ 'workout.exerciseMenu.back' | transloco }}
           </button>
@@ -70,37 +92,39 @@ export function repTarget(repMin: number | null, repMax: number | null): string 
       {{ 'workout.targetLine' | transloco: { sets: plannedCount(), reps: target() } }}
     </p>
 
-    <div class="flex flex-col">
+    @if (hasNote()) {
+      <app-exercise-note [text]="note()" [images]="images()" (edit)="editNote.emit()" />
+    }
+
+    <div class="flex flex-col gap-1.5">
       @for (set of item().sets; track set.id; let i = $index) {
-        <app-set-row
-          [number]="i + 1"
-          [weight]="set.weightKg"
-          [reps]="set.reps"
-          [state]="stateOf(set)"
-          [extra]="set.isExtra && !item().sets[i - 1]?.isExtra"
-          [unit]="unit()"
-          (weightChange)="workout.updateSet(set.id, { weightKg: $event })"
-          (repsChange)="workout.updateSet(set.id, { reps: $event })"
-          (complete)="complete(set)"
-          (menu)="setMenu.emit(set)"
-        />
-        @if (set.id === menuSetId()) {
-          <app-set-menu
-            (duplicate)="duplicate(set)"
-            (remove)="remove(set)"
-            (dismiss)="setMenu.emit(null)"
+        <!-- The menu sits in the row's wrapper so opening it does not add a gap. -->
+        <div>
+          <app-set-row
+            [number]="i + 1"
+            [weight]="set.weightKg"
+            [reps]="set.reps"
+            [state]="stateOf(set)"
+            [extra]="set.isExtra && !item().sets[i - 1]?.isExtra"
+            [unit]="unit()"
+            [weightStep]="weightStep()"
+            (weightChange)="workout.updateSet(set.id, { weightKg: $event })"
+            (repsChange)="workout.updateSet(set.id, { reps: $event })"
+            (complete)="complete(set)"
+            (menu)="setMenu.emit(set)"
           />
-        }
+          @if (set.id === menuSetId()) {
+            <app-set-menu
+              (duplicate)="duplicate(set)"
+              (remove)="remove(set)"
+              (dismiss)="setMenu.emit(null)"
+            />
+          }
+        </div>
       }
     </div>
 
-    <button
-      hlmBtn
-      variant="ghost"
-      size="sm"
-      class="self-start"
-      (click)="workout.addExtraSet(index())"
-    >
+    <button hlmBtn variant="ghost" size="sm" class="self-start" (click)="workout.addSet(index())">
       <ng-icon name="lucidePlus" />{{ 'workout.addSet' | transloco }}
     </button>
   `,
@@ -120,11 +144,29 @@ export class ExercisePage {
   readonly setCompleted = output<number>();
   /** Emitted when checking a set finished the exercise (all planned sets done). */
   readonly exerciseCompleted = output<void>();
+  /** Opens the note editor for this exercise. */
+  readonly editNote = output<void>();
+  /** Opens the weight step picker for this exercise. */
+  readonly editWeightStep = output<void>();
 
   protected readonly workout = inject(WorkoutService);
   private readonly catalog = inject(ExerciseCatalogService);
   private readonly settings = inject(SettingsService);
+  private readonly notes = inject(ExerciseNotesService);
+  private readonly exerciseSettings = inject(ExerciseSettingsService);
+  private readonly locale = toSignal(inject(TranslocoService).langChanges$, {
+    initialValue: 'de',
+  });
   protected readonly unit = computed(() => this.settings.settings().unit);
+  protected readonly note = computed(() => this.notes.noteFor(this.item().entry.exerciseId));
+  protected readonly images = computed(() => this.notes.imagesFor(this.item().entry.exerciseId));
+  protected readonly hasNote = computed(() => this.notes.hasNote(this.item().entry.exerciseId));
+  protected readonly weightStep = computed(() =>
+    this.exerciseSettings.weightStepFor(this.item().entry.exerciseId, this.unit()),
+  );
+  protected readonly weightStepLabel = computed(() =>
+    weightStepLabel(this.weightStep(), this.unit(), this.locale()),
+  );
 
   protected readonly exercise = computed(
     () => this.catalog.byId().get(this.item().entry.exerciseId) ?? { muscleGroup: null },

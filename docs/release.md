@@ -2,9 +2,37 @@
 
 Stand: Es gibt noch kein Apple- und kein Google-Entwicklerkonto. Deshalb baut CI vorerst **ohne Signatur** (Roadmap 8.5a). Signatur, TestFlight und Google Play folgen in 8.5b.
 
+## Versionierung und Releases
+
+Semantic Versioning, automatisch aus den Commits auf `main` mit [release-please](https://github.com/googleapis/release-please-action) (Entscheid [0016](decisions/0016-release-please.md)). Die Version steht nur in `package.json`; alles andere leitet sich davon ab.
+
+**Commits:** PRs werden gesquasht, der **PR-Titel** wird zum Commit auf `main` und zur Zeile im Changelog. Er muss deshalb ein Conventional Commit sein (`feat(workout): …`, `fix: …`), der Workflow «PR title» prüft das. Regeln für Typen und Scopes stehen in `CLAUDE.md` («Commits and PRs»).
+
+| Commit | Version (vor 1.0) | Version (ab 1.0) | Im Changelog |
+| --- | --- | --- | --- |
+| `fix:` | Patch | Patch | Bug Fixes |
+| `feat:` | Minor | Minor | Features |
+| `perf:` / `revert:` | Patch | Patch | Performance / Reverts |
+| `feat!:` oder Footer `BREAKING CHANGE:` | Minor | Major | eigener Abschnitt |
+| `docs`, `ci`, `chore`, `refactor`, `test`, `build`, `style` | – | – | nein |
+
+**Ablauf** (`.github/workflows/release.yml`):
+1. Jeder Push auf `main` aktualisiert den Release-PR «chore(main): release X.Y.Z». Er erhöht die Version in `package.json`, `src/app/core/app-info.ts` (Markierung `x-release-please-version`) und `.release-please-manifest.json` und ergänzt `CHANGELOG.md`.
+2. **Release Notes prüfen** ([0020](decisions/0020-whats-new.md)): Die App zeigt nach dem Update einmal «Neu in Grynd X.Y.Z» mit den Einträgen aus `RELEASE_NOTES` (`src/app/core/whats-new/release-notes.ts`, Texte in `public/i18n`). Normalerweise schreibt sie schon der Feature-PR. Fehlt der Eintrag für die Version des Release-PRs (oder steht er unter einer falsch geratenen Version), ist dessen CI rot: Dann einen PR `chore: add release notes for X.Y.Z` auf `main` mergen, der Release-PR zieht nach. Ein Release ohne Erwähnenswertes bekommt `items: []`.
+3. Release = diesen PR mergen. release-please setzt den Tag `vX.Y.Z` und veröffentlicht einen GitHub-Release mit dem Changelog als Text.
+4. Danach baut derselbe Workflow die nativen Builds und hängt `grynd-vX.Y.Z-debug.apk` an den Release.
+5. Sobald CI für den Release-Commit grün ist, deployt «Deploy» die Web-App in die Produktion. Nur Releases gehen in die Produktion; der Stand von `main` dazwischen läuft auf Staging (`/main/` des Preview-Hosts).
+
+Native Versionen: Android liest `versionName` aus `package.json` und rechnet `versionCode` = Major · 1 000 000 + Minor · 1 000 + Patch (0.2.0 → 2000), das steigt mit jeder Version. iOS bekommt `MARKETING_VERSION` und `CURRENT_PROJECT_VERSION` nach demselben Schema als Parameter von `xcodebuild` in CI.
+
+- Version und `CHANGELOG.md` nie von Hand ändern. Den Changelog-Text vor dem Release bei Bedarf im Release-PR korrigieren.
+- Version erzwingen (z.B. 1.0.0): Commit mit Footer `Release-As: 1.0.0` auf `main`.
+- Der Release-PR stammt von `GITHUB_TOKEN`. Seine Workflows warten deshalb auf Freigabe («Approve workflows to run») und laufen erst danach. Eine Preview bekommt er nie: Er ändert nur Version und Changelog, die App ist also dieselbe wie auf Staging (`/main/`).
+- Repo-Einstellungen, die das voraussetzt: Squash-Merge mit PR-Titel als Commit-Titel, Merge-Commits und Rebase-Merges aus; Actions → General → «Allow GitHub Actions to create and approve pull requests» an.
+
 ## Was CI heute baut
 
-Workflow `.github/workflows/build-native.yml` («Native builds»). Er läuft manuell (Actions → Native builds → Run workflow), bei Tags `v*` und bei PRs, die `android/`, `ios/`, `capacitor.config.ts`, `package.json` oder den Lockfile ändern.
+Workflow `.github/workflows/build-native.yml` («Native builds»). Er läuft manuell (Actions → Native builds → Run workflow), bei jedem Release (aufgerufen von «Release») und bei PRs, die `android/`, `ios/`, `capacitor.config.ts`, `package.json` oder den Lockfile ändern.
 
 | Job | Ergebnis |
 | --- | --- |
@@ -34,11 +62,14 @@ Workflow `.github/workflows/deploy.yml` («Deploy»), Hintergrund in `docs/decis
 
 | Job | Auslöser | Ziel |
 | --- | --- | --- |
-| `production` | CI auf `main` grün, oder manuell von `main` | `httpdocs/` des Produktions-FTP-Benutzers → `https://fit.michael-isler.com` |
-| `preview` | PR geöffnet oder aktualisiert | `httpdocs/pr-<n>/` des Preview-FTP-Benutzers → `https://fit-preview.michael-isler.com/pr-<n>/` |
+| `production` | nur Releases: CI auf `main` grün für den Release-Commit (gemergter Release-PR); manuell von `main` deployt den letzten Release erneut | `httpdocs/` des Produktions-FTP-Benutzers → `https://fit.michael-isler.com` |
+| `staging` | CI auf `main` grün (jeder Merge) | `httpdocs/main/` des Preview-FTP-Benutzers → `https://fit-preview.michael-isler.com/main/` |
+| `preview` | PR geöffnet oder aktualisiert, ausser dem Release-PR | `httpdocs/pr-<n>/` des Preview-FTP-Benutzers → `https://fit-preview.michael-isler.com/pr-<n>/` |
 | `preview-cleanup` | PR geschlossen oder gemergt | löscht `httpdocs/pr-<n>/` |
 
 Der Link zur Preview erscheint im PR als «View deployment» und in einem Kommentar des Jobs `preview-comment`, der bei jedem Deploy aktualisiert wird und beim Schliessen «Preview removed» meldet.
+
+Staging und Previews sind als solche erkennbar: Die Einstellungen zeigen die Version mit Build-Kennzeichnung (`0.4.0+main.abc1234`, `0.4.0+pr-31.abc1234`, lokal mit `pnpm start` `0.4.0+dev`), der Tab-Titel beginnt mit dem Kanal (`pr-31 · Grynd`). Die Kennzeichnung setzt der Build mit `--define "GRYND_BUILD='…'"` (`src/app/core/app-info.ts`, `angular.json` für `dev`). Releases und native Builds zeigen nur die Version.
 
 ### Einmalige Einrichtung
 
@@ -50,7 +81,7 @@ Der Link zur Preview erscheint im PR als «View deployment» und in einem Kommen
    | `Production` | `FTP_HOST`, `FTP_USER`, `FTP_PASSWORD` | `https://fit.michael-isler.com` |
    | `Preview` | `FTP_HOST`, `FTP_USER`, `FTP_PASSWORD` | `https://fit-preview.michael-isler.com` |
 
-3. **Empfohlen:** im Environment `Production` unter «Deployment branches and tags» nur `main` erlauben. Dann kommt ein Workflow aus einem PR nicht an die Produktions-Zugangsdaten. Zusätzlich prüft der Job `production-gate`, dass nur der aktuelle Stand von `main` deployt wird.
+3. **Empfohlen:** im Environment `Production` unter «Deployment branches and tags» nur `main` erlauben. Dann kommt ein Workflow aus einem PR nicht an die Produktions-Zugangsdaten. Zusätzlich prüft der Job `main-gate`, dass der Commit auf `main` liegt, und gibt die Produktion nur für den neusten Release frei.
 
 ### Wenn der Upload scheitert
 
@@ -78,7 +109,7 @@ GitHub-Secrets:
 | `ANDROID_KEY_PASSWORD` | Schlüssel-Passwort |
 | `PLAY_SERVICE_ACCOUNT_JSON` | JSON-Schlüssel des Service-Accounts |
 
-Ablauf im Workflow: `versionCode` aus der Run-Nummer, `versionName` aus `package.json`; `./gradlew bundleRelease` mit Signatur aus den Secrets; Upload des AAB in den Track `internal` (z.B. `r0adkll/upload-google-play`).
+Ablauf im Workflow: `versionCode` und `versionName` aus `package.json` (siehe «Versionierung und Releases»); `./gradlew bundleRelease` mit Signatur aus den Secrets; Upload des AAB in den Track `internal` (z.B. `r0adkll/upload-google-play`).
 
 ### iOS – TestFlight
 
@@ -96,6 +127,6 @@ GitHub-Secrets:
 | `APP_STORE_CONNECT_KEY_BASE64` | `.p8`-Datei als Base64 |
 | `APPLE_TEAM_ID` | Team-ID |
 
-Ablauf im Workflow (macOS-Runner): Build-Nummer aus der Run-Nummer; `xcodebuild archive` mit `-allowProvisioningUpdates` und den Authentifizierungs-Parametern des API-Schlüssels (`-authenticationKeyPath/-authenticationKeyID/-authenticationKeyIssuerID`), dann `xcodebuild -exportArchive` mit `ExportOptions.plist` (`method: app-store-connect`, `destination: upload`). Der Build erscheint nach der Verarbeitung in TestFlight; interne Tester brauchen keine Review.
+Ablauf im Workflow (macOS-Runner): Version und Build-Nummer aus `package.json` wie im Simulator-Build; `xcodebuild archive` mit `-allowProvisioningUpdates` und den Authentifizierungs-Parametern des API-Schlüssels (`-authenticationKeyPath/-authenticationKeyID/-authenticationKeyIssuerID`), dann `xcodebuild -exportArchive` mit `ExportOptions.plist` (`method: app-store-connect`, `destination: upload`). Der Build erscheint nach der Verarbeitung in TestFlight; interne Tester brauchen keine Review.
 
-Sobald die Konten da sind: Secrets anlegen, dann ergänzt ein eigener PR die Release-Jobs (Tag `v*` → beide Stores).
+Sobald die Konten da sind: Secrets anlegen, dann ergänzt ein eigener PR die Store-Uploads im Workflow «Release» (nach `release_created` → beide Stores).

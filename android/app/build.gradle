@@ -1,5 +1,10 @@
 apply plugin: 'com.android.application'
 
+// The version lives in package.json (bumped by release-please, docs/release.md).
+// versionCode must only grow: major * 1000000 + minor * 1000 + patch, e.g. 0.2.0 -> 2000.
+def appVersion = new groovy.json.JsonSlurper().parse(file('../../package.json')).version
+def (versionMajor, versionMinor, versionPatch) = appVersion.tokenize('.-').take(3).collect { it.toInteger() }
+
 android {
     namespace = "com.michaelisler.grynd"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -7,8 +12,8 @@ android {
         applicationId "com.michaelisler.grynd"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode versionMajor * 1000000 + versionMinor * 1000 + versionPatch
+        versionName appVersion
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.

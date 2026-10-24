@@ -83,6 +83,30 @@ describe('repositories', () => {
       expect((await repo.findById(plan.id, { includeDeleted: true }))?.deletedAt).not.toBeNull();
       await expect(repo.update(plan.id, { name: 'x' })).rejects.toThrow();
     });
+
+    it('counts rows that are not soft-deleted', async () => {
+      const repo = TestBed.inject(PlanRepository);
+      expect(await repo.count()).toBe(0);
+      await repo.insert({ name: 'Push', weekdays: [] });
+      const gone = await repo.insert({ name: 'Pull', weekdays: [] });
+      await repo.softDelete(gone.id);
+
+      expect(await repo.count()).toBe(1);
+    });
+
+    it('restore undoes a soft delete', async () => {
+      const repo = TestBed.inject(PlanRepository);
+      const plan = await repo.insert({ name: 'Back', weekdays: [] });
+      await repo.softDelete(plan.id);
+      clock.advance(60_000);
+
+      await repo.restore(plan.id);
+
+      expect(await repo.findById(plan.id)).toMatchObject({
+        deletedAt: null,
+        updatedAt: '2026-09-30T10:01:00.000Z',
+      });
+    });
   });
 
   describe('ExerciseRepository', () => {

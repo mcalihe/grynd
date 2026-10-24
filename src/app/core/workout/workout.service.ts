@@ -1,15 +1,17 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { DatabaseService } from '../db/database.service';
-import { SessionExercise, SetLog, WorkoutSession } from '../db/models';
+import { SessionExercise, SetLog, WorkoutPause, WorkoutSession } from '../db/models';
 import {
   ExerciseIntervalRepository,
   SessionExerciseRepository,
   SetLogRepository,
+  WorkoutPauseRepository,
   WorkoutSessionRepository,
 } from '../db/repositories/workout.repository';
 import { PlansService } from '../plans/plans.service';
-import { Clock } from '../utils/time';
+import { Clock, UtcTimestamp } from '../utils/time';
 import { closeStaleInterval, keepInterval } from './intervals';
+import { activeDurationMs } from './pauses';
 import { prefillSets, SetValues } from './prefill';
 import { recordSetIds } from './records';
 
@@ -22,12 +24,24 @@ export interface ActiveWorkout {
   session: WorkoutSession;
   planName: string;
   exercises: WorkoutExercise[];
+  /** Oldest first; the last one is open while the workout is paused. */
+  pauses: WorkoutPause[];
 }
 
 /** An exercise is done when all planned (non-extra) sets are completed. */
 export function isExerciseDone(sets: readonly SetLog[]): boolean {
   const planned = sets.filter((s) => !s.isExtra);
   return planned.length > 0 && planned.every((s) => s.completedAt !== null);
+}
+
+/**
+ * Completed share of all sets in the workout (extra sets included, like the progress segments)
+ * as a whole percent. Rounded down, so 100 only shows once every set is checked.
+ */
+export function workoutPercent(exercises: readonly { sets: readonly SetLog[] }[]): number {
+  const sets = exercises.flatMap((e) => e.sets);
+  const done = sets.filter((s) => s.completedAt !== null).length;
+  return sets.length === 0 ? 0 : Math.floor((done / sets.length) * 100);
 }
 
 /** The change from `before` to `after` finished the exercise (celebrated once, decision 0015). */
@@ -47,6 +61,7 @@ export class WorkoutService {
   private readonly sessionExercises = inject(SessionExerciseRepository);
   private readonly sets = inject(SetLogRepository);
   private readonly intervals = inject(ExerciseIntervalRepository);
+  private readonly pauses = inject(WorkoutPauseRepository);
   private readonly clock = inject(Clock);
 
   private readonly state = signal<ActiveWorkout | null>(null);
@@ -56,6 +71,10 @@ export class WorkoutService {
   readonly workout = this.state.asReadonly();
   readonly current = signal(0);
   readonly isActive = computed(() => this.state() !== null);
+  /** The clock stands still and no exercise time is tracked (decision 0023). */
+  readonly paused = computed(
+    () => this.state()?.pauses.some((pause) => pause.resumedAt === null) ?? false,
+  );
 
   /** Completed sets that set a new estimated 1RM for their exercise. */
   readonly records = computed(() => {
@@ -143,6 +162,38 @@ export class WorkoutService {
     return this.end('aborted');
   }
 
+  /** Training time so far without the pauses, so it stands still while paused. */
+  elapsedMs(now: UtcTimestamp): number {
+    const workout = this.state();
+    return workout ? activeDurationMs(workout.session.startedAt, now, workout.pauses) : 0;
+  }
+
+  /** Stops the clock until `resume()`: the current exercise's interval ends (decision 0023). */
+  async pause(): Promise<void> {
+    const workout = this.state();
+    if (!workout || this.paused()) {
+      return;
+    }
+    await this.closeInterval();
+    const pause = await this.pauses.insert({
+      sessionId: workout.session.id,
+      pausedAt: this.clock.nowUtc(),
+      resumedAt: null,
+    });
+    this.setPauses((pauses) => [...pauses, pause]);
+  }
+
+  /** Ends the pause; the visible exercise starts a new interval. */
+  async resume(): Promise<void> {
+    const open = this.state()?.pauses.find((pause) => pause.resumedAt === null);
+    if (!open) {
+      return;
+    }
+    const resumed = await this.pauses.update(open.id, { resumedAt: this.clock.nowUtc() });
+    this.setPauses((pauses) => pauses.map((pause) => (pause.id === open.id ? resumed : pause)));
+    await this.setCurrent(this.current());
+  }
+
   // ---------------------------------------------------------------- navigation
 
   /** Makes exercise `index` the visible one and tracks its time (plan.md §7 «Zeiterfassung»). */
@@ -152,7 +203,7 @@ export class WorkoutService {
       return;
     }
     this.current.set(index);
-    if (this.openInterval?.index === index) {
+    if (this.paused() || this.openInterval?.index === index) {
       return;
     }
     await this.closeInterval();
@@ -213,25 +264,23 @@ export class WorkoutService {
     return completing;
   }
 
-  /** «+ Satz»: copies the last set's values and marks it as extra. */
-  async addExtraSet(exerciseIndex: number): Promise<void> {
+  /** «+ Satz»: copies the last set's values (extra unless it replaces a deleted planned set). */
+  async addSet(exerciseIndex: number): Promise<void> {
     const exercise = this.state()?.exercises[exerciseIndex];
     if (!exercise) {
       return;
     }
     const last = exercise.sets.at(-1);
-    await this.sets.insert({
-      sessionExerciseId: exercise.entry.id,
-      position: exercise.sets.length,
-      weightKg: last?.weightKg ?? null,
-      reps: last?.reps ?? exercise.entry.repMin,
-      completedAt: null,
-      isExtra: true,
-    });
+    await this.database.driver.transaction(() =>
+      this.insertSet(exercise.entry.id, exercise.sets.length, {
+        weightKg: last?.weightKg ?? null,
+        reps: last?.reps ?? exercise.entry.repMin,
+      }),
+    );
     await this.reloadSets(exerciseIndex);
   }
 
-  /** Inserts an open copy right after the set (counts as an extra set). */
+  /** Inserts an open copy right after the set (extra unless it replaces a deleted planned set). */
   async duplicateSet(setId: string): Promise<void> {
     const found = this.findSet(setId);
     if (!found) {
@@ -243,13 +292,9 @@ export class WorkoutService {
       for (const later of siblings.filter((s) => s.position > set.position)) {
         await this.sets.update(later.id, { position: later.position + 1 });
       }
-      await this.sets.insert({
-        sessionExerciseId: set.sessionExerciseId,
-        position: set.position + 1,
+      await this.insertSet(set.sessionExerciseId, set.position + 1, {
         weightKg: set.weightKg,
         reps: set.reps,
-        completedAt: null,
-        isExtra: true,
       });
     });
     await this.reloadSets(index);
@@ -297,6 +342,7 @@ export class WorkoutService {
     const planName = session.planId
       ? ((await this.plans.getDraft(session.planId))?.name ?? '')
       : '';
+    const pauses = await this.pauses.findBySession(session.id);
     const best = new Map<string, number | null>();
     for (const { entry } of exercises) {
       best.set(
@@ -305,7 +351,7 @@ export class WorkoutService {
       );
     }
     this.historyBest.set(best);
-    this.state.set({ session, planName, exercises });
+    this.state.set({ session, planName, exercises, pauses });
   }
 
   private async end(status: 'finished' | 'aborted'): Promise<string> {
@@ -314,7 +360,15 @@ export class WorkoutService {
       throw new Error('No active workout.');
     }
     await this.closeInterval();
-    await this.sessions.update(workout.session.id, { status, finishedAt: this.clock.nowUtc() });
+    // Ending while paused: the pause ends with the workout, so it never counts.
+    const now = this.clock.nowUtc();
+    const open = workout.pauses.find((pause) => pause.resumedAt === null);
+    await this.database.driver.transaction(async () => {
+      if (open) {
+        await this.pauses.update(open.id, { resumedAt: now });
+      }
+      await this.sessions.update(workout.session.id, { status, finishedAt: now });
+    });
     this.state.set(null);
     this.current.set(0);
     return workout.session.id;
@@ -365,6 +419,30 @@ export class WorkoutService {
     }
   }
 
+  /**
+   * Adds an open set. A planned set deleted earlier in the session comes back instead of a new
+   * extra one, so deleting and re-adding keeps the plan's set count.
+   */
+  private async insertSet(
+    sessionExerciseId: string,
+    position: number,
+    values: SetValues,
+  ): Promise<void> {
+    const deleted = await this.sets.findDeletedPlanned(sessionExerciseId);
+    if (deleted) {
+      await this.sets.restore(deleted.id);
+      await this.sets.update(deleted.id, { ...values, position, completedAt: null });
+      return;
+    }
+    await this.sets.insert({
+      sessionExerciseId,
+      position,
+      ...values,
+      completedAt: null,
+      isExtra: true,
+    });
+  }
+
   private findSet(setId: string): { set: SetLog; index: number } | undefined {
     const exercises = this.state()?.exercises ?? [];
     for (const [index, exercise] of exercises.entries()) {
@@ -388,6 +466,13 @@ export class WorkoutService {
         ? exercise.entry
         : await this.sessionExercises.update(exercise.entry.id, { status });
     this.patchExercise(index, { entry, sets });
+  }
+
+  private setPauses(change: (pauses: WorkoutPause[]) => WorkoutPause[]): void {
+    const workout = this.state();
+    if (workout) {
+      this.state.set({ ...workout, pauses: change(workout.pauses) });
+    }
   }
 
   private patchExercise(index: number, patch: Partial<WorkoutExercise>): void {

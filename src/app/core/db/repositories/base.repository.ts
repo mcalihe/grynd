@@ -83,6 +83,14 @@ export abstract class BaseRepository<T extends BaseEntity> {
     );
   }
 
+  /** Undoes a soft delete. */
+  async restore(id: string): Promise<void> {
+    await this.db.run(
+      `UPDATE ${this.table} SET deletedAt = NULL, updatedAt = ? WHERE id = ? AND deletedAt IS NOT NULL`,
+      [this.clock.nowUtc(), id],
+    );
+  }
+
   async findById(id: string, options: { includeDeleted?: boolean } = {}): Promise<T | undefined> {
     const [row] = await this.findWhere(
       options.includeDeleted ? 'id = ?' : 'id = ? AND deletedAt IS NULL',
@@ -93,6 +101,14 @@ export abstract class BaseRepository<T extends BaseEntity> {
 
   async findAll(orderBy = 'createdAt'): Promise<T[]> {
     return this.findWhere('deletedAt IS NULL', [], orderBy);
+  }
+
+  /** Number of rows that are not soft-deleted. */
+  async count(): Promise<number> {
+    const [row] = await this.db.query<{ n: number }>(
+      `SELECT count(*) AS n FROM ${this.table} WHERE deletedAt IS NULL`,
+    );
+    return row?.n ?? 0;
   }
 
   protected async findWhere(

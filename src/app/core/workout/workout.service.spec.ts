@@ -4,6 +4,7 @@ import { SqlJsDriver } from '../../../testing/sqljs-driver';
 import { createTestDatabase, FakeClock } from '../../../testing/test-database';
 import {
   ExerciseIntervalRepository,
+  WorkoutPauseRepository,
   WorkoutSessionRepository,
 } from '../db/repositories/workout.repository';
 import { addExercises, updateExercise } from '../plans/plan-draft';
@@ -68,7 +69,7 @@ describe('WorkoutService', () => {
 
   it('never changes the plan', async () => {
     await service.start(planId);
-    await service.addExtraSet(0);
+    await service.addSet(0);
     await service.deleteSet(setsOf(1)[0].id);
     await service.moveExercise(0, 1);
     await service.setRestSeconds(0, 120);
@@ -82,7 +83,7 @@ describe('WorkoutService', () => {
 
   it('completes sets, marks the exercise done and ignores extra sets for that', async () => {
     await service.start(planId);
-    await service.addExtraSet(1);
+    await service.addSet(1);
     expect(setsOf(1).at(-1)).toMatchObject({ isExtra: true, position: 2 });
 
     expect(await service.toggleComplete(setsOf(1)[0].id)).toBe(true);
@@ -108,6 +109,38 @@ describe('WorkoutService', () => {
 
     await service.deleteSet(setsOf(0)[1].id);
     expect(setsOf(0).map((s) => s.position)).toEqual([0, 1, 2]);
+  });
+
+  it('brings a deleted planned set back before adding extra sets', async () => {
+    await service.start(planId);
+    const [first, second] = setsOf(1);
+    await service.updateSet(first.id, { weightKg: 50 });
+    await service.toggleComplete(first.id);
+    await service.toggleComplete(second.id);
+    await service.deleteSet(second.id);
+    expect(workout().exercises[1].entry.status).toBe('done');
+
+    await service.addSet(1);
+    expect(setsOf(1).map((s) => [s.id, s.position, s.weightKg, s.isExtra, s.completedAt])).toEqual([
+      [first.id, 0, 50, false, expect.any(String)],
+      [second.id, 1, 50, false, null],
+    ]);
+    expect(workout().exercises[1].entry.status).toBe('open');
+
+    await service.addSet(1);
+    expect(setsOf(1).map((s) => s.isExtra)).toEqual([false, false, true]);
+  });
+
+  it('duplicating also brings a deleted planned set back', async () => {
+    await service.start(planId);
+    const [first, second] = setsOf(1);
+    await service.deleteSet(second.id);
+
+    await service.duplicateSet(first.id);
+    expect(setsOf(1).map((s) => [s.id, s.isExtra])).toEqual([
+      [first.id, false],
+      [second.id, false],
+    ]);
   });
 
   it('prefills the next session from the last finished one and detects records', async () => {
@@ -170,6 +203,91 @@ describe('WorkoutService', () => {
       fresh.workout()!.exercises[0].entry.id,
     );
     expect(interval.leftAt).toBe(completedAt);
+  });
+
+  describe('pause', () => {
+    const intervalsOf = (i: number) =>
+      TestBed.inject(ExerciseIntervalRepository).findBySessionExercise(
+        workout().exercises[i].entry.id,
+      );
+    const pauses = () => TestBed.inject(WorkoutPauseRepository).findBySession(workout().session.id);
+
+    it('stops the clock and the exercise time until resumed', async () => {
+      await service.start(planId);
+      await service.setCurrent(0);
+      clock.advance(60_000);
+
+      await service.pause();
+      const pausedAt = clock.nowUtc();
+      expect(service.paused()).toBe(true);
+      expect((await intervalsOf(0)).map((i) => i.leftAt)).toEqual([pausedAt]);
+      expect(await pauses()).toEqual([expect.objectContaining({ pausedAt, resumedAt: null })]);
+
+      clock.advance(600_000);
+      expect(service.elapsedMs(clock.nowUtc())).toBe(60_000);
+
+      await service.resume();
+      expect(service.paused()).toBe(false);
+      expect((await pauses())[0].resumedAt).toBe(clock.nowUtc());
+      expect((await intervalsOf(0)).map((i) => i.leftAt)).toEqual([pausedAt, null]);
+
+      clock.advance(30_000);
+      expect(service.elapsedMs(clock.nowUtc())).toBe(90_000);
+    });
+
+    it('tracks no exercise time while paused', async () => {
+      await service.start(planId);
+      await service.setCurrent(0);
+      await service.pause();
+      clock.advance(60_000);
+
+      await service.setCurrent(1);
+
+      expect(service.current()).toBe(1);
+      expect(await intervalsOf(1)).toEqual([]);
+      await service.resume();
+      expect((await intervalsOf(1)).map((i) => i.leftAt)).toEqual([null]);
+    });
+
+    it('pauses and resumes only once', async () => {
+      await service.start(planId);
+      await service.resume();
+      await service.pause();
+      await service.pause();
+      expect(await pauses()).toHaveLength(1);
+
+      await service.resume();
+      await service.resume();
+      expect((await pauses()).map((p) => p.resumedAt !== null)).toEqual([true]);
+    });
+
+    it('ends an open pause with the workout', async () => {
+      const id = await service.start(planId);
+      clock.advance(60_000);
+      await service.pause();
+      const pauseRows = await pauses();
+      clock.advance(600_000);
+
+      await service.finish();
+
+      const finishedAt = (await TestBed.inject(WorkoutSessionRepository).findById(id))?.finishedAt;
+      const [pause] = await TestBed.inject(WorkoutPauseRepository).findBySession(id);
+      expect(pause.id).toBe(pauseRows[0].id);
+      expect(pause.resumedAt).toBe(finishedAt);
+    });
+
+    it('stays paused after a restart', async () => {
+      await service.start(planId);
+      clock.advance(60_000);
+      await service.pause();
+      clock.advance(600_000);
+
+      const fresh = TestBed.runInInjectionContext(() => new WorkoutService());
+      await fresh.restore();
+
+      expect(fresh.paused()).toBe(true);
+      expect(fresh.elapsedMs(clock.nowUtc())).toBe(60_000);
+    });
   });
 
   it('finishes or aborts the session', async () => {

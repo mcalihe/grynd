@@ -1,7 +1,12 @@
+import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { TranslocoTestingModule } from '@jsverse/transloco';
 import { ExerciseCatalogService } from '../../core/exercises/exercise-catalog.service';
+import { ExerciseNotesService, NoteImage } from '../../core/exercises/exercise-notes.service';
+import { ExerciseSettingsService } from '../../core/exercises/exercise-settings.service';
+import { HistorySummary } from '../../core/history/history-stats';
+import { HistoryService } from '../../core/history/history.service';
 import { PlansService } from '../../core/plans/plans.service';
 import { PlanDetailPage } from './plan-detail-page';
 import { targetSummary } from './plan-exercise-row';
@@ -30,7 +35,26 @@ describe('PlanDetailPage', () => {
     ],
   };
 
-  async function setup(found = true) {
+  const workout = (id: string, planId: string): HistorySummary => ({
+    id,
+    planId,
+    planName: 'Oberkörper',
+    startedAt: '2026-09-29T12:00:00.000Z',
+    finishedAt: '2026-09-29T12:50:00.000Z',
+    pausedMs: 0,
+    exerciseCount: 1,
+    setCount: 3,
+    volumeKg: 1200,
+  });
+
+  async function setup(
+    found = true,
+    history: HistorySummary[] = [],
+    notes: Record<string, string> = {},
+    images: Record<string, NoteImage[]> = {},
+    steps: Record<string, number> = {},
+  ) {
+    const imagesFor = (id: string) => images[id] ?? [];
     TestBed.configureTestingModule({
       imports: [PlanDetailPage, TranslocoTestingModule.forRoot({ langs: { de: {} } })],
       providers: [
@@ -39,6 +63,28 @@ describe('PlanDetailPage', () => {
         {
           provide: ExerciseCatalogService,
           useValue: { load: async () => undefined, nameById: () => 'Bankdrücken' },
+        },
+        {
+          provide: HistoryService,
+          useValue: { summaries: signal(history), load: async () => undefined },
+        },
+        {
+          provide: ExerciseNotesService,
+          useValue: {
+            load: async () => undefined,
+            noteFor: (id: string) => notes[id] ?? '',
+            imagesFor,
+            pendingFor: () => 0,
+            hasNote: (id: string) => !!notes[id] || imagesFor(id).length > 0,
+          },
+        },
+        {
+          provide: ExerciseSettingsService,
+          useValue: {
+            load: async () => undefined,
+            weightStepFor: (id: string) => steps[id] ?? 2.5,
+            setWeightStep: vi.fn(),
+          },
         },
       ],
     });
@@ -64,6 +110,79 @@ describe('PlanDetailPage', () => {
     el.querySelector<HTMLButtonElement>('app-plan-exercise-row button')?.click();
     fixture.detectChanges();
     expect(el.textContent).toContain('plans.restSeconds');
+  });
+
+  it('shows the weight step in the details and changes it in the sheet', async () => {
+    const { fixture } = await setup(true, [], {}, {}, { e1: 2 });
+    const el: HTMLElement = fixture.nativeElement;
+    el.querySelector<HTMLButtonElement>('app-plan-exercise-row button')?.click();
+    fixture.detectChanges();
+
+    const stepButton = [...el.querySelectorAll('button')].find((b) =>
+      b.textContent?.includes('weightStep.detail'),
+    )!;
+    expect(stepButton).toBeDefined();
+    stepButton.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const option = [...document.body.querySelectorAll<HTMLButtonElement>('[role="radio"]')].find(
+      (b) => b.getAttribute('aria-checked') === 'true',
+    );
+    expect(option?.textContent?.trim()).toBe('2 kg');
+    document.body.querySelector<HTMLButtonElement>('[role="radio"]')?.click();
+    expect(TestBed.inject(ExerciseSettingsService).setWeightStep).toHaveBeenCalledWith(
+      'e1',
+      'kg',
+      0.25,
+    );
+    document.body.querySelectorAll('.cdk-overlay-container').forEach((e) => e.remove());
+  });
+
+  it('shows the exercise note in the details, or offers to add one', async () => {
+    const withNote = (await setup(true, [], { e1: 'Bank flach' })).fixture;
+    const el: HTMLElement = withNote.nativeElement;
+    expect(el.querySelector('[aria-label$="exerciseNote.label"]')).not.toBeNull();
+    el.querySelector<HTMLButtonElement>('app-plan-exercise-row button')?.click();
+    withNote.detectChanges();
+    expect(el.querySelector('app-exercise-note')?.textContent).toContain('Bank flach');
+
+    TestBed.resetTestingModule();
+    const without = (await setup()).fixture;
+    const plain: HTMLElement = without.nativeElement;
+    expect(plain.querySelector('[aria-label$="exerciseNote.label"]')).toBeNull();
+    plain.querySelector<HTMLButtonElement>('app-plan-exercise-row button')?.click();
+    without.detectChanges();
+    expect(plain.querySelector('app-exercise-note')).toBeNull();
+    expect(plain.textContent).toContain('exerciseNote.add');
+  });
+
+  it('shows a note of photos only, with the photos', async () => {
+    const photo = { id: 'i1', src: 'data:image/jpeg;base64,AAAA' };
+    const { fixture } = await setup(true, [], {}, { e1: [photo] });
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.querySelector('[aria-label$="exerciseNote.label"]')).not.toBeNull();
+
+    el.querySelector<HTMLButtonElement>('app-plan-exercise-row button')?.click();
+    fixture.detectChanges();
+    const note = el.querySelector('app-exercise-note')!;
+    expect(note.textContent).toContain('exerciseNote.images');
+    expect(note.querySelector('img')?.getAttribute('src')).toBe(photo.src);
+    expect(el.textContent).not.toContain('exerciseNote.add');
+  });
+
+  it('links to the plan history once the plan was trained', async () => {
+    expect((await setup()).fixture.nativeElement.textContent).not.toContain('plans.history.title');
+
+    TestBed.resetTestingModule();
+    const { fixture, navigate } = await setup(true, [workout('a', 'p1'), workout('b', 'p2')]);
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.textContent).toContain('plans.history.title');
+    const entry = [...el.querySelectorAll('button')].find((b) =>
+      b.textContent?.includes('history.trainingOne'),
+    )!;
+    entry.click();
+    expect(navigate).toHaveBeenCalledWith(['/history/plans', 'p1']);
   });
 
   it('opens the editor and returns to the list for unknown plans', async () => {

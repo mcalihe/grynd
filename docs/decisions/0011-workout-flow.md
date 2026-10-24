@@ -16,6 +16,10 @@ Figma zeigt «Beenden» als Ghost-Button im Trainingskopf und «Training abschli
 - **Rekord braucht eine Basis:** Ohne frühere abgehakte Sätze der Übung gibt es kein «PR». Gleich gute Sätze sind kein Rekord.
 - **Android-Zurück** öffnet im Training denselben Dialog, statt die Seite zu verlassen.
 
+**Nachtrag 2026-10-04:** Der Ghost-Button «× Beenden» wirkte neben der Übersicht-Pill unausgewogen, und das × liest sich wie «verwerfen». «Beenden» ist jetzt die Trainingsuhr (`WorkoutClock`): eine Pill mit der laufenden Trainingsdauer und einem Stopp-Symbol. Sie öffnet denselben Dialog.
+
+**Nachtrag 2026-10-15:** Ein Training lässt sich pausieren und aus der Pause heraus verlassen ([0023](0023-pause-workout.md)). Pausiert führt Android-Zurück zu den Plänen statt zum Dialog; die Uhr öffnet ihn weiterhin.
+
 ## Später
 - Vibration, Ton und lokale Benachrichtigung beim Timer-Ende kommen mit den nativen Plugins in M8. Bis dahin nutzt der Timer `navigator.vibrate`, falls vorhanden.
 - Der Timer-Autostart ist immer an; die Einstellung folgt in M7.
@@ -25,3 +29,4 @@ Figma zeigt «Beenden» als Ghost-Button im Trainingskopf und «Training abschli
 - Screens können den Android-Zurück-Button über `BackButtonService.setHandler()` übernehmen und müssen ihn beim Zerstören wieder freigeben.
 - `@capacitor-community/keep-awake` hält den Bildschirm an, solange `/workout` offen ist (im Browser über die Wake Lock API, falls vorhanden).
 - Duplizierte Sätze werden direkt nach dem Original eingefügt und sind Extra-Sätze. Das Label «Extra» steht über dem ersten Extra-Satz einer Folge.
+- Gelöschte geplante Sätze bleiben als Soft Delete mit `isExtra = false` erhalten. «+ Satz» und «Satz duplizieren» stellen zuerst den zuletzt gelöschten davon wieder her (`deletedAt = NULL`, neue Position und Werte, offen) und legen erst danach Extra-Sätze an. So bleibt die Satzzahl des Plans ohne eigene Spalte erhalten: Anzahl der Zeilen mit `isExtra = false` inkl. gelöschter = geplante Sätze.

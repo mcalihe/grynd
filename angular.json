@@ -51,7 +51,10 @@
             "development": {
               "optimization": false,
               "extractLicenses": false,
-              "sourceMap": true
+              "sourceMap": true,
+              "define": {
+                "GRYND_BUILD": "'dev'"
+              }
             }
           },
           "defaultConfiguration": "production"

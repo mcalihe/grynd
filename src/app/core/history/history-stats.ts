@@ -5,9 +5,13 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 /** One finished workout as shown in the history list. */
 export interface HistorySummary {
   id: string;
+  /** Null only for sessions without a plan; the plan itself may be deleted. */
+  planId: string | null;
   planName: string;
   startedAt: UtcTimestamp;
   finishedAt: UtcTimestamp;
+  /** Time the workout was paused, derived from the pause timestamps (decision 0023). */
+  pausedMs: number;
   exerciseCount: number;
   setCount: number;
   volumeKg: number;
@@ -47,8 +51,9 @@ export function weekOffset(date: Date, now: Date): number {
   return Math.round(daysBetween(startOfWeek(date), startOfWeek(now)) / 7);
 }
 
+/** Training time: start to finish without the pauses. */
 export function sessionDurationMs(session: HistorySummary): number {
-  return Math.max(0, durationMs(session.startedAt, session.finishedAt));
+  return Math.max(0, durationMs(session.startedAt, session.finishedAt) - session.pausedMs);
 }
 
 /** Sessions grouped by week, newest week and newest session first. */

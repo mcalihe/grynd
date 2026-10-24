@@ -37,6 +37,18 @@
   --amber-700: #b45309;
   --red-400: #f87171;
   --red-600: #dc2626;
+  --blue-400: #3987e5;
+  --blue-500: #2a78d6;
+  --orange-500: #eb6834;
+  --orange-600: #d95926;
+  --aqua-500: #1baf7a;
+  --aqua-600: #199e70;
+  --violet-400: #9085e9;
+  --violet-800: #4a3aa7;
+  --yellow-500: #eda100;
+  --yellow-600: #c98500;
+  --magenta-400: #e87ba4;
+  --magenta-500: #d55181;
 
   /* Semantic (light) */
   --background: var(--neutral-100);
@@ -66,6 +78,13 @@
   --warning: var(--amber-700);
   --highlight: var(--brand-200);
   --surface-elevated: var(--white);
+  --muscle-chest: var(--blue-500);
+  --muscle-back: var(--orange-500);
+  --muscle-shoulders: var(--aqua-500);
+  --muscle-legs: var(--violet-800);
+  --muscle-glutes: var(--yellow-500);
+  --muscle-arms: var(--magenta-400);
+  --muscle-core: var(--brand-600);
 
   /* Layout */
   --radius: 12px;
@@ -100,6 +119,13 @@
   --warning: var(--amber-400);
   --highlight: var(--brand-400);
   --surface-elevated: var(--neutral-900);
+  --muscle-chest: var(--blue-400);
+  --muscle-back: var(--orange-600);
+  --muscle-shoulders: var(--aqua-600);
+  --muscle-legs: var(--violet-400);
+  --muscle-glutes: var(--yellow-600);
+  --muscle-arms: var(--magenta-500);
+  --muscle-core: var(--brand-700);
 }
 
 @theme inline {
@@ -130,6 +156,13 @@
   --color-warning: var(--warning);
   --color-highlight: var(--highlight);
   --color-surface-elevated: var(--surface-elevated);
+  --color-muscle-chest: var(--muscle-chest);
+  --color-muscle-back: var(--muscle-back);
+  --color-muscle-shoulders: var(--muscle-shoulders);
+  --color-muscle-legs: var(--muscle-legs);
+  --color-muscle-glutes: var(--muscle-glutes);
+  --color-muscle-arms: var(--muscle-arms);
+  --color-muscle-core: var(--muscle-core);
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: var(--radius);

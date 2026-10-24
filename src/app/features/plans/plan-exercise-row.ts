@@ -10,7 +10,8 @@ export function targetSummary(sets: number, repMin: number, repMax: number): str
 
 /**
  * One exercise in a plan (Figma rows in Plan-Detail 37:27708 / Plan bearbeiten 37:28096):
- * optional drag handle, name, targets, chevron that expands projected details.
+ * optional drag handle, name, targets (with a note icon when the exercise has a note,
+ * decision 0019), chevron that expands projected details.
  */
 @Component({
   selector: 'app-plan-exercise-row',
@@ -30,7 +31,14 @@ export function targetSummary(sets: number, repMin: number, repMax: number): str
       }
       <span class="flex min-w-0 flex-1 flex-col gap-1">
         <span class="truncate text-sm font-semibold">{{ name() }}</span>
-        <span class="text-xs text-muted-foreground">{{ summary() }}</span>
+        <span class="flex items-center gap-1.5 text-xs text-muted-foreground">
+          {{ summary() }}
+          @if (hasNote()) {
+            <span class="flex" role="img" [attr.aria-label]="'exerciseNote.label' | transloco">
+              <ng-icon name="lucideStickyNote" size="14" />
+            </span>
+          }
+        </span>
       </span>
       <button
         type="button"
@@ -53,5 +61,6 @@ export class PlanExerciseRow {
   readonly name = input.required<string>();
   readonly summary = input.required<string>();
   readonly draggable = input(false);
+  readonly hasNote = input(false);
   readonly expanded = model(false);
 }

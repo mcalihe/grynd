@@ -25,6 +25,42 @@
 
   <section class="flex flex-col gap-3">
     <h2 class="text-sm font-semibold text-muted-foreground">
+      Number Stepper 56:48064 · Value Scrubber · decision 0018
+    </h2>
+    <p class="text-xs text-muted-foreground">
+      Drag sideways on a stepper; rest at a screen edge to keep scrolling. Below: the ruler frozen
+      mid-scrub (80 → 87,5 kg).
+    </p>
+    <div class="flex gap-2">
+      <app-number-stepper label="KG" [value]="82.5" [stepSize]="2.5" [decimals]="2" />
+      <app-number-stepper label="REPS" [value]="8" [max]="999" />
+    </div>
+    <app-number-stepper
+      label="PAUSE (S)"
+      [value]="90"
+      [stepSize]="15"
+      [max]="600"
+      [stretch]="true"
+    />
+    <!-- The transform makes the fixed overlay fill this frame instead of the screen. -->
+    <div class="relative h-90 [transform:translateZ(0)] overflow-hidden rounded-lg border">
+      <app-value-scrubber
+        label="KG"
+        [value]="87.5"
+        [start]="80"
+        [step]="2.5"
+        [decimals]="2"
+        [max]="999"
+        [originX]="120"
+        [pointerX]="168"
+        [anchorY]="250"
+        [width]="361"
+      />
+    </div>
+  </section>
+
+  <section class="flex flex-col gap-3">
+    <h2 class="text-sm font-semibold text-muted-foreground">
       Progress Ring 66:2852 · Segments 56:48035
     </h2>
     <div class="flex gap-3">
@@ -70,6 +106,87 @@
     />
   </section>
 
+  <section class="flex flex-col gap-3">
+    <h2 class="text-sm font-semibold text-muted-foreground">Workout Clock · code only</h2>
+    <div class="flex flex-wrap items-center gap-3">
+      <app-workout-clock />
+      <app-workout-clock [elapsedMs]="1453000" />
+      <app-workout-clock [elapsedMs]="3729000" />
+    </div>
+  </section>
+
+  <section class="-mx-4 flex flex-col gap-3">
+    <h2 class="px-4 text-sm font-semibold text-muted-foreground">
+      Paused workout bar · code only (decision 0023)
+    </h2>
+    <app-paused-workout-bar planName="Oberkörper" [elapsedMs]="1453000" />
+    <app-paused-workout-bar [elapsedMs]="3729000" />
+    <app-paused-workout-bar planName="Ganzkörper mit sehr langem Plannamen" [elapsedMs]="0" />
+  </section>
+
+  <section class="flex flex-col gap-3">
+    <h2 class="text-sm font-semibold text-muted-foreground">
+      Exercise note · code only (decisions 0019, 0021)
+    </h2>
+    <app-exercise-note text="Sitz Stufe 4" (edit)="noteOpen.set(true)" />
+    <app-exercise-note [images]="noteOnlyImages" (edit)="noteOpen.set(true)" />
+    @if (demoNote() || demoImages().length) {
+      <app-exercise-note [text]="demoNote()" [images]="demoImages()" (edit)="noteOpen.set(true)" />
+    }
+    <button hlmBtn variant="ghost" size="sm" class="self-start" (click)="noteOpen.set(true)">
+      <ng-icon name="lucideStickyNote" />Notiz bearbeiten
+    </button>
+    <app-exercise-note-sheet
+      [(open)]="noteOpen"
+      title="Beinpresse"
+      [note]="demoNote()"
+      [images]="demoImages()"
+      (save)="demoNote.set($event.trim())"
+      (addImages)="addDemoImages($event)"
+      (removeImage)="removeDemoImage($event)"
+    />
+  </section>
+
+  <section class="flex flex-col gap-3">
+    <h2 class="text-sm font-semibold text-muted-foreground">
+      What's new · code only (decision 0020)
+    </h2>
+    <div class="rounded-xl border bg-card p-4">
+      <app-release-notes-list [items]="whatsNewNotes[0].items" />
+    </div>
+    <button
+      hlmBtn
+      variant="secondary"
+      size="sm"
+      class="self-start"
+      (click)="whatsNewOpen.set(true)"
+    >
+      <ng-icon name="lucideSparkles" />Popup
+    </button>
+    <app-whats-new-dialog
+      [open]="whatsNewOpen()"
+      [version]="whatsNewNotes[0].version"
+      [notes]="whatsNewNotes"
+      (closed)="whatsNewOpen.set(false)"
+    />
+  </section>
+
+  <section class="flex flex-col gap-3">
+    <h2 class="text-sm font-semibold text-muted-foreground">
+      Weight step · code only (decision 0022)
+    </h2>
+    <app-set-row [number]="1" [weight]="80" [reps]="8" [weightStep]="demoStep()" />
+    <button hlmBtn variant="ghost" size="sm" class="self-start" (click)="stepOpen.set(true)">
+      Gewichtsschritt: {{ demoStep() }} kg
+    </button>
+    <app-weight-step-sheet
+      [(open)]="stepOpen"
+      title="Kurzhantel-Bankdrücken"
+      [step]="demoStep()"
+      (pick)="demoStep.set($event)"
+    />
+  </section>
+
   <section class="-mx-4 flex flex-col gap-3">
     <h2 class="px-4 text-sm font-semibold text-muted-foreground">
       Page header · Plan card · Sticky
@@ -100,6 +217,44 @@
     <div>
       <app-history-row name="Oberkörper" details="Heute · 54 Min. · 6 Übungen" />
       <app-history-row name="Beine" details="Freitag · 61 Min. · 5 Übungen" />
+    </div>
+  </section>
+
+  <section class="flex flex-col gap-3">
+    <h2 class="text-sm font-semibold text-muted-foreground">
+      Statistics · Verlauf · Statistik / Kalender, Plan-Verlauf
+    </h2>
+    <div class="flex flex-col gap-3 rounded-xl border bg-surface-elevated p-4">
+      <app-period-pager label="September 2026" [canNext]="false" />
+      <app-key-figures
+        [figures]="figures"
+        [columns]="2"
+        [selectable]="true"
+        [(selected)]="figure"
+      />
+      <app-bar-chart [bars]="monthBars" [emptyHeight]="4" [interactive]="true" />
+    </div>
+    <app-key-figures class="rounded-xl border bg-card p-4" [figures]="figures" [columns]="2">
+      <p class="mt-3 text-xs text-muted-foreground">
+        Verglichen mit dem letzten Mal: Do., 24. Sep.
+      </p>
+    </app-key-figures>
+    <div class="rounded-xl border bg-surface-elevated p-4">
+      <app-month-calendar
+        [weeks]="calendar"
+        [weekdays]="['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So']"
+        [today]="today"
+        [(selected)]="calendarDay"
+      />
+    </div>
+    <div class="rounded-xl border bg-card p-4">
+      <app-donut-chart [segments]="muscles" totalLabel="Sätze" />
+    </div>
+    <div class="flex flex-wrap items-center gap-4 rounded-xl border bg-card p-4">
+      <app-sparkline [values]="[95, 96, 97.5, 97, 99, 100, 102.5]" label="Bankdrücken" />
+      <app-sparkline [values]="[75, 76, null, 75, 74, 74]" label="Latzug" />
+      <app-sparkline [values]="[80, 80, 80]" label="Flach" />
+      <app-sparkline [values]="[60]" label="Einzeln" />
     </div>
   </section>
 

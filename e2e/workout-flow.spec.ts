@@ -2,7 +2,8 @@ import { expect, test } from '@playwright/test';
 
 /**
  * Main flow (roadmap 8.4): create a plan → start a workout → log a set → finish → the history
- * shows it. Each test gets a fresh browser context, so the database starts empty.
+ * shows it in the list, the calendar, the statistics and the plan history. Each test gets a fresh
+ * browser context, so the database starts empty.
  */
 test('plan → workout → history', async ({ page }) => {
   await page.goto('/');
@@ -24,9 +25,23 @@ test('plan → workout → history', async ({ page }) => {
   await expect(page).toHaveURL(/\/workout$/);
   await expect(page.getByRole('heading', { name: 'Bankdrücken (mittlerer Griff)' })).toBeVisible();
 
-  // First set: 60 kg × 8 (reps are prefilled with the plan minimum)
+  // Very small phones (280 px, e.g. Galaxy Fold): the set row stays inside its card, the stepper
+  // buttons inside their steppers, and the pager page does not scroll
   const firstSet = page.locator('app-set-row').first();
-  await firstSet.locator('app-number-stepper').first().getByRole('button', { name: '–' }).click();
+  await page.setViewportSize({ width: 280, height: 653 });
+  const steppers = await firstSet.locator('app-number-stepper').all();
+  const boxes = [
+    firstSet.locator(':scope > div'),
+    ...steppers,
+    page.locator('section[data-index="0"]'),
+  ];
+  for (const box of boxes) {
+    expect(await box.evaluate((el) => el.scrollWidth - el.clientWidth)).toBe(0);
+  }
+  await page.setViewportSize({ width: 393, height: 852 });
+
+  // First set: 60 kg × 8 (reps are prefilled with the plan minimum)
+  await firstSet.getByRole('spinbutton', { name: 'KG' }).click();
   await firstSet.getByRole('textbox', { name: 'KG' }).fill('60');
   await firstSet.getByRole('textbox', { name: 'KG' }).press('Enter');
   await firstSet.getByRole('button', { name: 'Satz abhaken' }).click();
@@ -34,6 +49,58 @@ test('plan → workout → history', async ({ page }) => {
     'aria-pressed',
     'true',
   );
+
+  // Exercise note (decision 0019): written mid-workout, shown above the sets
+  await page.getByRole('button', { name: 'Übungsmenü' }).click();
+  await page.getByRole('menuitem', { name: 'Notiz hinzufügen' }).click();
+  await page.getByRole('textbox', { name: 'Notiz' }).fill('Bank flach, Griff eng');
+  // A photo (decision 0021): picked from the device, scaled down and stored right away
+  await page
+    .locator('input[type=file][multiple]')
+    .setInputFiles('public/exercises/Barbell_Bench_Press_-_Medium_Grip.webp');
+  await expect(page.getByRole('button', { name: 'Bild 1 von 1' })).toBeVisible();
+  await page.getByRole('button', { name: 'Fertig' }).click();
+  await expect(page.getByRole('button', { name: /Bank flach, Griff eng/ })).toBeVisible();
+  // The note card shows the photo; a tap opens it full screen
+  await page.getByRole('button', { name: 'Bild 1 von 1' }).click();
+  await expect(page.getByRole('dialog').getByRole('img', { name: 'Bild 1 von 1' })).toBeVisible();
+  await page.getByRole('dialog').getByRole('button', { name: 'Schließen' }).click();
+  await expect(page.getByRole('dialog')).toBeHidden();
+
+  // Weight step (decision 0022): 1 kg instead of 2.5 kg for this exercise
+  await page.getByRole('button', { name: 'Übungsmenü' }).click();
+  await page.getByRole('menuitem', { name: 'Gewichtsschritt: 2,5 kg' }).click();
+  await page.getByRole('radio', { name: '1 kg', exact: true }).click();
+  const secondSet = page.locator('app-set-row').nth(1);
+  await secondSet.getByRole('spinbutton', { name: 'KG' }).click();
+  await secondSet.getByRole('textbox', { name: 'KG' }).fill('60');
+  await secondSet.getByRole('textbox', { name: 'KG' }).press('Enter');
+  await secondSet.getByRole('button', { name: 'KG erhöhen' }).click();
+  await expect(secondSet.getByRole('spinbutton', { name: 'KG' })).toHaveAttribute(
+    'aria-valuenow',
+    '61',
+  );
+
+  // Pause (decision 0023): the sets can't be touched; leave for the app and come back later
+  await page.getByRole('button', { name: 'Training pausieren' }).click();
+  await expect(page.getByRole('heading', { name: 'Training pausiert' })).toBeVisible();
+  await page.getByRole('button', { name: 'Zu den Plänen' }).click();
+  await expect(page).toHaveURL(/\/plans$/);
+  // A paused workout does not reopen on start; it waits above the tabs
+  await page.reload();
+  const pausedBar = page.getByRole('button', { name: /^Pausiertes Training öffnen: E2E Brust/ });
+  await expect(pausedBar).toBeVisible({ timeout: 30_000 });
+  await expect(page).toHaveURL(/\/plans$/);
+  await pausedBar.click();
+  await expect(page).toHaveURL(/\/workout$/);
+  await expect(page.getByRole('heading', { name: 'Training pausiert' })).toBeVisible();
+  // The clock stands still while paused
+  const clock = page.getByRole('button', { name: /^Training beenden/ });
+  const frozen = await clock.getAttribute('aria-label');
+  await page.waitForTimeout(1500);
+  await expect(clock).toHaveAttribute('aria-label', frozen!);
+  await page.getByRole('button', { name: 'Weiter trainieren' }).click();
+  await expect(page.getByRole('heading', { name: 'Training pausiert' })).toBeHidden();
 
   // Finish → celebration (figures count up to their final values) → history detail
   await page.getByRole('button', { name: 'Training abschliessen' }).click();
@@ -44,11 +111,38 @@ test('plan → workout → history', async ({ page }) => {
   await expect(page).toHaveURL(/\/history\/.+/);
   await expect(page.getByRole('heading', { name: 'E2E Brust' })).toBeVisible();
   await expect(page.getByText('60 kg × 8')).toBeVisible();
-  await expect(page.getByText('480 kg')).toBeVisible();
+  await expect(page.locator('app-key-figures').getByText('480 kg', { exact: true })).toBeVisible();
 
   // Back to the list: the workout is listed under this week
   await page.getByRole('button', { name: 'Zurück' }).click();
   await expect(page).toHaveURL(/\/history$/);
   await expect(page.getByText('1 Training', { exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: /E2E Brust/ })).toBeVisible();
+
+  // Calendar: today is a training day
+  await page.getByRole('radio', { name: 'Kalender' }).click();
+  await expect(page).toHaveURL(/view=calendar/);
+  await expect(page.locator('app-month-calendar [data-trained]')).toHaveCount(1);
+
+  // Statistics: one workout this month, and the plan leads to its history
+  await page.getByRole('radio', { name: 'Statistik' }).click();
+  await expect(page).toHaveURL(/view=stats/);
+  const workouts = page.locator('app-history-stats-view app-key-figures button').first();
+  await expect(workouts).toContainText('1');
+  await expect(workouts).toContainText('Trainings');
+  await page.getByRole('button', { name: /E2E Brust/ }).click();
+  await expect(page).toHaveURL(/\/history\/plans\/.+/);
+  await expect(page.getByRole('heading', { name: 'E2E Brust' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Alle Trainings' })).toBeVisible();
+
+  // The plan shows the note and the weight step in the exercise details
+  await page.goto('/plans');
+  await page
+    .getByRole('button', { name: /E2E Brust/ })
+    .first()
+    .click();
+  await page.getByRole('button', { name: 'Details' }).click();
+  await expect(page.getByRole('button', { name: /Bank flach, Griff eng/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Bild 1 von 1' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Gewichtsschritt 1 kg' })).toBeVisible();
 });

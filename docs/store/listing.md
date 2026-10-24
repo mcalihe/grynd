@@ -23,7 +23,7 @@ Lege Pläne an – ein Plan ist ein Training, zum Beispiel «Oberkörper» oder 
 • Pausentimer mit Benachrichtigung, auch wenn die App im Hintergrund ist
 • Reihenfolge im Training jederzeit ändern, Extra-Sätze, Satz duplizieren
 • Rekorde automatisch erkannt
-• Verlauf mit Wochenübersicht, Dauer, Volumen und Zeit pro Übung
+• Verlauf als Liste, Kalender und Statistik: Volumen, Kraft pro Übung, Muskelgruppen und Serien
 • kg oder lb, Deutsch oder Englisch, helles und dunkles Design
 • Sicherung als Datei exportieren und wiederherstellen
 
@@ -52,7 +52,7 @@ Create plans – one plan is one workout, like "Upper body" or "Legs". When you 
 • Rest timer with a notification, even when the app is in the background
 • Reorder exercises during a workout, extra sets, duplicate sets
 • Personal records detected automatically
-• History with a weekly overview, duration, volume and time per exercise
+• History as list, calendar and statistics: volume, strength per exercise, muscle groups and streaks
 • kg or lb, English or German, light and dark theme
 • Export a backup file and restore it
 

@@ -17,18 +17,37 @@ import { HlmPopoverImports } from '@spartan-ng/helm/popover';
 import { HlmSheetImports } from '@spartan-ng/helm/sheet';
 import { HlmSwitchImports } from '@spartan-ng/helm/switch';
 import { HlmToggleGroupImports } from '@spartan-ng/helm/toggle-group';
+import { NoteImage } from '../../core/exercises/exercise-notes.service';
+import { NOTE_MAX_IMAGES } from '../../core/exercises/note-image';
 import { ThemeMode, ThemeService } from '../../core/services/theme.service';
+import { RELEASE_NOTES } from '../../core/whats-new/release-notes';
 import { PageHeader } from '../../shared/components/page-header/page-header';
 import { HistoryRow } from '../../shared/components/history-row/history-row';
 import { PlanCard } from '../../shared/components/plan-card/plan-card';
 import { ProgressRing } from '../../shared/components/progress-ring/progress-ring';
 import { WeekChart, WeekChartBar } from '../../shared/components/week-chart/week-chart';
+import { BarChart, BarChartBar } from '../../shared/components/bar-chart/bar-chart';
+import { DonutChart, DonutSegment } from '../../shared/components/donut-chart/donut-chart';
+import { ExerciseNote } from '../../shared/components/exercise-note/exercise-note';
+import { ExerciseNoteSheet } from '../../shared/components/exercise-note/exercise-note-sheet';
+import { WeightStepSheet } from '../../shared/components/weight-step/weight-step-sheet';
+import { KeyFigure, KeyFigures } from '../../shared/components/key-figures/key-figures';
+import { NumberStepper } from '../../shared/components/number-stepper/number-stepper';
+import { MonthCalendar } from '../../shared/components/month-calendar/month-calendar';
+import { PeriodPager } from '../../shared/components/period-pager/period-pager';
+import { Sparkline } from '../../shared/components/sparkline/sparkline';
+import { calendarMonth } from '../../core/history/history-insights';
 import { SegmentProgress } from '../../shared/components/segment-progress/segment-progress';
 import { SegmentedControl } from '../../shared/components/segmented-control/segmented-control';
 import { SetRow, SetRowState } from '../../shared/components/set-row/set-row';
 import { StickyAction } from '../../shared/components/sticky-action/sticky-action';
 import { TimerBar } from '../../shared/components/timer-bar/timer-bar';
 import { WeekdayChips } from '../../shared/components/weekday-chips/weekday-chips';
+import { ValueScrubber } from '../../shared/components/value-scrubber/value-scrubber';
+import { PausedWorkoutBar } from '../../shared/components/paused-workout-bar/paused-workout-bar';
+import { WorkoutClock } from '../../shared/components/workout-clock/workout-clock';
+import { ReleaseNotesList } from '../../shared/components/whats-new/release-notes-list';
+import { WhatsNewDialog } from '../../shared/components/whats-new/whats-new-dialog';
 import { CelebrationService } from '../../shared/motion/celebration.service';
 import { ExerciseCelebration } from '../workout/exercise-celebration';
 
@@ -50,12 +69,27 @@ import { ExerciseCelebration } from '../workout/exercise-celebration';
     HlmSheetImports,
     HlmAlertDialogImports,
     SetRow,
+    NumberStepper,
+    ValueScrubber,
     ProgressRing,
     SegmentProgress,
     TimerBar,
+    WorkoutClock,
+    PausedWorkoutBar,
+    ExerciseNote,
+    ExerciseNoteSheet,
+    ReleaseNotesList,
+    WhatsNewDialog,
+    WeightStepSheet,
     PageHeader,
     PlanCard,
     WeekChart,
+    BarChart,
+    KeyFigures,
+    PeriodPager,
+    MonthCalendar,
+    DonutChart,
+    Sparkline,
     HistoryRow,
     StickyAction,
     WeekdayChips,
@@ -76,6 +110,92 @@ export class ComponentsShowcase {
     { label: 'Sa', trained: true, value: 1 },
     { label: 'So', trained: false, value: 0 },
   ];
+
+  // Statistics (Verlauf · Statistik, Kalender, Plan-Verlauf)
+  protected readonly figures: KeyFigure[] = [
+    { label: 'Trainings', value: '12', delta: '+2', tone: 'up' },
+    { label: 'Dauer', value: '11 Std.', delta: '+1 Std. 5 Min.', tone: 'neutral' },
+    { label: 'Volumen', value: '103 040 kg', delta: '+8 320 kg', tone: 'up' },
+    { label: 'Sätze', value: '214', delta: '−4', tone: 'down' },
+  ];
+  protected readonly figure = signal(2);
+
+  // Exercise note (decision 0019)
+  protected readonly demoNote = signal(
+    'Sitz auf Stufe 4, Füsse oben auf der Platte.\nLangsam ablassen, unten nicht ganz durchstrecken.\nIm letzten Satz halbe Wiederholungen.',
+  );
+  protected readonly noteOpen = signal(false);
+
+  // What's new (decision 0020): the two newest versions, as after skipping one update
+  protected readonly whatsNewNotes = RELEASE_NOTES.filter((entry) => entry.items.length).slice(
+    0,
+    2,
+  );
+  protected readonly whatsNewOpen = signal(false);
+
+  // Note photos (decision 0021): catalog thumbnails stand in; picked files stay in memory.
+  protected readonly demoImages = signal<NoteImage[]>(
+    ['Leg_Press', 'Seated_Cable_Rows', 'Wide-Grip_Lat_Pulldown'].map((key) => ({
+      id: key,
+      src: `exercises/${key}.webp`,
+    })),
+  );
+  protected readonly noteOnlyImages: NoteImage[] = [
+    { id: 'bench', src: 'exercises/Barbell_Bench_Press_-_Medium_Grip.webp' },
+  ];
+
+  protected addDemoImages(files: File[]): void {
+    this.demoImages.update((images) => [
+      ...images,
+      ...files.slice(0, NOTE_MAX_IMAGES - images.length).map((file, i) => ({
+        id: `${file.name}-${Date.now()}-${i}`,
+        src: URL.createObjectURL(file),
+      })),
+    ]);
+  }
+
+  protected removeDemoImage(id: string): void {
+    this.demoImages.update((images) => images.filter((image) => image.id !== id));
+  }
+  // Weight step (decision 0022)
+  protected readonly demoStep = signal(2);
+  protected readonly stepOpen = signal(false);
+  protected readonly monthBars: BarChartBar[] = Array.from({ length: 30 }, (_, i) => {
+    const trained = [0, 2, 4, 7, 9, 11, 14, 16, 18, 21, 23, 28].includes(i);
+    return {
+      value: trained ? 0.8 + ((i * 7) % 5) / 25 : 0,
+      filled: trained,
+      label: i % 7 === 0 ? String(i + 1) : '',
+      description: `${i + 1}. September`,
+    };
+  });
+  protected readonly today = new Date(2026, 8, 30);
+  protected readonly calendarDay = signal<Date | null>(new Date(2026, 8, 29));
+  protected readonly calendar = calendarMonth(
+    this.today,
+    [1, 3, 5, 8, 10, 12, 15, 17, 19, 22, 24, 29].map((day) => ({
+      id: `d${day}`,
+      planId: 'p1',
+      planName: 'Oberkörper',
+      startedAt: new Date(2026, 8, day, 18).toISOString(),
+      finishedAt: new Date(2026, 8, day, 19).toISOString(),
+      pausedMs: 0,
+      exerciseCount: 6,
+      setCount: 18,
+      volumeKg: 8420,
+    })),
+  );
+  protected readonly muscles: DonutSegment[] = (
+    [
+      ['chest', 'Brust', 48],
+      ['back', 'Rücken', 44],
+      ['shoulders', 'Schultern', 30],
+      ['legs', 'Beine', 41],
+      ['glutes', 'Po', 0],
+      ['arms', 'Arme', 27],
+      ['core', 'Core', 12],
+    ] as const
+  ).map(([key, label, value]) => ({ key, label, value, color: `var(--muscle-${key})` }));
 
   protected readonly theme = inject(ThemeService);
   protected readonly themeModes: ThemeMode[] = ['system', 'light', 'dark'];

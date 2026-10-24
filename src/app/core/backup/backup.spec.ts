@@ -21,6 +21,7 @@ function sample(): Record<BackupTable, BackupRow[]> {
     workout_session: [
       { ...base('s1'), planId: 'p1', startedAt: ts, finishedAt: ts, status: 'finished' },
     ],
+    workout_pause: [{ ...base('wp1'), sessionId: 's1', pausedAt: ts, resumedAt: ts }],
     session_exercise: [
       {
         ...base('se1'),
@@ -45,27 +46,39 @@ function sample(): Record<BackupTable, BackupRow[]> {
         isExtra: 0,
       },
     ],
+    exercise_note: [{ ...base('n1'), exerciseId: 'e1', text: 'Bank flach, Griff eng' }],
+    exercise_note_image: [
+      { ...base('img1'), exerciseId: 'e1' },
+      { ...base('img0'), exerciseId: 'e1', deletedAt: ts },
+    ],
+    exercise_setting: [{ ...base('x1'), exerciseId: 'e1', weightStepKg: 2, weightStepLb: null }],
   };
 }
 
+const photos = () => ({ img1: btoa('jpeg') });
 const catalog = new Set(['e1']);
-const validate = (raw: unknown) => validateBackup(raw, 1, catalog);
+/** Schema of the current app (migration 5 added workout pauses). */
+const SCHEMA = 5;
+const validate = (raw: unknown) => validateBackup(raw, SCHEMA, catalog);
 
 describe('validateBackup', () => {
   it('accepts a backup it built itself', () => {
-    const backup = buildBackup(sample(), 1, ts);
+    const backup = buildBackup(sample(), SCHEMA, ts, photos());
     const result = validate(JSON.parse(JSON.stringify(backup)));
     expect(result).toEqual({ ok: true, backup });
   });
 
   it('rejects other files and newer schemas', () => {
     expect(validate('hello')).toEqual({ ok: false, error: 'format' });
-    expect(validate({ ...buildBackup(sample(), 1, ts), app: 'fitnotes' })).toEqual({
+    expect(validate({ ...buildBackup(sample(), SCHEMA, ts, photos()), app: 'fitnotes' })).toEqual({
       ok: false,
       error: 'format',
     });
-    expect(validate(buildBackup(sample(), 2, ts))).toEqual({ ok: false, error: 'newerSchema' });
-    const missingTable = buildBackup(sample(), 1, ts) as unknown as {
+    expect(validate(buildBackup(sample(), SCHEMA + 1, ts))).toEqual({
+      ok: false,
+      error: 'newerSchema',
+    });
+    const missingTable = buildBackup(sample(), SCHEMA, ts, photos()) as unknown as {
       data: Record<string, unknown>;
     };
     delete missingTable.data['set_log'];
@@ -75,11 +88,14 @@ describe('validateBackup', () => {
   it('rejects rows with missing required values or wrong types', () => {
     const data = sample();
     data.plan[0]['name'] = null;
-    expect(validate(buildBackup(data, 1, ts))).toEqual({ ok: false, error: 'invalidRow' });
+    expect(validate(buildBackup(data, SCHEMA, ts, photos()))).toEqual({
+      ok: false,
+      error: 'invalidRow',
+    });
 
     const typed = sample() as unknown as Record<string, Record<string, unknown>[]>;
     typed['set_log'][0]['reps'] = { evil: true };
-    expect(validate(buildBackup(typed as never, 1, ts))).toEqual({
+    expect(validate(buildBackup(typed as never, SCHEMA, ts, photos()))).toEqual({
       ok: false,
       error: 'invalidRow',
     });
@@ -88,9 +104,144 @@ describe('validateBackup', () => {
   it('rejects broken references, including unknown exercises', () => {
     const orphan = sample();
     orphan.set_log[0]['sessionExerciseId'] = 'nope';
-    expect(validate(buildBackup(orphan, 1, ts))).toEqual({ ok: false, error: 'missingReference' });
+    expect(validate(buildBackup(orphan, SCHEMA, ts, photos()))).toEqual({
+      ok: false,
+      error: 'missingReference',
+    });
 
-    expect(validateBackup(buildBackup(sample(), 1, ts), 1, new Set())).toEqual({
+    expect(validateBackup(buildBackup(sample(), SCHEMA, ts, photos()), SCHEMA, new Set())).toEqual({
+      ok: false,
+      error: 'missingReference',
+    });
+  });
+
+  it('reads backups from before exercise notes (schema 1) without notes', () => {
+    const old = buildBackup(sample(), 1, ts) as unknown as {
+      data: Record<string, unknown>;
+      images?: unknown;
+    };
+    delete old.data['exercise_note'];
+    delete old.data['exercise_note_image'];
+    delete old.data['exercise_setting'];
+    delete old.data['workout_pause'];
+    delete old.images;
+
+    const result = validate(old);
+
+    expect(result.ok).toBe(true);
+    expect(result.ok && result.backup.data.exercise_note).toEqual([]);
+    expect(result.ok && result.backup.images).toEqual({});
+  });
+
+  it('reads backups from before note photos (schema 2) without photos', () => {
+    const old = buildBackup(sample(), 2, ts) as unknown as {
+      data: Record<string, unknown>;
+      images?: unknown;
+    };
+    delete old.data['exercise_note_image'];
+    delete old.data['exercise_setting'];
+    delete old.data['workout_pause'];
+    delete old.images;
+
+    const result = validate(old);
+
+    expect(result.ok).toBe(true);
+    expect(result.ok && result.backup.data.exercise_note).toHaveLength(1);
+    expect(result.ok && result.backup.data.exercise_note_image).toEqual([]);
+    expect(result.ok && result.backup.images).toEqual({});
+  });
+
+  it('reads backups from before exercise settings (schema 3) without settings', () => {
+    const old = buildBackup(sample(), 3, ts, photos()) as unknown as {
+      data: Record<string, unknown>;
+    };
+    delete old.data['exercise_setting'];
+    delete old.data['workout_pause'];
+
+    const result = validate(old);
+
+    expect(result.ok).toBe(true);
+    expect(result.ok && result.backup.data.exercise_setting).toEqual([]);
+    expect(result.ok && result.backup.data.exercise_note_image).toHaveLength(2);
+  });
+
+  it('requires the settings table in newer backups and checks its exercise', () => {
+    const missing = buildBackup(sample(), SCHEMA, ts, photos()) as unknown as {
+      data: Record<string, unknown>;
+    };
+    delete missing.data['exercise_setting'];
+    expect(validate(missing)).toEqual({ ok: false, error: 'format' });
+
+    const unknown = sample();
+    unknown.exercise_setting[0]['exerciseId'] = 'gone';
+    expect(validate(buildBackup(unknown, SCHEMA, ts, photos()))).toEqual({
+      ok: false,
+      error: 'missingReference',
+    });
+  });
+
+  it('reads backups from before workout pauses (schema 4) without pauses', () => {
+    const old = buildBackup(sample(), 4, ts, photos()) as unknown as {
+      data: Record<string, unknown>;
+    };
+    delete old.data['workout_pause'];
+
+    const result = validate(old);
+
+    expect(result.ok).toBe(true);
+    expect(result.ok && result.backup.data.workout_pause).toEqual([]);
+    expect(result.ok && result.backup.data.exercise_setting).toHaveLength(1);
+  });
+
+  it('requires the pauses table in newer backups and checks its session', () => {
+    const missing = buildBackup(sample(), SCHEMA, ts, photos()) as unknown as {
+      data: Record<string, unknown>;
+    };
+    delete missing.data['workout_pause'];
+    expect(validate(missing)).toEqual({ ok: false, error: 'format' });
+
+    const orphan = sample();
+    orphan.workout_pause[0]['sessionId'] = 'gone';
+    expect(validate(buildBackup(orphan, SCHEMA, ts, photos()))).toEqual({
+      ok: false,
+      error: 'missingReference',
+    });
+  });
+
+  it('needs the file of every live photo, but not of deleted ones', () => {
+    expect(validate(buildBackup(sample(), SCHEMA, ts, {}))).toEqual({
+      ok: false,
+      error: 'missingReference',
+    });
+    expect(validate(buildBackup(sample(), SCHEMA, ts, { img1: 'not base64!' }))).toEqual({
+      ok: false,
+      error: 'missingReference',
+    });
+    const withoutImages = buildBackup(sample(), SCHEMA, ts) as unknown as { images?: unknown };
+    delete withoutImages.images;
+    expect(validate(withoutImages)).toEqual({ ok: false, error: 'format' });
+
+    const result = validate(buildBackup(sample(), SCHEMA, ts, { ...photos(), stray: btoa('x') }));
+    expect(result.ok && result.backup.images).toEqual(photos());
+  });
+
+  it('requires the notes tables in newer backups and checks their exercise', () => {
+    const missing = buildBackup(sample(), SCHEMA, ts, photos()) as unknown as {
+      data: Record<string, unknown>;
+    };
+    delete missing.data['exercise_note'];
+    expect(validate(missing)).toEqual({ ok: false, error: 'format' });
+
+    const unknown = sample();
+    unknown.exercise_note[0]['exerciseId'] = 'gone';
+    expect(validate(buildBackup(unknown, SCHEMA, ts, photos()))).toEqual({
+      ok: false,
+      error: 'missingReference',
+    });
+
+    const photo = sample();
+    photo.exercise_note_image[0]['exerciseId'] = 'gone';
+    expect(validate(buildBackup(photo, SCHEMA, ts, photos()))).toEqual({
       ok: false,
       error: 'missingReference',
     });
@@ -100,7 +251,7 @@ describe('validateBackup', () => {
     const data = sample() as unknown as Record<string, Record<string, unknown>[]>;
     data['workout_session'][0]['planId'] = null;
     data['plan'][0]['secret'] = 'x';
-    const result = validate(buildBackup(data as never, 1, ts));
+    const result = validate(buildBackup(data as never, SCHEMA, ts, photos()));
     expect(result.ok).toBe(true);
     expect(result.ok && result.backup.data.plan[0]).not.toHaveProperty('secret');
   });

@@ -64,7 +64,7 @@ Ein **Plan ist genau ein Training**: eine feste Abfolge von Übungen mit Sätzen
 Figma ist die Quelle für Tokens. Die Variablen tragen bereits ihren CSS-Namen als Code-Syntax (`var(--primary)` usw.) und können über den Figma-MCP-Server ausgelesen werden.
 
 - **Markenfarbe:** Volt Lime (Skala `brand/50–950`), dazu `neutral/50–950` sowie Statusfarben `green`, `amber`, `red`.
-- **Semantische Tokens** (Light und Dark, Namen wie shadcn/Spartan): `background`, `foreground`, `card`, `card-foreground`, `popover`, `popover-foreground`, `primary`, `primary-foreground`, `secondary`, `secondary-foreground`, `muted`, `muted-foreground`, `accent`, `accent-foreground`, `destructive`, `border`, `input`, `ring`, `chart-1` bis `chart-5` sowie eigene: `success`, `warning`, `highlight`, `surface-elevated`. Radien: `--radius` (12), `--radius-lg` (16), `--radius-xl` (20), `--radius-full` (Pill).
+- **Semantische Tokens** (Light und Dark, Namen wie shadcn/Spartan): `background`, `foreground`, `card`, `card-foreground`, `popover`, `popover-foreground`, `primary`, `primary-foreground`, `secondary`, `secondary-foreground`, `muted`, `muted-foreground`, `accent`, `accent-foreground`, `destructive`, `border`, `input`, `ring`, `chart-1` bis `chart-5` sowie eigene: `success`, `warning`, `highlight`, `surface-elevated`, `muscle-chest` … `muscle-core` (feste Farbe pro Muskelgruppe für Diagramme, [0016](decisions/0016-history-statistics.md)). Radien: `--radius` (12), `--radius-lg` (16), `--radius-xl` (20), `--radius-full` (Pill).
 - **Farbregeln:** Fortschritt immer in `primary`. `success` nur für Status-Meldungen (Badges, Toasts, Trends). Icons übernehmen die Vordergrundfarbe ihrer Fläche (auf `primary` → `primary-foreground`).
 - **Theme:** Automatisch (`prefers-color-scheme`, reagiert live), Hell oder Dunkel; Wahl in den Einstellungen gespeichert. Ein `ThemeService` setzt `.dark` am `html`-Element (Tailwind v4: `@custom-variant dark`) und passt die Statusleiste an. Light und Dark zeigen nur auf verschiedene Stufen derselben Palette.
 - **Schrift:** Inter (Platzhalter, finale Wahl offen), lokal gebündelt, Tabellenziffern für alle Zahlen.
@@ -77,9 +77,13 @@ Alle Tabellen haben `id` (UUIDv7), `createdAt`, `updatedAt`, `deletedAt`. Dazu k
 | Tabelle | Felder | Hinweis |
 | --- | --- | --- |
 | `exercise` | key, nameDe, nameEn, primaryMuscles, secondaryMuscles, muscleGroup, force (push / pull / static), equipment, level, category, images | Katalog aus free-exercise-db (gemeinfrei), mit der App ausgeliefert, nur lesbar; deutsche Namen per AI übersetzt |
+| `exercise_note` | exerciseId, text | Notiz des Nutzers zu einer Übung, gilt in allen Plänen; höchstens eine pro Übung, max. 500 Zeichen ([0019](decisions/0019-exercise-notes.md)) |
+| `exercise_note_image` | exerciseId | Bild zur Notiz einer Übung, höchstens 6 pro Übung; die JPEG-Datei liegt im Datenordner der App, nicht in SQLite ([0021](decisions/0021-note-images.md)) |
+| `exercise_setting` | exerciseId, weightStepKg, weightStepLb | Einstellungen des Nutzers zu einer Übung, gelten in allen Plänen; Gewichtsschritt getrennt für kg und lb, `null` = 2,5 ([0022](decisions/0022-weight-step.md)) |
 | `plan` | name, weekdays (Liste 0–6, optional) | Ein Plan = ein Training |
 | `plan_exercise` | planId, exerciseId, position, targetSets, repMin, repMax, restSeconds | Feste Reihenfolge über `position`; Standard 3 × 8–12, 90 s |
 | `workout_session` | planId (optional), startedAt, finishedAt, status (active / finished / aborted) | Maximal eine aktive Session |
+| `workout_pause` | sessionId, pausedAt, resumedAt | Pausen eines Trainings; `resumedAt` leer, solange es pausiert ist, höchstens eine offene pro Session ([0023](decisions/0023-pause-workout.md)) |
 | `session_exercise` | sessionId, exerciseId, position, status (open / done), repMin, repMax, restSeconds | Kopie der Plan-Übungen inkl. Ziele beim Start |
 | `exercise_interval` | sessionExerciseId, enteredAt, leftAt | Zeiträume, in denen die Übung angezeigt wurde; beliebig viele |
 | `set_log` | sessionExerciseId, position, weightKg, reps, completedAt, isExtra | Gewicht immer in kg |
@@ -87,16 +91,19 @@ Alle Tabellen haben `id` (UUIDv7), `createdAt`, `updatedAt`, `deletedAt`. Dazu k
 ## 7. Geschäftsregeln
 
 - **Session als Kopie:** Beim Start werden Übungen und Soll-Sätze des Plans in `session_exercise` und `set_log` kopiert. Änderungen im Training (Reihenfolge, Extra-Sätze, Sätze löschen/duplizieren) betreffen nur die Session, nie den Plan.
+- **Notizen pro Übung** gehören zur Übung, nicht zum Plan: Sie werden nicht in die Session kopiert, lassen sich jederzeit ändern (auch im Training) und erscheinen nicht im Verlauf ([0019](decisions/0019-exercise-notes.md)). Eine Notiz kann bis zu 6 Bilder haben, auch ohne Text; Bilder sind nur für den Nutzer und werden nie geteilt ([0021](decisions/0021-note-images.md)).
+- **Gewichtsschritt pro Übung** gehört ebenso zur Übung: Er bestimmt nur ± und die Scrubber-Skala, wird nicht in die Session kopiert und lässt sich auch im Training ändern ([0022](decisions/0022-weight-step.md)).
 - **Vorbefüllung:** Gewicht und Wiederholungen pro Satzposition aus der letzten abgeschlossenen Session mit derselben Übung; fehlt eine Position, gelten die Werte des letzten Vorsatzes; sonst Gewicht leer und Wdh. = Plan-Minimum. Verworfene Trainings zählen nicht.
-- **Extra-Satz:** «+ Satz» übernimmt die Werte des letzten Satzes und setzt `isExtra = true`.
+- **Extra-Satz:** «+ Satz» übernimmt die Werte des letzten Satzes und setzt `isExtra = true`. Wurde in dieser Session ein geplanter Satz gelöscht, kommt stattdessen dieser zurück (offen, mit den neuen Werten), bis die Satzzahl des Plans wieder erreicht ist; das gilt auch für «Satz duplizieren».
 - **Heute:** alle Pläne, deren `weekdays` den aktuellen Wochentag enthalten (mehrere möglich).
-- **Fortsetzen:** Eine aktive Session überlebt App-Neustarts; die App öffnet sie beim Start wieder.
+- **Fortsetzen:** Eine aktive Session überlebt App-Neustarts; die App öffnet sie beim Start wieder, ausser sie ist pausiert ([0023](decisions/0023-pause-workout.md)).
+- **Pausieren:** Ein Training lässt sich pausieren; danach kann man die App normal nutzen, es bleibt das einzige aktive Training. Pausen zählen nicht zur Trainingsdauer ([0023](decisions/0023-pause-workout.md)).
 - **Rekord:** Ein Satz ist ein PR, wenn sein geschätztes 1RM (Epley: kg × (1 + reps / 30)) über allen bisherigen abgehakten Sätzen dieser Übung liegt (abgeschlossene Sessions und frühere Sätze der laufenden). Ohne Basis und bei Gleichstand kein PR. Wird zur Laufzeit berechnet, nicht gespeichert.
 - **Beenden/Abschliessen:** siehe [0011](decisions/0011-workout-flow.md). «Beenden und speichern» → `finished`, «Training verwerfen» → `aborted` (nicht im Verlauf).
-- **Einheiten:** intern kg, Umrechnung in lb nur für die Anzeige (auf 0,1 gerundet, Schritt 2,5 lb; eingegebene lb bleiben exakt erhalten).
+- **Einheiten:** intern kg, Umrechnung in lb nur für die Anzeige (auf 0,1 gerundet; eingegebene lb bleiben exakt erhalten). Schritt pro Übung wählbar, getrennt für kg (0,25–10) und lb (0,5–10), Standard 2,5 ([0022](decisions/0022-weight-step.md)).
 - **Zeiterfassung:**
-  - Training: `startedAt` beim Start, `finishedAt` bei «Training abschliessen».
-  - Übung: Jedes Mal, wenn eine Übung zur aktuellen Seite wird, beginnt ein Intervall (`enteredAt`); beim Wegwischen oder Abschliessen wird es geschlossen (`leftAt`). Zeit pro Übung = Summe der Intervalle.
+  - Training: `startedAt` beim Start, `finishedAt` bei «Training abschliessen». Dauer = `finishedAt` − `startedAt` − Pausen (`workout_pause`, je `pausedAt` bis `resumedAt`).
+  - Übung: Jedes Mal, wenn eine Übung zur aktuellen Seite wird, beginnt ein Intervall (`enteredAt`); beim Wegwischen, Pausieren oder Abschliessen wird es geschlossen (`leftAt`). Zeit pro Übung = Summe der Intervalle.
   - Intervalle unter ca. 3 Sekunden werden nicht gespeichert.
   - Wird die App beendet, schliesst sie offene Intervalle beim nächsten Start mit dem Zeitpunkt des letzten abgehakten Satzes.
   - Satz: `completedAt` beim Abhaken.
@@ -109,10 +116,13 @@ Alle Tabellen haben `id` (UUIDv7), `createdAt`, `updatedAt`, `deletedAt`. Dazu k
 - Plan-Karte: Name, Anzahl Übungen, Wochentage als Chips, rechts Pfeil-Button (44 px). Karte und Pfeil öffnen den Plan; gestartet wird im Plan-Detail. Pfeil beim heutigen Plan in `primary`, sonst `secondary`.
 - Kein Primary-Button unten. «Neuer Plan» als Secondary-Button in der Liste.
 - Bottom-Navigation: Pläne, Verlauf, Einstellungen. Ein laufendes Training ist ein Vollbild ohne Navigation und wird über den Plan gestartet (kein Training-Tab).
+- Ein pausiertes Training steht auf den Tab-Screens als Leiste über der Navigation (Planname, «Pausiert · 23:14»); ein Tap öffnet es ([0023](decisions/0023-pause-workout.md)).
 
 ### Plan-Detail, Plan bearbeiten, Plan erstellen (`/plans/:id`, `/plans/:id/edit`, `/plans/new`)
 - **Plan-Detail ist eine Ansicht** ([0010](decisions/0010-plan-detail-and-editor.md)): Wochentage und Reihenfolge nur angezeigt, Chevron klappt die Ziele auf; «Bearbeiten» oben rechts, «Training starten» als Primary.
 - **Bearbeiten/Erstellen:** Ziele pro Übung (Sätze, Wdh. min/max, Pause) im aufgeklappten Eintrag; «Plan löschen» im Drei-Punkte-Menü mit Bestätigung (Soft Delete).
+- **Notizen:** Ein Notiz-Symbol neben den Zielen markiert Übungen mit Notiz (Text oder Bilder; Detail und Editor). Im Detail zeigt der aufgeklappte Eintrag die Notiz mit ihren Bildern oder «Notiz hinzufügen»; bearbeitet wird im selben Sheet wie im Training ([0019](decisions/0019-exercise-notes.md), [0021](decisions/0021-note-images.md)).
+- **Gewichtsschritt:** Im Detail zeigt der aufgeklappte Eintrag «Gewichtsschritt 2,5 kg»; ein Tap öffnet dasselbe Sheet wie im Training. Der Editor zeigt ihn nicht ([0022](decisions/0022-weight-step.md)).
 - Planname, «Wochentage (optional)» als 7 Chips, Übungsliste mit Drag-Handle, Name, «3 × 8–10», Menü.
 - «Plan erstellen» = gleicher Screen wie Bearbeiten, Titel «Neuer Plan», Empty State; «Plan speichern» deaktiviert, solange Name oder Übungen fehlen.
 - Kein Abbrechen-Button, verlassen über den Zurück-Pfeil.
@@ -127,32 +137,40 @@ Alle Tabellen haben `id` (UUIDv7), `createdAt`, `updatedAt`, `deletedAt`. Dazu k
 
 ### Training (`/workout`)
 - **Eine Übung pro Seite,** horizontales Wischen per CSS Scroll-Snap (`scroll-snap-type: x mandatory`). Kopfbereich und Weiter-Button bewegen sich nicht mit.
-- **Segment-Indikator oben:** ein Segment pro Übung (Session-Reihenfolge), füllt sich anteilig zu den erledigten Sätzen (inkl. Extra-Sätze), aktuelles Segment hervorgehoben, ohne Zahlen.
+- **Segment-Indikator oben:** ein Segment pro Übung (Session-Reihenfolge), füllt sich anteilig zu den erledigten Sätzen (inkl. Extra-Sätze), aktuelles Segment hervorgehoben, ohne Zahlen. Rechts daneben der Gesamtfortschritt in Prozent (erledigte Sätze aller Übungen inkl. Extra-Sätze, abgerundet: 100 % erst, wenn alles abgehakt ist).
 - **Übersicht:** Pill «2 / 6» mit Listen-Icon und Chevron öffnet ein Sheet mit allen Übungen. Umsortieren per Angular CDK Drag and Drop, alle Zeilen immer verschiebbar. Status als Fortschrittsring in `primary` (voll = Haken), aktuelle Übung über Hintergrund und Rahmen markiert, kein Text. Tippen springt zur Übung.
-- **Übungsmenü (drei Punkte):** «1 nach hinten verschieben», «Ans Ende verschieben».
-- **Satz-Zeile** (80 px): Nummer, Vorwert, Stepper für kg und Wdh., Haken. Werte lassen sich auch durch waagrechtes Wischen über das Zahlenfeld ändern (schneller = grössere Sprünge). Zustände: offen, erledigt, Rekord, Menü offen. Kein «aktiv»-Zustand.
-- **Satz-Kontextmenü:** Long-Press (ca. 500 ms, mit Haptik) oder kleines Drei-Punkte-Icon; «Satz duplizieren», «Satz löschen». Kein Swipe-to-Delete.
+- **Übungsmenü (drei Punkte):** «Notiz hinzufügen» bzw. «Notiz bearbeiten», «Gewichtsschritt: 2,5 kg» (Sheet mit den Schritten als Chips, [0022](decisions/0022-weight-step.md)), «1 nach hinten verschieben», «Ans Ende verschieben».
+- **Notiz:** Hat die Übung eine Notiz, steht sie als Karte (höchstens 3 Zeilen, darunter die Bilder als Vorschau) unter der Zielzeile; ein Tap auf den Text öffnet ein Sheet mit Textfeld, Bildern («Bilder auswählen», auf Handys auch «Foto aufnehmen») und «Fertig». Der Text wird beim Schliessen gespeichert, eine geleerte Notiz wird gelöscht ([0019](decisions/0019-exercise-notes.md)). Bilder werden sofort gespeichert; ein Tap auf ein Bild öffnet den Bildbetrachter (Vollbild, wischen), aus dem Sheet heraus auch mit «Bild löschen» ([0021](decisions/0021-note-images.md)).
+- **Satz-Zeile** (80 px): Nummer, Vorwert, Stepper für kg und Wdh., Haken. Werte lassen sich auch durch waagrechtes Ziehen über den Stepper ändern: ein Lineal über den ganzen Bildschirm zeigt jeden Schritt, am Bildschirmrand scrollt es weiter ([0018](decisions/0018-value-scrubber.md)). Zustände: offen, erledigt, Rekord, Menü offen. Kein «aktiv»-Zustand.
+- **Satz-Kontextmenü:** Long-Press (ca. 500 ms, mit Haptik), Rechtsklick (Web) oder Tippen auf die Satznummer, öffnet unter der Zeile; «Satz duplizieren», «Satz löschen». Kein Swipe-to-Delete.
 - **«+ Satz»** unter den Sätzen; Extra-Sätze mit Label «Extra».
 - **Timer:** neutraler Timer als feste Leiste über dem Weiter-Button (kein Sheet). Bereit: Standarddauer + Chevron + Play. Läuft: Restzeit, Fortschrittslinie, −15 / +15, Stopp. Letzte 10 s in `warning`. Tippen auf die Zeit öffnet ein Popover mit 0:30, 1:00, 1:30, 2:00, 3:00. Startet automatisch nach dem Abhaken eines Satzes (abschaltbar). Speichert die Endzeit, nicht einen Zähler. Bei Ablauf: Haptik und eine lokale Benachrichtigung mit Standardton (auch im Hintergrund, [0014](decisions/0014-native-polish.md)).
 - **Weiter-Button:** «Weiter zu {Übungsname}», einzeilig mit Ellipsis; bei der letzten Übung «Training abschliessen».
-- **Beenden:** kleiner Ghost-Button im Kopf; Dialog «Training beenden?» mit «Beenden und speichern», «Training verwerfen» (destructive), «Weiter trainieren». Android-Zurück öffnet denselben Dialog ([0011](decisions/0011-workout-flow.md)).
+- **Pausieren** ([0023](decisions/0023-pause-workout.md)): runder Pause-Button links neben der Trainingsuhr. Pausiert stehen Uhr und Timer still, Sätze und Timer sind nicht bedienbar, ein Overlay zeigt «Training pausiert» mit der Zeit und «Zu den Plänen»; der Button unten wird zu «Weiter trainieren». Android-Zurück führt pausiert zu den Plänen.
+- **Beenden:** Trainingsuhr rechts im Kopf, gleich wie die Übersicht-Pill: Trainingsdauer ohne Pausen (aus `startedAt` und den Pausen, h:mm:ss ab einer Stunde) mit Stopp-Symbol. Tippen öffnet den Dialog «Training beenden?» mit «Beenden und speichern», «Training verwerfen» (destructive), «Weiter trainieren». Android-Zurück öffnet denselben Dialog ([0011](decisions/0011-workout-flow.md)).
 - **Belohnungen** ([0015](decisions/0015-celebrations.md)): Satz abhaken = Haken federt auf mit Funken; Rekord = Sterne und «PR»-Badge; Übung fertig = Badge mit Lob und Konfetti, das ins Fortschrittssegment fliegt (einmal pro Übung); alle Übungen erledigt = «Training abschliessen» pulsiert. Nie blockierend, ohne Ton.
 - **Abschliessen** (auch «Beenden und speichern») führt zum Feier-Screen `/workout/done/:id` (Pokal, Konfetti, Kennzahlen zählen hoch) und mit «Weiter» zum Verlaufs-Detail `/history/:id`.
 - «Training starten» bei laufendem Training fragt «Laufendes Training fortsetzen?» und führt zu `/workout`.
-- Bildschirm bleibt an, solange `/workout` offen ist (`@capacitor-community/keep-awake`).
+- Bildschirm bleibt an, solange `/workout` offen ist und das Training läuft (`@capacitor-community/keep-awake`).
 
-### Verlauf (`/history`, `/history/:sessionId`)
+### Verlauf (`/history`, `/history/:sessionId`, `/history/plans/:planId`)
+- Drei Ansichten über ein Segmented Control: **Liste** (Standard, wie unten), **Kalender** (Monat mit Trainingstagen, Monatszahlen, Serie) und **Statistik** (Woche/Monat/Jahr mit Kennzahlen und Diagramm, Kraft, Muskelgruppen als Ring, Konstanz, Pläne). Details in [0016](decisions/0016-history-statistics.md).
 - Wochenübersicht der laufenden Woche (Montag bis Sonntag) als einfarbiges Balkendiagramm (`chart-1`): Höhe = Trainingsdauer des Tages relativ zum längsten Tag, Tage ohne Training als niedrige graue Balken. Kopf mit Anzahl Trainings, Gesamtdauer und Differenz zur Vorwoche (positiv in `success`).
 - Liste vergangener Trainings, gruppiert nach Woche («Diese Woche», «Vorwoche», danach Datumsbereich): Planname, Tag, Dauer, Anzahl Übungen. Nur abgeschlossene, nicht gelöschte Trainings; verworfene erscheinen nie.
 - Leerer Verlauf: Diagramm mit «0 Trainings» und Empty State «Noch keine Trainings».
-- **Detail:** Planname, Tag und Startzeit; Kennzahlen Dauer, Volumen (Σ kg × Wdh. abgehakter Sätze, Körpergewicht zählt 0) und Sätze; pro Übung Zeit (Summe der Intervalle) und die abgehakten Sätze mit Badges «Rekord» (`success`) und «Extra». Rekorde zählen gegen früher begonnene Trainings.
+- **Detail:** Planname, Tag und Startzeit; Kennzahlen Dauer, Volumen (Σ kg × Wdh. abgehakter Sätze, Körpergewicht zählt 0), Sätze und Rekorde, jeweils mit Differenz zum letzten Training desselben Plans; Link «Alle Trainings mit {Plan}»; pro Übung Zeit (Summe der Intervalle), Volumen mit Differenz zum letzten Mal und die abgehakten Sätze mit Badges «Rekord» (`success`) und «Extra». Rekorde zählen gegen früher begonnene Trainings.
+- **Planverlauf:** alle Trainings eines Plans mit Durchschnitten, Diagramm der letzten 12 Trainings und geschätztem 1RM pro Übung als Sparkline; erreichbar aus Detail, Statistik und Plan-Detail.
 - **Löschen** über das Drei-Punkte-Menü im Detail mit Bestätigung (Soft Delete); gelöschte Trainings zählen nicht mehr für Vorbefüllung und Rekorde ([0012](decisions/0012-history.md)).
 
 ### Einstellungen (`/settings`)
 - Letzter Tab der Bottom-Navigation (Zahnrad).
-- Theme (Automatisch/Hell/Dunkel), Einheiten (kg/lb), Sprache (Deutsch/English, bis zur Wahl die Gerätesprache), Timer-Autostart, JSON-Export/Import als Backup, Version.
+- Theme (Automatisch/Hell/Dunkel), Einheiten (kg/lb), Sprache (Deutsch/English, bis zur Wahl die Gerätesprache), Timer-Autostart, JSON-Export/Import als Backup (inkl. Notiz-Bilder als Base64, [0021](decisions/0021-note-images.md)), «Neuigkeiten», Version.
 - Gespeichert mit `@capacitor/preferences`, wirksam sofort ([0013](decisions/0013-settings-units-swipe-backup.md)).
 - **Import ersetzt alle Pläne und Trainings** nach Prüfung der Datei und Bestätigung; Export als Download bzw. über das Teilen-Menü.
+
+### Neuigkeiten (Popup und `/settings/whats-new`)
+- Nach einem Update erscheint einmal ein Popup «Neu in Grynd {{version}}» mit den Neuerungen seit der zuletzt gesehenen Version (auch übersprungene), nur auf den Tab-Screens, nie im Training. Neuinstallationen sehen es nicht ([0020](decisions/0020-whats-new.md)).
+- Die Texte schreibt man von Hand, für alle verständlich, in Deutsch und Englisch; nur was Nutzer merken. In den Einstellungen listet «Neuigkeiten» alle Versionen.
 
 ## 9. UI-Regeln
 

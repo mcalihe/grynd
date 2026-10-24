@@ -157,6 +157,46 @@ Umgesetzt in `claude/training-motivation-animations-i5cxg2`, Entscheide in [0015
 | A.3 | ✅ Übung fertig: Badge-Overlay, Flug ins Segment, Weiter-Button pulsiert; alle Übungen erledigt → «Training abschliessen» pulsiert |
 | A.4 | ✅ Feier-Screen `/workout/done/:id` nach dem Abschliessen, E2E angepasst |
 
+## M9 – Statistik im Verlauf ✅
+
+Umgesetzt in `claude/history-statistics-views-066be4`, Entscheide in [0016](decisions/0016-history-statistics.md). Figma-Entwürfe ab y = 21896 (Light/Dark), neue Tokens `--muscle-*`.
+
+| # | Aufgabe | Figma Light | Figma Dark |
+| --- | --- | --- | --- |
+| 9.1 | ✅ `history-insights.ts` (Zeiträume, Kalender, Serie, Rekorde, Muskelgruppen, Kraft, Vergleich, Planverlauf) und `HistoryService.loadFacts()` (test-first) | – | – |
+| 9.2 | ✅ Bausteine `BarChart`, `KeyFigures`, `PeriodPager`, `MonthCalendar`, `DonutChart`, `Sparkline` | – | – |
+| 9.3 | ✅ **Verlauf · Liste** mit den Ansichten Liste, Kalender, Statistik (Query-Parameter `view`) | `118:1692` | `122:3429` |
+| 9.4 | ✅ **Verlauf · Kalender** | `119:1728` | `122:3501` |
+| 9.5 | ✅ **Verlauf · Statistik** | `120:1760` | `122:3651` |
+| 9.6 | ✅ **Verlauf-Detail · Vergleich** | `121:1935` | `122:3846` |
+| 9.7 | ✅ **Plan-Verlauf** `/history/plans/:planId` und Einstieg im Plan-Detail | `122:1825`, `122:3315` | `122:3939`, `122:4037` |
+
+---
+
+## Wert-Scrubber ✅
+
+Umgesetzt in `claude/weight-reps-slider-ux-98fc52`, Entscheide in [0018](decisions/0018-value-scrubber.md). Ziehen über einen Stepper zeigt ein Lineal über den ganzen Bildschirm (ein Strich = ein Schritt, am Rand scrollt es weiter); der Wert ist ein Spinbutton für Tastatur und Screenreader. Ohne Figma-Entwurf, Vorschau unter `/dev/components`.
+
+## Notizen pro Übung ✅
+
+Umgesetzt in `ccr-37c3cc58-uxl97v`, Entscheide in [0019](decisions/0019-exercise-notes.md). Eine Notiz pro Übung (Geräteeinstellung, Ausführung, Technik-Tipps), gültig in allen Plänen; Tabelle `exercise_note` (Migration 2), im Backup ab Schema 2. Sichtbar und bearbeitbar im Training (Karte über den Sätzen, Übungsmenü) und im Plan-Detail. Ohne Figma-Entwurf, Vorschau unter `/dev/components`.
+
+## Neuigkeiten nach Updates ✅
+
+Umgesetzt in `ccr-c602f928-9227l1`, Entscheide in [0020](decisions/0020-whats-new.md). Nach einem Update einmal ein Popup mit den Neuerungen (handgeschriebene Release Notes, de und en), in den Einstellungen «Neuigkeiten» mit allen Versionen; CI verlangt beim Release-PR einen Eintrag für dessen Version. Ohne Figma-Entwurf, Vorschau unter `/dev/components`.
+
+## Bilder in Notizen ✅
+
+Umgesetzt in `ccr-c5dece36-vt0o19`, Entscheide in [0021](decisions/0021-note-images.md). Bis zu 6 Bilder pro Übungsnotiz, nur für den Nutzer: aus der Galerie oder (auf Handys) mit der Kamera, auf 1600 px verkleinert und als Datei im Datenordner der App gespeichert; Tabelle `exercise_note_image` (Migration 3), im Backup ab Schema 3. Vorschau auf der Notiz-Karte, Vollbild-Betrachter zum Wischen, Löschen mit Bestätigung. Ohne Figma-Entwurf, Vorschau unter `/dev/components`. Offen: manueller Test von Kamera und Fotoauswahl auf Android und iOS.
+
+## Gewichtsschritt pro Übung ✅
+
+Umgesetzt in `ccr-cd9d91b1-bugiex`, Entscheide in [0022](decisions/0022-weight-step.md). Der ±-Schritt und die Scrubber-Skala für das Gewicht sind pro Übung wählbar (kg 0,25–10, lb 0,5–10, Standard 2,5), gültig in allen Plänen; Tabelle `exercise_setting` (Migration 4), im Backup ab Schema 4. Änderbar im Training (Übungsmenü) und im Plan-Detail. Ohne Figma-Entwurf, Vorschau unter `/dev/components`.
+
+## Training pausieren ✅
+
+Umgesetzt in `ccr-9fc67d84-p4ss53`, Entscheide in [0023](decisions/0023-pause-workout.md). Pause-Button im Trainingskopf: Uhr und Timer stehen still, die Sätze warten unter einem Overlay mit «Weiter trainieren» und «Zu den Plänen». Ein pausiertes Training wartet auf den Tab-Screens als Leiste über der Navigation und öffnet sich beim Start nicht von selbst. Pausen zählen nicht zur Dauer; Tabelle `workout_pause` (Migration 5), im Backup ab Schema 5. Ohne Figma-Entwurf, Vorschau der Leiste unter `/dev/components`.
+
 ---
 
 ## Entscheide aus M0

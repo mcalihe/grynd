@@ -31,13 +31,6 @@ export class ExerciseRepository extends BaseRepository<Exercise> {
     return row;
   }
 
-  async count(): Promise<number> {
-    const [row] = await this.db.query<{ n: number }>(
-      'SELECT count(*) AS n FROM exercise WHERE deletedAt IS NULL',
-    );
-    return row?.n ?? 0;
-  }
-
   /**
    * Inserts or updates catalog entries by their stable id (from the bundled JSON).
    * Entries missing from the bundle are soft-deleted, so references from plans stay valid.

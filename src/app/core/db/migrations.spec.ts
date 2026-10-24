@@ -4,11 +4,15 @@ import { getSchemaVersion, migrate, MIGRATIONS } from './migrations';
 const TABLES = [
   'exercise',
   'exercise_interval',
+  'exercise_note',
+  'exercise_note_image',
+  'exercise_setting',
   'meta',
   'plan',
   'plan_exercise',
   'session_exercise',
   'set_log',
+  'workout_pause',
   'workout_session',
 ];
 
@@ -58,11 +62,80 @@ describe('migrate', () => {
     expect(brokenTables).toEqual([]);
   });
 
+  it('upgrades a database of version 1 and keeps its data', async () => {
+    await migrate(driver, MIGRATIONS.slice(0, 1));
+    await driver.run(
+      `INSERT INTO plan (id, name, createdAt, updatedAt) VALUES ('p', 'Beine', 'x', 'x')`,
+    );
+
+    expect(await migrate(driver)).toBe(MIGRATIONS.at(-1)?.version);
+
+    expect(await driver.query('SELECT name FROM plan')).toEqual([{ name: 'Beine' }]);
+    expect(await driver.query('SELECT * FROM exercise_note')).toEqual([]);
+    expect(await driver.query('SELECT * FROM exercise_note_image')).toEqual([]);
+    expect(await driver.query('SELECT * FROM exercise_setting')).toEqual([]);
+    expect(await driver.query('SELECT * FROM workout_pause')).toEqual([]);
+  });
+
+  it('upgrades a database of version 2 and keeps its notes', async () => {
+    await migrate(driver, MIGRATIONS.slice(0, 2));
+    await driver.run(`INSERT INTO exercise (id, key, nameDe, nameEn, createdAt, updatedAt)
+      VALUES ('e', 'bench', 'Bank', 'Bench', 'x', 'x')`);
+    await driver.run(`INSERT INTO exercise_note (id, exerciseId, text, createdAt, updatedAt)
+      VALUES ('n', 'e', 'Sitz Stufe 4', 'x', 'x')`);
+
+    expect(await migrate(driver)).toBe(MIGRATIONS.at(-1)?.version);
+
+    expect(await driver.query('SELECT text FROM exercise_note')).toEqual([
+      { text: 'Sitz Stufe 4' },
+    ]);
+    await driver.run(`INSERT INTO exercise_note_image (id, exerciseId, createdAt, updatedAt)
+      VALUES ('i', 'e', 'x', 'x')`);
+    await expect(
+      driver.run(`INSERT INTO exercise_note_image (id, exerciseId, createdAt, updatedAt)
+        VALUES ('j', 'unknown', 'x', 'x')`),
+    ).rejects.toThrow();
+  });
+
+  it('allows only one note per exercise, apart from deleted ones', async () => {
+    await migrate(driver);
+    await driver.run(`INSERT INTO exercise (id, key, nameDe, nameEn, createdAt, updatedAt)
+      VALUES ('e', 'bench', 'Bank', 'Bench', 'x', 'x')`);
+    const insert = `INSERT INTO exercise_note (id, exerciseId, text, createdAt, updatedAt, deletedAt)
+      VALUES (?, 'e', 'note', 'x', 'x', ?)`;
+    await driver.run(insert, ['old', 'x']);
+    await driver.run(insert, ['a', null]);
+    await expect(driver.run(insert, ['b', null])).rejects.toThrow();
+  });
+
+  it('allows only one settings row per exercise, apart from deleted ones', async () => {
+    await migrate(driver);
+    await driver.run(`INSERT INTO exercise (id, key, nameDe, nameEn, createdAt, updatedAt)
+      VALUES ('e', 'bench', 'Bank', 'Bench', 'x', 'x')`);
+    const insert = `INSERT INTO exercise_setting (id, exerciseId, weightStepKg, createdAt, updatedAt, deletedAt)
+      VALUES (?, 'e', 2, 'x', 'x', ?)`;
+    await driver.run(insert, ['old', 'x']);
+    await driver.run(insert, ['a', null]);
+    await expect(driver.run(insert, ['b', null])).rejects.toThrow();
+  });
+
   it('allows only one active workout session', async () => {
     await migrate(driver);
     const insert = `INSERT INTO workout_session (id, startedAt, status, createdAt, updatedAt)
       VALUES (?, '2026-01-01T00:00:00.000Z', 'active', 'x', 'x')`;
     await driver.run(insert, ['a']);
     await expect(driver.run(insert, ['b'])).rejects.toThrow();
+  });
+
+  it('allows only one open pause per workout, apart from ended and deleted ones', async () => {
+    await migrate(driver);
+    await driver.run(`INSERT INTO workout_session (id, startedAt, status, createdAt, updatedAt)
+      VALUES ('s', '2026-01-01T00:00:00.000Z', 'active', 'x', 'x')`);
+    const insert = `INSERT INTO workout_pause (id, sessionId, pausedAt, resumedAt, createdAt, updatedAt, deletedAt)
+      VALUES (?, 's', '2026-01-01T00:10:00.000Z', ?, 'x', 'x', ?)`;
+    await driver.run(insert, ['ended', '2026-01-01T00:15:00.000Z', null]);
+    await driver.run(insert, ['deleted', null, 'x']);
+    await driver.run(insert, ['a', null, null]);
+    await expect(driver.run(insert, ['b', null, null])).rejects.toThrow();
   });
 });
