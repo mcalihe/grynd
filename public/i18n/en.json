@@ -333,6 +333,10 @@
     }
   },
   "releaseNotes": {
+    "exerciseSearch": {
+      "title": "Find exercises faster",
+      "text": "Search and filters now stay at the top while you scroll. Tap a muscle group, pick equipment from the menu below it, or just type «chest dumbbell» into the search."
+    },
     "notePhotos": {
       "title": "Photos in notes",
       "text": "Add up to six photos to an exercise note, like your seat setting. They stay on your device and are just for you."
@@ -400,13 +404,15 @@
   },
   "picker": {
     "search": "Search exercises",
+    "searchPlaceholder": "Exercise, muscle or equipment",
+    "clearSearch": "Clear search",
     "muscleGroup": "Muscle group",
-    "movement": "Movement",
-    "equipment": "Equipment",
+    "allEquipment": "All equipment",
     "resetFilters": "Reset filters",
     "noResults": "No exercise found",
     "recent": "Recently used",
-    "results": "Results",
+    "countOne": "1 exercise",
+    "countMany": "{{count}} exercises",
     "inPlan": "In plan",
     "choose": "Choose exercises",
     "addOne": "Add 1 exercise",

@@ -56,14 +56,59 @@ export function isFilterActive(filter: ExerciseFilter): boolean {
   );
 }
 
-/** Every query word must appear in the German or English name. */
+/** Equipment filter for a catalog equipment value (`null` if no filter covers it). */
+export function equipmentFilterOf(value: string | null): EquipmentFilter | null {
+  return (
+    EQUIPMENT.find((e) => (EQUIPMENT_FILTERS[e] as readonly string[]).includes(value ?? '')) ?? null
+  );
+}
+
+/**
+ * Search vocabulary per muscle group and equipment (decision 0024), German and English plus
+ * common gym words, so «brust kurzhantel», «bizeps» or «kh» find exercises without a filter.
+ * Only matched against, never shown.
+ */
+const MUSCLE_TERMS: Record<MuscleGroup, string> = {
+  chest: 'brust brustmuskel chest pec pecs',
+  back: 'rücken back lat lats latissimus',
+  shoulders: 'schulter schultern shoulder shoulders delts deltoid',
+  legs: 'beine bein legs leg quads quadrizeps oberschenkel waden calves hamstrings',
+  glutes: 'po gesäß glutes glute',
+  arms: 'arme arm arms bizeps biceps trizeps triceps unterarm forearm',
+  core: 'core bauch abs rumpf',
+};
+const EQUIPMENT_TERMS: Record<EquipmentFilter, string> = {
+  barbell: 'langhantel barbell lh sz-stange',
+  dumbbell: 'kurzhantel kurzhanteln dumbbell dumbbells kh',
+  cable: 'kabel kabelzug seilzug cable',
+  machine: 'maschine gerät machine',
+  bodyweight: 'körpergewicht eigengewicht bodyweight',
+};
+
+const haystacks = new WeakMap<Exercise, string>();
+
+/** Names in both languages plus the muscle and equipment vocabulary, normalized once. */
+function haystack(exercise: Exercise): string {
+  let text = haystacks.get(exercise);
+  if (text === undefined) {
+    const equipment = equipmentFilterOf(exercise.equipment);
+    text = normalize(
+      [
+        exercise.nameDe,
+        exercise.nameEn,
+        exercise.muscleGroup ? MUSCLE_TERMS[exercise.muscleGroup] : '',
+        equipment ? EQUIPMENT_TERMS[equipment] : '',
+      ].join(' '),
+    );
+    haystacks.set(exercise, text);
+  }
+  return text;
+}
+
+/** Every query word must appear in the name (German or English), muscle group or equipment. */
 export function matchesQuery(exercise: Exercise, query: string): boolean {
   const words = normalize(query).split(/\s+/).filter(Boolean);
-  if (words.length === 0) {
-    return true;
-  }
-  const haystack = normalize(`${exercise.nameDe} ${exercise.nameEn}`);
-  return words.every((word) => haystack.includes(word));
+  return words.every((word) => haystack(exercise).includes(word));
 }
 
 /** OR within a chip group, AND between groups (plan.md §8). */

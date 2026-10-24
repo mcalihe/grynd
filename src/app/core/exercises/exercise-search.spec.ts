@@ -2,6 +2,7 @@ import { catalogEntry } from '../../../testing/catalog';
 import { Exercise } from '../db/models';
 import {
   EMPTY_FILTER,
+  equipmentFilterOf,
   filterExercises,
   isFilterActive,
   matchesQuery,
@@ -57,6 +58,24 @@ describe('exercise search', () => {
     expect(matchesQuery(row, 'rudern hantel')).toBe(false);
     expect(matchesQuery(pullup, 'klimmzuge')).toBe(true);
     expect(matchesQuery(bench, '   ')).toBe(true);
+  });
+
+  it('also finds muscle and equipment words in both languages', () => {
+    expect(matchesQuery(bench, 'brust langhantel')).toBe(true);
+    expect(matchesQuery(bench, 'chest barbell')).toBe(true);
+    expect(matchesQuery(curl, 'bizeps')).toBe(true);
+    expect(matchesQuery(curl, 'langhantel')).toBe(true);
+    expect(matchesQuery(pullup, 'rücken körpergewicht')).toBe(true);
+    expect(matchesQuery(row, 'rucken kabelzug')).toBe(true);
+    expect(matchesQuery(row, 'brust')).toBe(false);
+    expect(matchesQuery(bench, 'kurzhantel')).toBe(false);
+  });
+
+  it('maps catalog equipment values to equipment filters', () => {
+    expect(equipmentFilterOf('e-z curl bar')).toBe('barbell');
+    expect(equipmentFilterOf('body only')).toBe('bodyweight');
+    expect(equipmentFilterOf('kettlebells')).toBeNull();
+    expect(equipmentFilterOf(null)).toBeNull();
   });
 
   it('ORs within a group and ANDs between groups', () => {
