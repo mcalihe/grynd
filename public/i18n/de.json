@@ -333,6 +333,10 @@
     }
   },
   "releaseNotes": {
+    "exerciseSearch": {
+      "title": "Übungen schneller finden",
+      "text": "Suche und Filter bleiben beim Scrollen oben. Tippe auf eine Muskelgruppe, wähle Geräte im Menü darunter oder schreib einfach «Brust Kurzhantel» in die Suche."
+    },
     "notePhotos": {
       "title": "Bilder in Notizen",
       "text": "Füge einer Übungsnotiz bis zu sechs Fotos hinzu, etwa von der Sitzeinstellung. Die Bilder bleiben auf deinem Gerät und sind nur für dich."
@@ -400,15 +404,11 @@
   },
   "picker": {
     "search": "Übungen durchsuchen",
+    "searchPlaceholder": "Übung, Muskel oder Gerät",
     "clearSearch": "Suche löschen",
-    "filters": "Filter",
-    "groups": {
-      "muscles": "Muskeln",
-      "equipment": "Equipment",
-      "forces": "Bewegung"
-    },
+    "muscleGroup": "Muskelgruppe",
+    "allEquipment": "Alle Geräte",
     "resetFilters": "Filter zurücksetzen",
-    "reset": "Zurücksetzen",
     "noResults": "Keine Übung gefunden",
     "recent": "Zuletzt verwendet",
     "countOne": "1 Übung",

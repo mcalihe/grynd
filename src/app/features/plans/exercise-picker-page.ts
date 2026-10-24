@@ -12,67 +12,47 @@ import {
   signal,
   untracked,
   viewChild,
-  WritableSignal,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { NgIcon } from '@ng-icons/core';
 import { HlmBadge } from '@spartan-ng/helm/badge';
 import { HlmButton } from '@spartan-ng/helm/button';
+import { HlmDropdownMenuImports } from '@spartan-ng/helm/dropdown-menu';
 import { HlmInput } from '@spartan-ng/helm/input';
 import { Exercise, MuscleGroup } from '../../core/db/models';
 import { SessionExerciseRepository } from '../../core/db/repositories/workout.repository';
 import { ExerciseCatalogService } from '../../core/exercises/exercise-catalog.service';
 import {
   EQUIPMENT,
-  EQUIPMENT_FILTERS,
   EquipmentFilter,
+  equipmentFilterOf,
   filterExercises,
-  ForceFilter,
-  FORCES,
   isFilterActive,
   MUSCLE_GROUPS,
   normalize,
   toggle,
 } from '../../core/exercises/exercise-search';
 import { ConfirmService } from '../../core/services/confirm.service';
-import { SegmentedControl } from '../../shared/components/segmented-control/segmented-control';
 import { StickyAction } from '../../shared/components/sticky-action/sticky-action';
 import { PlanEditorStore } from './plan-editor.store';
-
-type FilterGroupId = 'muscles' | 'equipment' | 'forces';
-
-/** One filter tab and its chips. */
-interface FilterGroup {
-  id: FilterGroupId;
-  labelPrefix: string;
-  options: readonly string[];
-  value: WritableSignal<readonly string[]>;
-}
 
 interface ListEntry {
   letter?: string;
   exercise?: Exercise;
 }
 
-/** Equipment chip for a catalog equipment value (for the meta line). */
-function equipmentChip(value: string | null): EquipmentFilter | null {
-  return (EQUIPMENT.find((e) =>
-    (EQUIPMENT_FILTERS[e] as readonly string[]).includes(value ?? ''),
-  ) ?? null) as EquipmentFilter | null;
-}
-
 /**
- * «Übungen hinzufügen» (Figma 63:12824, 63:13440, 63:14032; filters per decision 0016): search,
- * filter tabs with their chips and the result count stay pinned while only the list scrolls. Recently
- * used, alphabetical list with thumbnails, multi-select. Exercises already in the plan are dimmed.
+ * «Übungen hinzufügen» (Figma 63:12824, 63:13440, 63:14032; filters per decision 0024): search,
+ * muscle chips and the equipment dropdown stay pinned while only the list scrolls. Recently used,
+ * alphabetical list with thumbnails, multi-select. Exercises already in the plan are dimmed.
  */
 @Component({
   selector: 'app-exercise-picker-page',
   imports: [
     StickyAction,
-    SegmentedControl,
     HlmButton,
+    HlmDropdownMenuImports,
     HlmInput,
     HlmBadge,
     NgIcon,
@@ -110,7 +90,7 @@ function equipmentChip(value: string | null): EquipmentFilter | null {
           autocomplete="off"
           enterkeyhint="search"
           [attr.aria-label]="'picker.search' | transloco"
-          [placeholder]="'picker.search' | transloco"
+          [placeholder]="'picker.searchPlaceholder' | transloco"
           [value]="query()"
           (input)="query.set($any($event.target).value)"
         />
@@ -126,44 +106,71 @@ function equipmentChip(value: string | null): EquipmentFilter | null {
         }
       </label>
 
-      <app-segmented-control
-        [attr.aria-label]="'picker.filters' | transloco"
-        [options]="tabs()"
-        [value]="activeGroup().id"
-        (valueChange)="selectGroup($event)"
-      />
-
       <div
-        #chipRow
         class="-mx-4 -my-1.5 flex [scrollbar-width:none] gap-2 overflow-x-auto px-4 py-1.5"
         role="group"
-        [attr.aria-label]="tabs()[groups.indexOf(activeGroup())].label"
+        [attr.aria-label]="'picker.muscleGroup' | transloco"
       >
-        @let group = activeGroup();
-        @for (option of group.options; track option) {
+        @for (muscle of muscleGroups; track muscle) {
           <button
             type="button"
-            [class]="chipClass(group.value().includes(option))"
-            [attr.aria-pressed]="group.value().includes(option)"
-            (click)="group.value.set(toggle(group.value(), option))"
+            [class]="chipClass(muscles().includes(muscle))"
+            [attr.aria-pressed]="muscles().includes(muscle)"
+            (click)="muscles.set(toggle(muscles(), muscle))"
           >
-            {{ group.labelPrefix + option | transloco }}
+            {{ 'muscles.' + muscle | transloco }}
           </button>
         }
       </div>
 
-      <div class="flex h-8 items-center gap-2">
-        <p class="min-w-0 flex-1 truncate text-sm text-muted-foreground" aria-live="polite">
+      <div class="flex items-center gap-2">
+        @let picked = equipment();
+        <button
+          type="button"
+          [class]="chipClass(picked.length > 0) + ' gap-1'"
+          [hlmDropdownMenuTrigger]="equipmentMenu"
+          align="start"
+        >
+          @if (picked.length === 0) {
+            {{ 'picker.allEquipment' | transloco }}
+          } @else {
+            {{ 'equipment.' + picked[0] | transloco }}
+            @if (picked.length > 1) {
+              +{{ picked.length - 1 }}
+            }
+          }
+          <ng-icon name="lucideChevronDown" size="16" />
+        </button>
+        <ng-template #equipmentMenu>
+          <hlm-dropdown-menu class="w-56">
+            <button
+              hlmDropdownMenuCheckbox
+              [checked]="equipment().length === 0"
+              [keepOpen]="false"
+              (triggered)="equipment.set([])"
+            >
+              {{ 'picker.allEquipment' | transloco }}
+              <hlm-dropdown-menu-checkbox-indicator />
+            </button>
+            <hlm-dropdown-menu-separator />
+            @for (item of equipmentValues; track item) {
+              <button
+                hlmDropdownMenuCheckbox
+                [checked]="equipment().includes(item)"
+                (triggered)="equipment.set(toggle(equipment(), item))"
+              >
+                {{ 'equipment.' + item | transloco }}
+                <hlm-dropdown-menu-checkbox-indicator />
+              </button>
+            }
+          </hlm-dropdown-menu>
+        </ng-template>
+        <p class="ml-auto text-sm text-muted-foreground tabular-nums" aria-live="polite">
           {{
             (results().length === 1 ? 'picker.countOne' : 'picker.countMany')
               | transloco: { count: results().length }
           }}
         </p>
-        @if (chipsActive()) {
-          <button hlmBtn variant="ghost" size="sm" class="-mr-3 shrink-0" (click)="clearChips()">
-            <ng-icon name="lucideX" />{{ 'picker.reset' | transloco }}
-          </button>
-        }
       </div>
     </div>
 
@@ -279,42 +286,13 @@ export class ExercisePickerPage implements OnInit {
 
   protected readonly query = signal('');
   protected readonly muscles = signal<readonly MuscleGroup[]>([]);
-  protected readonly forces = signal<readonly ForceFilter[]>([]);
   protected readonly equipment = signal<readonly EquipmentFilter[]>([]);
   protected readonly selected = signal<ReadonlySet<string>>(new Set());
   private readonly recentIds = signal<string[]>([]);
 
-  protected readonly groups: readonly FilterGroup[] = [
-    {
-      id: 'muscles',
-      labelPrefix: 'muscles.',
-      options: MUSCLE_GROUPS,
-      value: this.muscles as WritableSignal<readonly string[]>,
-    },
-    {
-      id: 'equipment',
-      labelPrefix: 'equipment.',
-      options: EQUIPMENT,
-      value: this.equipment as WritableSignal<readonly string[]>,
-    },
-    {
-      id: 'forces',
-      labelPrefix: 'forces.',
-      options: FORCES,
-      value: this.forces as WritableSignal<readonly string[]>,
-    },
-  ];
+  protected readonly muscleGroups = MUSCLE_GROUPS;
+  protected readonly equipmentValues = EQUIPMENT;
   protected readonly toggle = toggle;
-  protected readonly activeGroup = signal(this.groups[0]);
-  /** Tab labels carry the number of active chips, e.g. «Muskeln · 2». */
-  protected readonly tabs = computed(() =>
-    this.groups.map((group) => {
-      const count = group.value().length;
-      const label = this.transloco.translate(`picker.groups.${group.id}`);
-      return { value: group.id, label: count ? `${label} · ${count}` : label };
-    }),
-  );
-  private readonly chipRow = viewChild<ElementRef<HTMLElement>>('chipRow');
   /** The list is scrolled: the pinned area gets a bottom border. */
   protected readonly scrolled = signal(false);
   private readonly scroller = viewChild<ElementRef<HTMLElement>>('scroller');
@@ -346,11 +324,11 @@ export class ExercisePickerPage implements OnInit {
   private readonly filter = computed(() => ({
     query: this.query(),
     muscles: this.muscles(),
-    forces: this.forces(),
+    // Push/pull stays in the data and the search core, but the picker doesn't offer it (0024).
+    forces: [],
     equipment: this.equipment(),
   }));
   protected readonly filterActive = computed(() => isFilterActive(this.filter()));
-  protected readonly chipsActive = computed(() => this.groups.some((g) => g.value().length > 0));
 
   /** Sorted by display name in the UI language. */
   private readonly sorted = computed(() => {
@@ -405,27 +383,12 @@ export class ExercisePickerPage implements OnInit {
     }`;
   }
 
-  protected selectGroup(id: FilterGroupId): void {
-    this.activeGroup.set(this.groups.find((g) => g.id === id) ?? this.groups[0]);
-    const row = this.chipRow()?.nativeElement;
-    if (row) {
-      row.scrollLeft = 0;
-    }
-  }
-
-  /** Clears the chips; the search stays. */
-  protected clearChips(): void {
-    this.muscles.set([]);
-    this.forces.set([]);
-    this.equipment.set([]);
-  }
-
   protected meta(exercise: Exercise): string {
     const parts: string[] = [];
     if (exercise.muscleGroup) {
       parts.push(this.transloco.translate(`muscles.${exercise.muscleGroup}`));
     }
-    const chip = equipmentChip(exercise.equipment);
+    const chip = equipmentFilterOf(exercise.equipment);
     if (chip) {
       parts.push(this.transloco.translate(`equipment.${chip}`));
     }
@@ -445,7 +408,6 @@ export class ExercisePickerPage implements OnInit {
   protected resetFilters(): void {
     this.query.set('');
     this.muscles.set([]);
-    this.forces.set([]);
     this.equipment.set([]);
   }
 
