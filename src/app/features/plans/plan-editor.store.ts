@@ -1,6 +1,7 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import {
   addExercises,
+  copyDraft,
   DraftExercise,
   emptyDraft,
   isDirty,
@@ -11,6 +12,12 @@ import {
   updateExercise,
 } from '../../core/plans/plan-draft';
 import { PlansService } from '../../core/plans/plans.service';
+
+/** Plan to duplicate and how to name the copy (the name is translated by the caller). */
+export interface PlanCopy {
+  planId: string;
+  name: (sourceName: string) => string;
+}
 
 /**
  * Draft of the plan being created or edited. Provided on the editor route so it survives the
@@ -30,19 +37,25 @@ export class PlanEditorStore {
   readonly valid = computed(() => isValid(this.draft()));
   readonly exerciseIds = computed(() => new Set(this.draft().exercises.map((e) => e.exerciseId)));
 
-  /** Loads the plan once per editor visit; returns false if the plan does not exist. */
-  async init(id: string | null): Promise<boolean> {
+  /**
+   * Loads the plan once per editor visit; returns false if the plan (or the copied one) does
+   * not exist. With `copyOf`, a new plan starts as a copy that counts as unsaved changes.
+   */
+  async init(id: string | null, copyOf?: PlanCopy): Promise<boolean> {
+    // A copy is a new plan: the picker's init(null) must find and keep its draft.
     const key = id ?? 'new';
     if (this.loadedKey === key) {
       return true;
     }
-    const draft = id ? await this.plans.getDraft(id) : emptyDraft();
-    if (!draft) {
+    const source = id ?? copyOf?.planId;
+    const loaded = source ? await this.plans.getDraft(source) : emptyDraft();
+    if (!loaded) {
       return false;
     }
+    const draft = !id && copyOf ? copyDraft(loaded, copyOf.name(loaded.name)) : loaded;
     this.loadedKey = key;
     this.draft.set(draft);
-    this.snapshot.set(draft);
+    this.snapshot.set(draft === loaded ? draft : emptyDraft());
     this.loaded.set(true);
     return true;
   }

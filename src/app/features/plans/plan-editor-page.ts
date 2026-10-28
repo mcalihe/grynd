@@ -1,7 +1,7 @@
 import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
 import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { TranslocoPipe } from '@jsverse/transloco';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { NgIcon } from '@ng-icons/core';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmDropdownMenuImports } from '@spartan-ng/helm/dropdown-menu';
@@ -14,7 +14,7 @@ import { NumberStepper } from '../../shared/components/number-stepper/number-ste
 import { PageHeader } from '../../shared/components/page-header/page-header';
 import { StickyAction } from '../../shared/components/sticky-action/sticky-action';
 import { WeekdayChips } from '../../shared/components/weekday-chips/weekday-chips';
-import { PlanEditorStore } from './plan-editor.store';
+import { PlanCopy, PlanEditorStore } from './plan-editor.store';
 import { PlanExerciseRow, targetSummary } from './plan-exercise-row';
 
 /**
@@ -55,6 +55,9 @@ import { PlanExerciseRow, targetSummary } from './plan-exercise-row';
           </button>
           <ng-template #planMenu>
             <hlm-dropdown-menu class="w-56">
+              <button hlmDropdownMenuItem (click)="duplicate()">
+                {{ 'plans.duplicate.action' | transloco }}
+              </button>
               <button hlmDropdownMenuItem variant="destructive" (click)="delete()">
                 {{ 'plans.delete.action' | transloco }}
               </button>
@@ -210,6 +213,7 @@ export class PlanEditorPage implements OnInit {
   private readonly confirm = inject(ConfirmService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly transloco = inject(TranslocoService);
 
   protected readonly summary = targetSummary;
   protected saving = false;
@@ -219,9 +223,14 @@ export class PlanEditorPage implements OnInit {
     return this.route.parent?.snapshot.paramMap.get('id') ?? null;
   }
 
+  /** /plans/new?copyOf=<id> starts the new plan as a copy of that plan. */
+  private get copyOf(): string | null {
+    return this.planId ? null : this.route.snapshot.queryParamMap.get('copyOf');
+  }
+
   async ngOnInit(): Promise<void> {
     const [found] = await Promise.all([
-      this.store.init(this.planId),
+      this.store.init(this.planId, this.copyOf ? this.copyRequest(this.copyOf) : undefined),
       this.catalog.load(),
       this.notes.load(),
     ]);
@@ -240,8 +249,20 @@ export class PlanEditorPage implements OnInit {
   }
 
   protected back(): void {
-    const id = this.planId;
+    const id = this.planId ?? this.copyOf;
     void this.router.navigate(id ? ['/plans', id] : ['/plans']);
+  }
+
+  /** Opens a new plan prefilled with the saved state of this one; the guard asks first. */
+  protected duplicate(): void {
+    void this.router.navigate(['/plans/new'], { queryParams: { copyOf: this.planId } });
+  }
+
+  private copyRequest(planId: string): PlanCopy {
+    return {
+      planId,
+      name: (name) => this.transloco.translate('plans.duplicate.name', { name }),
+    };
   }
 
   protected async save(): Promise<void> {

@@ -24,6 +24,27 @@ export function emptyDraft(): PlanDraft {
   return { name: '', weekdays: [], exercises: [] };
 }
 
+/** Longest plan name the editor accepts (maxlength of the name input). */
+export const PLAN_NAME_MAX_LENGTH = 60;
+
+/**
+ * Unsaved new plan with the source's weekdays, exercises and targets. Notes and weight steps
+ * belong to the exercise, so the copy shares them without copying anything.
+ */
+export function copyDraft(source: PlanDraft, name: string): PlanDraft {
+  return {
+    name: name.slice(0, PLAN_NAME_MAX_LENGTH),
+    weekdays: [...source.weekdays],
+    exercises: source.exercises.map((e) => ({
+      exerciseId: e.exerciseId,
+      targetSets: e.targetSets,
+      repMin: e.repMin,
+      repMax: e.repMax,
+      restSeconds: e.restSeconds,
+    })),
+  };
+}
+
 export function isValid(draft: PlanDraft): boolean {
   return draft.name.trim().length > 0 && draft.exercises.length > 0;
 }

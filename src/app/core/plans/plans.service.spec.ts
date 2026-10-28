@@ -5,11 +5,13 @@ import { createTestDatabase, FakeClock } from '../../../testing/test-database';
 import { PlanExerciseRepository, PlanRepository } from '../db/repositories/plan.repository';
 import {
   addExercises,
+  copyDraft,
   DEFAULT_TARGETS,
   emptyDraft,
   isDirty,
   isValid,
   moveItem,
+  PLAN_NAME_MAX_LENGTH,
   PlanDraft,
   removeExercise,
   updateExercise,
@@ -49,6 +51,43 @@ describe('plan draft', () => {
       repMin: 5,
       repMax: 5,
     });
+  });
+
+  it('copies weekdays, exercises and targets into an unsaved plan', () => {
+    const source: PlanDraft = {
+      id: 'p1',
+      name: 'Push',
+      weekdays: [1, 4],
+      exercises: [
+        {
+          planExerciseId: 'pe1',
+          exerciseId: 'e1',
+          targetSets: 4,
+          repMin: 6,
+          repMax: 8,
+          restSeconds: 120,
+        },
+        { planExerciseId: 'pe2', exerciseId: 'e2', ...DEFAULT_TARGETS },
+      ],
+    };
+
+    const copy = copyDraft(source, 'Push (Kopie)');
+
+    expect(copy).toEqual({
+      name: 'Push (Kopie)',
+      weekdays: [1, 4],
+      exercises: [
+        { exerciseId: 'e1', targetSets: 4, repMin: 6, repMax: 8, restSeconds: 120 },
+        { exerciseId: 'e2', ...DEFAULT_TARGETS },
+      ],
+    });
+    expect(copy.weekdays).not.toBe(source.weekdays);
+    expect(copy.exercises[0]).not.toBe(source.exercises[0]);
+  });
+
+  it('cuts the copied name to the editor limit', () => {
+    const copy = copyDraft(base, 'x'.repeat(PLAN_NAME_MAX_LENGTH + 5));
+    expect(copy.name).toHaveLength(PLAN_NAME_MAX_LENGTH);
   });
 
   it('detects changes, ignoring undone ones and whitespace', () => {
