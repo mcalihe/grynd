@@ -64,7 +64,7 @@ export function exerciseProgress(item: WorkoutExercise): number {
                   </span>
                   <span class="text-xs text-muted-foreground">
                     {{
-                      'workout.overviewSets'
+                      (item.cardio ? 'workout.overviewEntries' : 'workout.overviewSets')
                         | transloco: { done: done(item), total: item.sets.length }
                     }}
                   </span>
