@@ -41,6 +41,7 @@ import { calendarMonth } from '../../core/history/history-insights';
 import { SegmentProgress } from '../../shared/components/segment-progress/segment-progress';
 import { SegmentedControl } from '../../shared/components/segmented-control/segmented-control';
 import { SetRow, SetRowState } from '../../shared/components/set-row/set-row';
+import { CardioRow, CardioRowState } from '../../shared/components/cardio-row/cardio-row';
 import { StickyAction } from '../../shared/components/sticky-action/sticky-action';
 import { TimerBar } from '../../shared/components/timer-bar/timer-bar';
 import { WeekdayChips } from '../../shared/components/weekday-chips/weekday-chips';
@@ -70,6 +71,7 @@ import { ExerciseCelebration } from '../workout/exercise-celebration';
     HlmSheetImports,
     HlmAlertDialogImports,
     SetRow,
+    CardioRow,
     NumberStepper,
     ValueScrubber,
     ProgressRing,
@@ -208,6 +210,7 @@ export class ComponentsShowcase {
     'destructive',
   ] as const;
   protected readonly setStates: SetRowState[] = ['open', 'completed', 'record', 'menu-open'];
+  protected readonly cardioStates: CardioRowState[] = ['open', 'completed', 'menu-open'];
   protected readonly ringValues = [0, 1 / 3, 1 / 2, 2 / 3, 1];
   protected readonly segments = [
     { done: 3, total: 3 },
