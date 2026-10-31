@@ -43,6 +43,10 @@
       "repMin": "REPS MIN",
       "repMax": "REPS MAX"
     },
+    "duplicate": {
+      "action": "Duplicate plan",
+      "name": "{{name}} (copy)"
+    },
     "delete": {
       "action": "Delete plan",
       "title": "Delete plan?",
@@ -333,6 +337,10 @@
     }
   },
   "releaseNotes": {
+    "duplicatePlan": {
+      "title": "Duplicate plans",
+      "text": "Need a similar plan? Open a plan for editing and choose “Duplicate plan” in the menu at the top right. Adjust the name, weekdays and exercises before you save."
+    },
     "notePhotos": {
       "title": "Photos in notes",
       "text": "Add up to six photos to an exercise note, like your seat setting. They stay on your device and are just for you."

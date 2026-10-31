@@ -43,6 +43,10 @@
       "repMin": "WDH. MIN",
       "repMax": "WDH. MAX"
     },
+    "duplicate": {
+      "action": "Plan duplizieren",
+      "name": "{{name}} (Kopie)"
+    },
     "delete": {
       "action": "Plan löschen",
       "title": "Plan löschen?",
@@ -333,6 +337,10 @@
     }
   },
   "releaseNotes": {
+    "duplicatePlan": {
+      "title": "Pläne duplizieren",
+      "text": "Brauchst du einen ähnlichen Plan? Öffne einen Plan zum Bearbeiten und wähle im Menü oben rechts «Plan duplizieren». Name, Wochentage und Übungen kannst du vor dem Speichern anpassen."
+    },
     "notePhotos": {
       "title": "Bilder in Notizen",
       "text": "Füge einer Übungsnotiz bis zu sechs Fotos hinzu, etwa von der Sitzeinstellung. Die Bilder bleiben auf deinem Gerät und sind nur für dich."

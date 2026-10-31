@@ -9,6 +9,7 @@ In Figma sehen Plan-Detail (`37:27708`) und «Plan bearbeiten» (`37:28096`) fas
 - **Plan-Detail ist eine Ansicht.** Wochentage und Reihenfolge werden nur angezeigt, der Chevron klappt die Ziele auf. Oben rechts steht «Bearbeiten», der Primary-Button ist «Training starten».
 - **Bearbeiten und Erstellen** nutzen denselben Screen mit «Speichern» bzw. «Plan speichern». Der Button ist deaktiviert, solange Name oder Übungen fehlen. Es gibt keinen Abbrechen-Button.
 - **Löschen** geht über das Drei-Punkte-Menü im Bearbeiten-Screen und braucht eine Bestätigung. Es ist ein Soft Delete, vergangene Trainings bleiben erhalten.
+- **Duplizieren** (Nachtrag 2026-10): ebenfalls im Drei-Punkte-Menü des Bearbeiten-Screens. Es öffnet `/plans/new?copyOf=<id>` mit einer Kopie des gespeicherten Plans (Name mit «(Kopie)», Wochentage, Übungen, Ziele). Die Kopie entsteht erst beim Speichern, ohne Speichern fragt der Unsaved-Guard. Notizen und Gewichtsschritte gehören zur Übung und gelten automatisch auch für die Kopie.
 - **Routen:** «Übungen hinzufügen» ist eine Kind-Route des Editors: `/plans/new/add-exercises` und `/plans/:id/edit/add-exercises`. Der Entwurf (`PlanEditorStore`, auf Routenebene bereitgestellt) übersteht so den Wechsel, und der Unsaved-Guard am Eltern-Pfad greift nur beim Verlassen des Editors.
 
 ## Umsetzungshinweise
