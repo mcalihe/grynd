@@ -68,6 +68,7 @@ Grynd kannte nur Krafttraining: Jeder Satz war kg × Wdh. Der Katalog hatte zwar
   - `core/energy/energy.ts`: MET, `entryKcal()`, `sessionEnergy()`.
   - `core/units/distance.ts`: Umrechnung, Tempo.
 - **Stepper:** `NumberStepper` und `ValueScrubber` nehmen ein `format` (Zahl oder Dauer m:ss) und einen `origin` (Startwert für ein leeres Feld).
-- **Komponenten:** `CardioRow` (`app-cardio-row`), `CardioStartSheet`, `CardioSession`.
-- **Verlauf:** `HistoryService.loadFacts()` lädt nur noch Kraftsätze; Cardio-Einträge kommen aus einer eigenen Abfrage.
+- **Komponenten:** `CardioRow` (`app-cardio-row`), `CardioStartSheet`, `CardioSession`. Long-Press und Haken-Animation teilen sich `SetRow` und `CardioRow` (`LongPress`, `celebrateCheck`).
+- **Training:** `WorkoutService.startCardio()` startet ohne Plan, `standalone` und `ActiveWorkout.activity` kennzeichnen es; `end()` schreibt die aktive Dauer in den Eintrag. `WorkoutLauncher` fragt bei laufendem Training nach (Plan-Detail und Pläne-Screen).
+- **Verlauf:** `HistoryService.summaries` ist ein `computed`, das die Kalorien mit `sessionEnergy()` und dem Körpergewicht (Training, sonst Einstellung) rechnet. `loadFacts()` lädt nur noch Kraftsätze; Cardio-Einträge kommen aus einer eigenen Abfrage. `previousSessionOf()` vergleicht nach Plan oder Aktivität.
 - Vorschau unter `/dev/components` und `/dev/celebration/cardio`.

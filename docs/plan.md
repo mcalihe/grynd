@@ -76,17 +76,17 @@ Alle Tabellen haben `id` (UUIDv7), `createdAt`, `updatedAt`, `deletedAt`. Dazu k
 
 | Tabelle | Felder | Hinweis |
 | --- | --- | --- |
-| `exercise` | key, nameDe, nameEn, primaryMuscles, secondaryMuscles, muscleGroup, force (push / pull / static), equipment, level, category, images | Katalog aus free-exercise-db (gemeinfrei), mit der App ausgeliefert, nur lesbar; deutsche Namen per AI übersetzt |
+| `exercise` | key, nameDe, nameEn, primaryMuscles, secondaryMuscles, muscleGroup, force (push / pull / static), equipment, level, category, images | Katalog aus free-exercise-db (gemeinfrei), mit der App ausgeliefert, nur lesbar; deutsche Namen per AI übersetzt. Dazu eigene Ausdauer-Aktivitäten (`Grynd_*`, ohne Bilder); `category = cardio` heisst Ausdauer ([0024](decisions/0024-cardio-and-calories.md)) |
 | `exercise_note` | exerciseId, text | Notiz des Nutzers zu einer Übung, gilt in allen Plänen; höchstens eine pro Übung, max. 500 Zeichen ([0019](decisions/0019-exercise-notes.md)) |
 | `exercise_note_image` | exerciseId | Bild zur Notiz einer Übung, höchstens 6 pro Übung; die JPEG-Datei liegt im Datenordner der App, nicht in SQLite ([0021](decisions/0021-note-images.md)) |
 | `exercise_setting` | exerciseId, weightStepKg, weightStepLb | Einstellungen des Nutzers zu einer Übung, gelten in allen Plänen; Gewichtsschritt getrennt für kg und lb, `null` = 2,5 ([0022](decisions/0022-weight-step.md)) |
 | `plan` | name, weekdays (Liste 0–6, optional) | Ein Plan = ein Training |
-| `plan_exercise` | planId, exerciseId, position, targetSets, repMin, repMax, restSeconds | Feste Reihenfolge über `position`; Standard 3 × 8–12, 90 s |
-| `workout_session` | planId (optional), startedAt, finishedAt, status (active / finished / aborted) | Maximal eine aktive Session |
+| `plan_exercise` | planId, exerciseId, position, targetSets, repMin, repMax, restSeconds, targetDurationSec | Feste Reihenfolge über `position`; Standard 3 × 8–12, 90 s; Ausdauer 1 × 10 Min. (`targetDurationSec`, [0024](decisions/0024-cardio-and-calories.md)) |
+| `workout_session` | planId (optional), startedAt, finishedAt, status (active / finished / aborted), bodyWeightKg | Maximal eine aktive Session; ohne Plan = Ausdauer-Training einer Aktivität; `bodyWeightKg` aus den Einstellungen beim Start ([0024](decisions/0024-cardio-and-calories.md)) |
 | `workout_pause` | sessionId, pausedAt, resumedAt | Pausen eines Trainings; `resumedAt` leer, solange es pausiert ist, höchstens eine offene pro Session ([0023](decisions/0023-pause-workout.md)) |
-| `session_exercise` | sessionId, exerciseId, position, status (open / done), repMin, repMax, restSeconds | Kopie der Plan-Übungen inkl. Ziele beim Start |
+| `session_exercise` | sessionId, exerciseId, position, status (open / done), repMin, repMax, restSeconds, targetDurationSec | Kopie der Plan-Übungen inkl. Ziele beim Start |
 | `exercise_interval` | sessionExerciseId, enteredAt, leftAt | Zeiträume, in denen die Übung angezeigt wurde; beliebig viele |
-| `set_log` | sessionExerciseId, position, weightKg, reps, completedAt, isExtra | Gewicht immer in kg |
+| `set_log` | sessionExerciseId, position, weightKg, reps, durationSec, distanceM, level, kcal, heartRate, completedAt, isExtra | Gewicht immer in kg, Distanz immer in m; ein Ausdauer-Eintrag hat Dauer statt kg × Wdh. ([0024](decisions/0024-cardio-and-calories.md)) |
 
 ## 7. Geschäftsregeln
 
@@ -98,9 +98,11 @@ Alle Tabellen haben `id` (UUIDv7), `createdAt`, `updatedAt`, `deletedAt`. Dazu k
 - **Heute:** alle Pläne, deren `weekdays` den aktuellen Wochentag enthalten (mehrere möglich).
 - **Fortsetzen:** Eine aktive Session überlebt App-Neustarts; die App öffnet sie beim Start wieder, ausser sie ist pausiert ([0023](decisions/0023-pause-workout.md)).
 - **Pausieren:** Ein Training lässt sich pausieren; danach kann man die App normal nutzen, es bleibt das einzige aktive Training. Pausen zählen nicht zur Trainingsdauer ([0023](decisions/0023-pause-workout.md)).
+- **Ausdauer** ([0024](decisions/0024-cardio-and-calories.md)): Cardio-Übungen (`category = cardio`) loggen Einträge mit Dauer, Distanz, Stufe, kcal vom Gerät und Puls. Vorbefüllt werden die Dauer aus dem Plan-Ziel (sonst vom letzten Mal), Distanz und Stufe vom letzten Mal, nie kcal und Puls. Einträge zählen für den Fortschritt, aber nicht als Sätze, Volumen, Muskelgruppen oder Rekorde. Ein Training ohne Plan hat eine Aktivität; beim Abschliessen wird die aktive Dauer zur Dauer des Eintrags.
+- **Kalorien** ([0024](decisions/0024-cardio-and-calories.md)): MET × Körpergewicht × Stunden. Ein Cardio-Eintrag zählt mit den kcal des Geräts, sonst mit dem MET der Aktivität (bei Gehen, Laufen, Velo nach Tempo); dazu bei Kraftsätzen die übrige aktive Zeit mit 3,5 MET. Körpergewicht = Wert des Trainings, sonst die Einstellung; fehlt es und braucht ein Teil eine Schätzung, gibt es keine Kalorien (keine Teilsummen). Geschätzte Werte mit «≈».
 - **Rekord:** Ein Satz ist ein PR, wenn sein geschätztes 1RM (Epley: kg × (1 + reps / 30)) über allen bisherigen abgehakten Sätzen dieser Übung liegt (abgeschlossene Sessions und frühere Sätze der laufenden). Ohne Basis und bei Gleichstand kein PR. Wird zur Laufzeit berechnet, nicht gespeichert.
 - **Beenden/Abschliessen:** siehe [0011](decisions/0011-workout-flow.md). «Beenden und speichern» → `finished`, «Training verwerfen» → `aborted` (nicht im Verlauf).
-- **Einheiten:** intern kg, Umrechnung in lb nur für die Anzeige (auf 0,1 gerundet; eingegebene lb bleiben exakt erhalten). Schritt pro Übung wählbar, getrennt für kg (0,25–10) und lb (0,5–10), Standard 2,5 ([0022](decisions/0022-weight-step.md)).
+- **Einheiten:** intern kg, Umrechnung in lb nur für die Anzeige (auf 0,1 gerundet; eingegebene lb bleiben exakt erhalten). Schritt pro Übung wählbar, getrennt für kg (0,25–10) und lb (0,5–10), Standard 2,5 ([0022](decisions/0022-weight-step.md)). Distanzen intern in m, angezeigt in km oder mi (eigene Einstellung, [0024](decisions/0024-cardio-and-calories.md)).
 - **Zeiterfassung:**
   - Training: `startedAt` beim Start, `finishedAt` bei «Training abschliessen». Dauer = `finishedAt` − `startedAt` − Pausen (`workout_pause`, je `pausedAt` bis `resumedAt`).
   - Übung: Jedes Mal, wenn eine Übung zur aktuellen Seite wird, beginnt ein Intervall (`enteredAt`); beim Wegwischen, Pausieren oder Abschliessen wird es geschlossen (`leftAt`). Zeit pro Übung = Summe der Intervalle.
@@ -114,15 +116,17 @@ Alle Tabellen haben `id` (UUIDv7), `createdAt`, `updatedAt`, `deletedAt`. Dazu k
 ### Pläne (`/plans`)
 - Abschnitt «Heute» nur, wenn ein Plan für heute geplant ist. Heutige Plan-Karte sieht aus wie alle anderen.
 - Plan-Karte: Name, Anzahl Übungen, Wochentage als Chips, rechts Pfeil-Button (44 px). Karte und Pfeil öffnen den Plan; gestartet wird im Plan-Detail. Pfeil beim heutigen Plan in `primary`, sonst `secondary`.
-- Kein Primary-Button unten. «Neuer Plan» als Secondary-Button in der Liste.
+- Kein Primary-Button unten. «Neuer Plan» und «Ausdauer starten» als Secondary-Buttons in der Liste (im Leer-Zustand untereinander).
+- **Ausdauer starten** ([0024](decisions/0024-cardio-and-calories.md)): Sheet mit allen Cardio-Aktivitäten (zuletzt verwendete zuerst, dann A–Z); ein Tap startet ein Training ohne Plan.
 - Bottom-Navigation: Pläne, Verlauf, Einstellungen. Ein laufendes Training ist ein Vollbild ohne Navigation und wird über den Plan gestartet (kein Training-Tab).
-- Ein pausiertes Training steht auf den Tab-Screens als Leiste über der Navigation (Planname, «Pausiert · 23:14»); ein Tap öffnet es ([0023](decisions/0023-pause-workout.md)).
+- Ein pausiertes Training steht auf den Tab-Screens als Leiste über der Navigation (Planname bzw. Aktivität, «Pausiert · 23:14»); ein Tap öffnet es ([0023](decisions/0023-pause-workout.md)).
 
 ### Plan-Detail, Plan bearbeiten, Plan erstellen (`/plans/:id`, `/plans/:id/edit`, `/plans/new`)
 - **Plan-Detail ist eine Ansicht** ([0010](decisions/0010-plan-detail-and-editor.md)): Wochentage und Reihenfolge nur angezeigt, Chevron klappt die Ziele auf; «Bearbeiten» oben rechts, «Training starten» als Primary.
 - **Bearbeiten/Erstellen:** Ziele pro Übung (Sätze, Wdh. min/max, Pause) im aufgeklappten Eintrag; «Plan löschen» im Drei-Punkte-Menü mit Bestätigung (Soft Delete). «Plan duplizieren» im selben Menü öffnet «Neuer Plan» mit «Name (Kopie)», Wochentagen, Übungen und Zielen des gespeicherten Plans; gespeichert wird erst mit «Plan speichern».
 - **Notizen:** Ein Notiz-Symbol neben den Zielen markiert Übungen mit Notiz (Text oder Bilder; Detail und Editor). Im Detail zeigt der aufgeklappte Eintrag die Notiz mit ihren Bildern oder «Notiz hinzufügen»; bearbeitet wird im selben Sheet wie im Training ([0019](decisions/0019-exercise-notes.md), [0021](decisions/0021-note-images.md)).
 - **Gewichtsschritt:** Im Detail zeigt der aufgeklappte Eintrag «Gewichtsschritt 2,5 kg»; ein Tap öffnet dasselbe Sheet wie im Training. Der Editor zeigt ihn nicht ([0022](decisions/0022-weight-step.md)).
+- **Ausdauer** ([0024](decisions/0024-cardio-and-calories.md)): Cardio-Übungen zeigen «10 Min.» bzw. «2 × 10 Min.» oder «Ohne Ziel»; der Editor hat dafür Dauer und Einträge statt Sätze, Wdh. und Pause; im Detail keine Pause und kein Gewichtsschritt.
 - Planname, «Wochentage (optional)» als 7 Chips, Übungsliste mit Drag-Handle, Name, «3 × 8–10», Menü.
 - «Plan erstellen» = gleicher Screen wie Bearbeiten, Titel «Neuer Plan», Empty State; «Plan speichern» deaktiviert, solange Name oder Übungen fehlen.
 - Kein Abbrechen-Button, verlassen über den Zurück-Pfeil.
@@ -133,7 +137,7 @@ Alle Tabellen haben `id` (UUIDv7), `createdAt`, `updatedAt`, `deletedAt`. Dazu k
 - **Kopf bleibt stehen, nur die Liste scrollt** ([0024](decisions/0024-exercise-picker-filters.md)): eine Zeile Muskel-Chips (ein Tap filtert), darunter der Chip «Alle Geräte ▾» mit Dropdown direkt darunter und rechts, sobald ein Filter aktiv ist, «✕ Filter löschen». Die Trefferzahl steht als Überschrift über den Ergebnissen; im Leerzustand «Filter zurücksetzen».
 - «Zuletzt verwendet» (3 Übungen aus `session_exercise`), dann alphabetische Liste mit Vorschaubild, Muskelgruppe und Equipment.
 - Mehrfachauswahl, Primary-Button «3 Übungen hinzufügen». Übungen, die schon im Plan sind: gedimmt, «Im Plan», nicht auswählbar.
-- Neue Übungen am Ende des Plans mit Standard 3 × 8–12. Schliessen mit Auswahl → Guard-Dialog.
+- Neue Übungen am Ende des Plans mit Standard 3 × 8–12, Ausdauer mit 1 × 10 Min. Schliessen mit Auswahl → Guard-Dialog.
 
 ### Training (`/workout`)
 - **Eine Übung pro Seite,** horizontales Wischen per CSS Scroll-Snap (`scroll-snap-type: x mandatory`). Kopfbereich und Weiter-Button bewegen sich nicht mit.
@@ -144,27 +148,29 @@ Alle Tabellen haben `id` (UUIDv7), `createdAt`, `updatedAt`, `deletedAt`. Dazu k
 - **Satz-Zeile** (80 px): Nummer, Vorwert, Stepper für kg und Wdh., Haken. Werte lassen sich auch durch waagrechtes Ziehen über den Stepper ändern: ein Lineal über den ganzen Bildschirm zeigt jeden Schritt, am Bildschirmrand scrollt es weiter ([0018](decisions/0018-value-scrubber.md)). Zustände: offen, erledigt, Rekord, Menü offen. Kein «aktiv»-Zustand.
 - **Satz-Kontextmenü:** Long-Press (ca. 500 ms, mit Haptik), Rechtsklick (Web) oder Tippen auf die Satznummer, öffnet unter der Zeile; «Satz duplizieren», «Satz löschen». Kein Swipe-to-Delete.
 - **«+ Satz»** unter den Sätzen; Extra-Sätze mit Label «Extra».
+- **Ausdauer im Plan** ([0024](decisions/0024-cardio-and-calories.md)): Badge «Ausdauer», Zielzeile «1 Eintrag · Ziel 10 Min.», Cardio-Zeilen (Nummer, Dauer m:ss, Distanz, Haken; darunter Stufe, kcal, Puls je nach Aktivität), «+ Eintrag». Kein Gewichtsschritt im Menü, kein Timer-Autostart.
+- **Ausdauer ohne Plan** ([0024](decisions/0024-cardio-and-calories.md)): Kopf mit Aktivität, Pause und Trainingsuhr; darunter eine grosse Uhr, das Tempo (min/km, km/h, /500 m, /100 m) und die Felder Distanz, Stufe, kcal, Puls. Keine Pill, keine Segmente, kein Timer. Pausiert bleiben die Felder bearbeitbar, «Zu den Plänen» erscheint. Primary immer «Training abschliessen».
 - **Timer:** neutraler Timer als feste Leiste über dem Weiter-Button (kein Sheet). Bereit: Standarddauer + Chevron + Play. Läuft: Restzeit, Fortschrittslinie, −15 / +15, Stopp. Letzte 10 s in `warning`. Tippen auf die Zeit öffnet ein Popover mit 0:30, 1:00, 1:30, 2:00, 3:00. Startet automatisch nach dem Abhaken eines Satzes (abschaltbar). Speichert die Endzeit, nicht einen Zähler. Bei Ablauf: Haptik und eine lokale Benachrichtigung mit Standardton (auch im Hintergrund, [0014](decisions/0014-native-polish.md)).
 - **Weiter-Button:** «Weiter zu {Übungsname}», einzeilig mit Ellipsis; bei der letzten Übung «Training abschliessen».
 - **Pausieren** ([0023](decisions/0023-pause-workout.md)): runder Pause-Button links neben der Trainingsuhr. Pausiert stehen Uhr und Timer still, Sätze und Timer sind nicht bedienbar, ein Overlay zeigt «Training pausiert» mit der Zeit und «Zu den Plänen»; der Button unten wird zu «Weiter trainieren». Android-Zurück führt pausiert zu den Plänen.
 - **Beenden:** Trainingsuhr rechts im Kopf, gleich wie die Übersicht-Pill: Trainingsdauer ohne Pausen (aus `startedAt` und den Pausen, h:mm:ss ab einer Stunde) mit Stopp-Symbol. Tippen öffnet den Dialog «Training beenden?» mit «Beenden und speichern», «Training verwerfen» (destructive), «Weiter trainieren». Android-Zurück öffnet denselben Dialog ([0011](decisions/0011-workout-flow.md)).
 - **Belohnungen** ([0015](decisions/0015-celebrations.md)): Satz abhaken = Haken federt auf mit Funken; Rekord = Sterne und «PR»-Badge; Übung fertig = Badge mit Lob und Konfetti, das ins Fortschrittssegment fliegt (einmal pro Übung); alle Übungen erledigt = «Training abschliessen» pulsiert. Nie blockierend, ohne Ton.
-- **Abschliessen** (auch «Beenden und speichern») führt zum Feier-Screen `/workout/done/:id` (Pokal, Konfetti, Kennzahlen zählen hoch) und mit «Weiter» zum Verlaufs-Detail `/history/:id`.
+- **Abschliessen** (auch «Beenden und speichern») führt zum Feier-Screen `/workout/done/:id` (Pokal, Konfetti, Kennzahlen zählen hoch: Dauer, Volumen und Sätze, Distanz und Ø Tempo, Kalorien, Rekorde; ohne Körpergewicht ein Hinweis statt Kalorien, [0024](decisions/0024-cardio-and-calories.md)) und mit «Weiter» zum Verlaufs-Detail `/history/:id`.
 - «Training starten» bei laufendem Training fragt «Laufendes Training fortsetzen?» und führt zu `/workout`.
 - Bildschirm bleibt an, solange `/workout` offen ist und das Training läuft (`@capacitor-community/keep-awake`).
 
 ### Verlauf (`/history`, `/history/:sessionId`, `/history/plans/:planId`)
-- Drei Ansichten über ein Segmented Control: **Liste** (Standard, wie unten), **Kalender** (Monat mit Trainingstagen, Monatszahlen, Serie) und **Statistik** (Woche/Monat/Jahr mit Kennzahlen und Diagramm, Kraft, Muskelgruppen als Ring, Konstanz, Pläne). Details in [0016](decisions/0016-history-statistics.md).
+- Drei Ansichten über ein Segmented Control: **Liste** (Standard, wie unten), **Kalender** (Monat mit Trainingstagen, Monatszahlen, Serie) und **Statistik** (Woche/Monat/Jahr mit Kennzahlen und Diagramm, Kraft, Muskelgruppen als Ring, Konstanz, Pläne). Details in [0016](decisions/0016-history-statistics.md). Kennzahlen auch für Kalorien und, sobald es Distanzen gibt, Distanz; Ausdauer ohne Plan erscheint unter «Pläne» pro Aktivität ([0024](decisions/0024-cardio-and-calories.md)).
 - Wochenübersicht der laufenden Woche (Montag bis Sonntag) als einfarbiges Balkendiagramm (`chart-1`): Höhe = Trainingsdauer des Tages relativ zum längsten Tag, Tage ohne Training als niedrige graue Balken. Kopf mit Anzahl Trainings, Gesamtdauer und Differenz zur Vorwoche (positiv in `success`).
-- Liste vergangener Trainings, gruppiert nach Woche («Diese Woche», «Vorwoche», danach Datumsbereich): Planname, Tag, Dauer, Anzahl Übungen. Nur abgeschlossene, nicht gelöschte Trainings; verworfene erscheinen nie.
+- Liste vergangener Trainings, gruppiert nach Woche («Diese Woche», «Vorwoche», danach Datumsbereich): Planname, Tag, Dauer, Anzahl Übungen; Ausdauer ohne Plan mit Aktivität, Icon und Distanz. Nur abgeschlossene, nicht gelöschte Trainings; verworfene erscheinen nie.
 - Leerer Verlauf: Diagramm mit «0 Trainings» und Empty State «Noch keine Trainings».
-- **Detail:** Planname, Tag und Startzeit; Kennzahlen Dauer, Volumen (Σ kg × Wdh. abgehakter Sätze, Körpergewicht zählt 0), Sätze und Rekorde, jeweils mit Differenz zum letzten Training desselben Plans; Link «Alle Trainings mit {Plan}»; pro Übung Zeit (Summe der Intervalle), Volumen mit Differenz zum letzten Mal und die abgehakten Sätze mit Badges «Rekord» (`success`) und «Extra». Rekorde zählen gegen früher begonnene Trainings.
+- **Detail:** Planname, Tag und Startzeit; Kennzahlen Dauer, Kalorien, Volumen (Σ kg × Wdh. abgehakter Sätze, Körpergewicht zählt 0), Sätze, Distanz und Rekorde (je nach Training), jeweils mit Differenz zum letzten Training desselben Plans bzw. derselben Aktivität; ohne Körpergewicht ein Hinweis mit Link zu den Einstellungen; Cardio-Einträge als «25:00 · 5,2 km · 4:48 /km · Stufe 8 · 142 bpm · ≈ 310 kcal» ([0024](decisions/0024-cardio-and-calories.md)); Link «Alle Trainings mit {Plan}»; pro Übung Zeit (Summe der Intervalle), Volumen mit Differenz zum letzten Mal und die abgehakten Sätze mit Badges «Rekord» (`success`) und «Extra». Rekorde zählen gegen früher begonnene Trainings.
 - **Planverlauf:** alle Trainings eines Plans mit Durchschnitten, Diagramm der letzten 12 Trainings und geschätztem 1RM pro Übung als Sparkline; erreichbar aus Detail, Statistik und Plan-Detail.
 - **Löschen** über das Drei-Punkte-Menü im Detail mit Bestätigung (Soft Delete); gelöschte Trainings zählen nicht mehr für Vorbefüllung und Rekorde ([0012](decisions/0012-history.md)).
 
 ### Einstellungen (`/settings`)
 - Letzter Tab der Bottom-Navigation (Zahnrad).
-- Theme (Automatisch/Hell/Dunkel), Einheiten (kg/lb), Sprache (Deutsch/English, bis zur Wahl die Gerätesprache), Timer-Autostart, JSON-Export/Import als Backup (inkl. Notiz-Bilder als Base64, [0021](decisions/0021-note-images.md)), «Neuigkeiten», Version.
+- Theme (Automatisch/Hell/Dunkel), Einheiten (Gewicht kg/lb, Distanz km/mi), Sprache (Deutsch/English, bis zur Wahl die Gerätesprache), Körpergewicht (optional, für die Kalorien, [0024](decisions/0024-cardio-and-calories.md)), Timer-Autostart, JSON-Export/Import als Backup (inkl. Notiz-Bilder als Base64, [0021](decisions/0021-note-images.md)), «Neuigkeiten», Version.
 - Gespeichert mit `@capacitor/preferences`, wirksam sofort ([0013](decisions/0013-settings-units-swipe-backup.md)).
 - **Import ersetzt alle Pläne und Trainings** nach Prüfung der Datei und Bestätigung; Export als Download bzw. über das Teilen-Menü.
 
