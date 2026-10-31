@@ -67,7 +67,8 @@ function defaultDay(weeks: CalendarDay[][], now: Date): Date | null {
         <h2 class="text-xl font-semibold">{{ format.dayLong(selected()!) }}</h2>
         @for (session of selectedSessions(); track session.id) {
           <app-history-row
-            [name]="session.planName || ('history.untitled' | transloco)"
+            [name]="format.sessionName(session)"
+            [icon]="format.sessionIcon(session)"
             [details]="format.sessionDetails(session, now)"
             (open)="open(session.id)"
           />

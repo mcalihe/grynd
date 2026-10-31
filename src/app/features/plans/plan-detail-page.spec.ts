@@ -68,6 +68,11 @@ describe('PlanDetailPage', () => {
     exerciseCount: 1,
     setCount: 3,
     volumeKg: 1200,
+    activityId: null,
+    cardioCount: 0,
+    distanceM: 0,
+    bodyWeightKg: null,
+    energy: null,
   });
 
   async function setup(

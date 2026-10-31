@@ -6,6 +6,7 @@ import { SqlJsDriver } from '../../../testing/sqljs-driver';
 import { createTestDatabase, FakeClock } from '../../../testing/test-database';
 import { addExercises } from '../plans/plan-draft';
 import { PlansService } from '../plans/plans.service';
+import { SettingsService } from '../settings/settings.service';
 import { WorkoutService } from '../workout/workout.service';
 import { recordsBySession } from './history-insights';
 import { sessionDurationMs } from './history-stats';
@@ -26,7 +27,11 @@ describe('HistoryService', () => {
       imports: [TranslocoTestingModule.forRoot({ langs: { de: {} } })],
       providers: [...db.providers, provideMemorySettings()],
     });
-    await seedCatalog(['bench', 'row'].map((key, i) => catalogEntry(`e${i}`, key)));
+    await seedCatalog([
+      ...['bench', 'row'].map((key, i) => catalogEntry(`e${i}`, key)),
+      catalogEntry('run', 'Grynd_Running', { category: 'cardio', images: [] }),
+      catalogEntry('tread', 'Running_Treadmill', { category: 'cardio', muscleGroup: 'legs' }),
+    ]);
     const draft = addExercises({ name: 'Oberkörper', weekdays: [], exercises: [] }, ['e0', 'e1']);
     planId = await TestBed.inject(PlansService).save(draft);
     workout = TestBed.inject(WorkoutService);
@@ -170,5 +175,84 @@ describe('HistoryService', () => {
 
     await workout.start(planId);
     expect(workout.workout()!.exercises[0].sets[0].weightKg).toBe(80);
+  });
+  describe('cardio and calories (decision 0024)', () => {
+    /** A run without a plan: 25 minutes, 5 km, optionally with device calories. */
+    async function run(kcal: number | null = null): Promise<string> {
+      await workout.startCardio('run');
+      const entry = workout.workout()!.exercises[0].sets[0];
+      await workout.updateSet(entry.id, { distanceM: 5000, kcal });
+      clock.advance(25 * 60_000);
+      const id = await workout.finish();
+      clock.advance(24 * 60 * 60_000);
+      return id;
+    }
+
+    it('names a workout without a plan after its activity, with distance and no sets', async () => {
+      const id = await run(310);
+      await history.load();
+      expect(history.summaries()[0]).toMatchObject({
+        id,
+        planId: null,
+        activityId: 'run',
+        setCount: 0,
+        volumeKg: 0,
+        cardioCount: 1,
+        distanceM: 5000,
+        energy: { kcal: 310, estimated: false },
+      });
+
+      const detail = await history.detail(id);
+      expect(detail!.exercises[0]).toMatchObject({ cardio: true, exerciseKey: 'Grynd_Running' });
+      expect(detail!.exercises[0].sets[0]).toMatchObject({ durationSec: 1500, distanceM: 5000 });
+    });
+
+    it('estimates with the body weight of the workout, else the current setting', async () => {
+      const settings = TestBed.inject(SettingsService);
+      await run(); // no body weight yet
+      await settings.update({ bodyWeightKg: 80 });
+      await run(); // keeps 80
+      await settings.update({ bodyWeightKg: 60 });
+      await history.load();
+
+      // ACSM running at 12 km/h ≈ 12.43 MET × kg × 25/60 h
+      const [withSnapshot, withoutSnapshot] = history.summaries();
+      expect(withSnapshot.bodyWeightKg).toBe(80);
+      expect(withSnapshot.energy?.kcal).toBe(414);
+      expect(withoutSnapshot.bodyWeightKg).toBe(60);
+      expect(withoutSnapshot.energy?.kcal).toBe(311);
+
+      await settings.update({ bodyWeightKg: null });
+      expect(history.summaries()[0].energy?.kcal).toBe(414);
+      expect(history.summaries()[1].energy).toBeNull();
+    });
+
+    it('keeps cardio out of sets, volume and the statistics facts', async () => {
+      const draft = addExercises(
+        { name: 'Beine', weekdays: [], exercises: [] },
+        ['e0', 'tread'],
+        (id) => id === 'tread',
+      );
+      const legs = await TestBed.inject(PlansService).save(draft);
+      await workout.start(legs);
+      for (const exercise of workout.workout()!.exercises) {
+        const set = exercise.sets[0];
+        await workout.updateSet(set.id, { weightKg: 100, reps: 5 });
+        await workout.toggleComplete(set.id);
+      }
+      clock.advance(30 * 60_000);
+      const id = await workout.finish();
+
+      await history.load();
+      await history.loadFacts();
+      expect(history.summaries().find((s) => s.id === id)).toMatchObject({
+        setCount: 1,
+        volumeKg: 500,
+        cardioCount: 1,
+      });
+      expect(history.facts().map((f) => f.exerciseId)).toEqual(['e0']);
+      const detail = await history.detail(id);
+      expect(detail!.exercises.flatMap((e) => e.sets).some((s) => s.record)).toBe(false);
+    });
   });
 });

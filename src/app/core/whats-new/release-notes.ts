@@ -27,6 +27,7 @@ export const RELEASE_NOTES: readonly ReleaseNotes[] = [
       { id: 'duplicatePlan', icon: 'lucideCopy' },
       { id: 'exerciseSearch', icon: 'lucideSearch' },
       { id: 'cardio', icon: 'lucideActivity' },
+      { id: 'calories', icon: 'lucideFlame' },
     ],
   },
   {

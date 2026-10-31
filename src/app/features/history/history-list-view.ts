@@ -44,7 +44,8 @@ import { HistoryFormat } from './history-format';
         </h2>
         @for (session of week.sessions; track session.id) {
           <app-history-row
-            [name]="session.planName || ('history.untitled' | transloco)"
+            [name]="format.sessionName(session)"
+            [icon]="format.sessionIcon(session)"
             [details]="details(session)"
             (open)="open(session.id)"
           />

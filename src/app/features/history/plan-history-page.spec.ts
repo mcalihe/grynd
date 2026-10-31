@@ -21,6 +21,11 @@ describe('PlanHistoryPage', () => {
     exerciseCount: 1,
     setCount: 3,
     volumeKg,
+    activityId: null,
+    cardioCount: 0,
+    distanceM: 0,
+    bodyWeightKg: null,
+    energy: null,
   });
   const fact = (sessionId: string, day: number, weightKg: number): HistorySetFact => ({
     id: `${sessionId}-${weightKg}`,

@@ -9,6 +9,8 @@ import { HistoryDetail, HistoryService } from '../../core/history/history.servic
 import { ConfirmService } from '../../core/services/confirm.service';
 import { HistoryDetailPage } from './history-detail-page';
 
+const noCardio = { durationSec: null, distanceM: null, level: null, kcal: null, heartRate: null };
+
 describe('HistoryDetailPage', () => {
   const detail: HistoryDetail = {
     summary: {
@@ -21,14 +23,21 @@ describe('HistoryDetailPage', () => {
       exerciseCount: 1,
       setCount: 2,
       volumeKg: 1300,
+      activityId: null,
+      cardioCount: 0,
+      distanceM: 0,
+      bodyWeightKg: null,
+      energy: null,
     },
     exercises: [
       {
         exerciseId: 'e1',
+        exerciseKey: 'e1',
+        cardio: false,
         timeMs: 12 * 60_000,
         sets: [
-          { id: 'a', weightKg: 80, reps: 8, isExtra: false, record: false },
-          { id: 'b', weightKg: 82.5, reps: 8, isExtra: true, record: true },
+          { id: 'a', weightKg: 80, reps: 8, ...noCardio, isExtra: false, record: false },
+          { id: 'b', weightKg: 82.5, reps: 8, ...noCardio, isExtra: true, record: true },
         ],
       },
     ],
@@ -43,6 +52,11 @@ describe('HistoryDetailPage', () => {
     pausedMs: 0,
     setCount: 3,
     volumeKg: 1200,
+    activityId: null,
+    cardioCount: 0,
+    distanceM: 0,
+    bodyWeightKg: null,
+    energy: null,
   };
   const fact = (id: string, sessionId: string, startedAt: string, weightKg: number) =>
     ({

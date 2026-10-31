@@ -13,6 +13,11 @@ describe('MonthCalendar', () => {
     exerciseCount: 6,
     setCount: 18,
     volumeKg: 8420,
+    activityId: null,
+    cardioCount: 0,
+    distanceM: 0,
+    bodyWeightKg: null,
+    energy: null,
   });
 
   it('lets only training days be selected', () => {

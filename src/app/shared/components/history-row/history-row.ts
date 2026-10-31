@@ -17,7 +17,7 @@ import { NgIcon } from '@ng-icons/core';
         class="flex size-10 shrink-0 items-center justify-center rounded-md bg-secondary text-secondary-foreground"
         aria-hidden="true"
       >
-        <ng-icon name="lucideDumbbell" size="24" />
+        <ng-icon [name]="icon()" size="24" />
       </span>
       <span class="flex min-w-0 flex-1 flex-col gap-1">
         <span class="truncate text-sm font-semibold">{{ name() }}</span>
@@ -29,6 +29,8 @@ import { NgIcon } from '@ng-icons/core';
 export class HistoryRow {
   readonly name = input.required<string>();
   readonly details = input('');
+  /** The activity's icon for cardio without a plan (decision 0024). */
+  readonly icon = input('lucideDumbbell');
 
   readonly open = output<void>();
 }

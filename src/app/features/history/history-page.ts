@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { ExerciseCatalogService } from '../../core/exercises/exercise-catalog.service';
 import { HistoryService } from '../../core/history/history.service';
 import { PageHeader } from '../../shared/components/page-header/page-header';
 import { SegmentedControl } from '../../shared/components/segmented-control/segmented-control';
@@ -62,6 +63,7 @@ export class HistoryPage implements OnInit {
   private readonly format = inject(HistoryFormat);
   private readonly router = inject(Router);
   private readonly state = inject(HistoryViewState);
+  private readonly catalog = inject(ExerciseCatalogService);
 
   protected readonly current = computed<HistoryView>(() =>
     HISTORY_VIEWS.includes(this.view() as HistoryView) ? (this.view() as HistoryView) : 'list',
@@ -73,6 +75,8 @@ export class HistoryPage implements OnInit {
   ngOnInit(): void {
     this.state.view.set(this.current());
     void this.history.load();
+    // Workouts without a plan are named after their activity (decision 0024).
+    void this.catalog.load();
   }
 
   protected select(view: HistoryView): void {

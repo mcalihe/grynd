@@ -7,16 +7,17 @@ import {
   OnInit,
   signal,
 } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { NgIcon } from '@ng-icons/core';
 import { HlmBadge } from '@spartan-ng/helm/badge';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmDropdownMenuImports } from '@spartan-ng/helm/dropdown-menu';
 import { ExerciseCatalogService } from '../../core/exercises/exercise-catalog.service';
-import { exerciseComparison, previousSessionOfPlan } from '../../core/history/history-insights';
+import { exerciseComparison, previousSessionOf } from '../../core/history/history-insights';
 import { sessionDurationMs } from '../../core/history/history-stats';
-import { HistoryDetail, HistoryService } from '../../core/history/history.service';
+import { entryKcal } from '../../core/energy/energy';
+import { HistoryDetail, HistoryService, HistorySet } from '../../core/history/history.service';
 import { ConfirmService } from '../../core/services/confirm.service';
 import { Clock } from '../../core/utils/time';
 import { KeyFigure, KeyFigures } from '../../shared/components/key-figures/key-figures';
@@ -27,7 +28,8 @@ import { HistoryViewState } from './history-view';
 /**
  * One finished workout (Figma Verlauf-Detail 84:3364, «Vergleich»): key figures against the last
  * workout of the same plan, a link to the plan history, then per exercise its time, volume and the
- * completed sets with «Rekord»/«Extra». The menu deletes the workout (soft delete).
+ * completed sets with «Rekord»/«Extra». Calories, distance and cardio entries per decision 0024.
+ * The menu deletes the workout (soft delete).
  */
 @Component({
   selector: 'app-history-detail-page',
@@ -38,6 +40,7 @@ import { HistoryViewState } from './history-view';
     HlmButton,
     HlmDropdownMenuImports,
     NgIcon,
+    RouterLink,
     TranslocoPipe,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -69,7 +72,7 @@ import { HistoryViewState } from './history-view';
       <div class="flex flex-col gap-4 px-4 pb-6">
         <div class="flex flex-col gap-1">
           <h1 class="text-display font-semibold break-words">
-            {{ d.summary.planName || ('history.untitled' | transloco) }}
+            {{ format.sessionName(d.summary) }}
           </h1>
           <p class="text-sm text-muted-foreground">{{ when() }}</p>
         </div>
@@ -78,6 +81,14 @@ import { HistoryViewState } from './history-view';
           @if (previous()) {
             <p class="mt-4 text-xs text-muted-foreground">
               {{ 'history.compare' | transloco: { day: previousDay() } }}
+            </p>
+          }
+          @if (!summary()?.energy) {
+            <p class="mt-4 text-xs text-muted-foreground" data-hint="kcal">
+              {{ 'history.noBodyWeight' | transloco }}
+              <a routerLink="/settings" class="font-semibold text-foreground underline">
+                {{ 'history.noBodyWeightLink' | transloco }}
+              </a>
             </p>
           }
         </app-key-figures>
@@ -133,7 +144,11 @@ import { HistoryViewState } from './history-view';
               @for (set of exercise.sets; track set.id; let i = $index) {
                 <li class="flex min-h-8 items-center gap-3 text-sm">
                   <span class="w-4 text-muted-foreground">{{ i + 1 }}</span>
-                  <span class="flex-1">{{ format.set(set.weightKg, set.reps) }}</span>
+                  <span class="flex-1">{{
+                    exercise.cardio
+                      ? cardioText(exercise.exerciseKey, set)
+                      : format.set(set.weightKg, set.reps)
+                  }}</span>
                   @if (set.record) {
                     <span hlmBadge variant="success">{{ 'history.record' | transloco }}</span>
                   } @else if (set.isExtra) {
@@ -161,6 +176,11 @@ export class HistoryDetailPage implements OnInit {
   private readonly viewState = inject(HistoryViewState);
 
   protected readonly detail = signal<HistoryDetail | undefined>(undefined);
+  /** The loaded summary, kept current: its calories follow the body weight setting. */
+  protected readonly summary = computed(() => {
+    const own = this.detail()?.summary;
+    return own ? (this.history.summaries().find((s) => s.id === own.id) ?? own) : undefined;
+  });
 
   protected readonly when = computed(() => {
     const summary = this.detail()?.summary;
@@ -174,25 +194,32 @@ export class HistoryDetailPage implements OnInit {
   /** The last workout of the same plan before this one; the deltas compare against it. */
   protected readonly previous = computed(() => {
     const summary = this.detail()?.summary;
-    return summary ? previousSessionOfPlan(this.history.summaries(), summary) : undefined;
+    return summary ? previousSessionOf(this.history.summaries(), summary) : undefined;
   });
   protected readonly previousDay = computed(() => {
     const previous = this.previous();
     return previous ? this.format.day(new Date(previous.startedAt), this.clock.now()) : '';
   });
 
+  /**
+   * Duration and calories, then volume and sets for strength, distance for cardio, records for
+   * strength (decision 0024); each with the change since the previous comparable workout.
+   */
   protected readonly figures = computed<KeyFigure[]>(() => {
     const detail = this.detail();
-    if (!detail) {
+    const summary = this.summary();
+    if (!detail || !summary) {
       return [];
     }
-    const { summary } = detail;
     const before = this.previous();
     const duration = before ? sessionDurationMs(summary) - sessionDurationMs(before) : 0;
     const volume = before ? summary.volumeKg - before.volumeKg : 0;
     const sets = before ? summary.setCount - before.setCount : 0;
+    const kcal = before?.energy && summary.energy ? summary.energy.kcal - before.energy.kcal : 0;
+    const distance = before ? summary.distanceM - before.distanceM : 0;
+    const strength = summary.setCount > 0 || summary.cardioCount === 0;
     const records = detail.exercises.flatMap((e) => e.sets).filter((s) => s.record).length;
-    return [
+    const figures: KeyFigure[] = [
       {
         label: this.format.t('history.stats.duration'),
         value: this.format.duration(sessionDurationMs(summary)),
@@ -200,20 +227,47 @@ export class HistoryDetailPage implements OnInit {
         tone: 'neutral',
       },
       {
-        label: this.format.t('history.stats.volume'),
-        value: this.format.volume(summary.volumeKg),
-        delta: this.format.delta(volume, (kg) => this.format.volume(kg)),
-        tone: this.format.tone(volume),
+        label: this.format.t('history.stats.kcal'),
+        value: summary.energy ? this.format.kcal(summary.energy) : '–',
+        delta: this.format.delta(kcal, (v) => this.format.kcal(v)),
+        tone: this.format.tone(kcal),
       },
-      {
-        label: this.format.t('history.stats.sets'),
-        value: String(summary.setCount),
-        delta: this.format.delta(sets, String),
-        tone: this.format.tone(sets),
-      },
-      { label: this.format.t('history.stats.records'), value: String(records) },
     ];
+    if (strength) {
+      figures.push(
+        {
+          label: this.format.t('history.stats.volume'),
+          value: this.format.volume(summary.volumeKg),
+          delta: this.format.delta(volume, (kg) => this.format.volume(kg)),
+          tone: this.format.tone(volume),
+        },
+        {
+          label: this.format.t('history.stats.sets'),
+          value: String(summary.setCount),
+          delta: this.format.delta(sets, String),
+          tone: this.format.tone(sets),
+        },
+      );
+    }
+    if (summary.distanceM > 0) {
+      figures.push({
+        label: this.format.t('history.stats.distance'),
+        value: this.format.distance(summary.distanceM),
+        delta: this.format.delta(distance, (m) => this.format.distance(m)),
+        tone: this.format.tone(distance),
+      });
+    }
+    if (strength) {
+      figures.push({ label: this.format.t('history.stats.records'), value: String(records) });
+    }
+    return figures;
   });
+
+  /** One cardio entry with its calories: the device's, else the estimate (decision 0024). */
+  protected cardioText(exerciseKey: string, set: HistorySet): string {
+    const energy = entryKcal({ exerciseKey, ...set }, this.summary()?.bodyWeightKg ?? null);
+    return this.format.cardio(exerciseKey, set, energy);
+  }
 
   /** Volume per exercise and the change since the exercise was last trained. */
   protected readonly volumes = computed(() => {

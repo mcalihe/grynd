@@ -200,6 +200,11 @@ export class ComponentsShowcase {
       exerciseCount: 6,
       setCount: 18,
       volumeKg: 8420,
+      activityId: null,
+      cardioCount: 0,
+      distanceM: 0,
+      bodyWeightKg: null,
+      energy: null,
     })),
   );
   protected readonly muscles: DonutSegment[] = (

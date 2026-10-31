@@ -1,6 +1,8 @@
 import { Routes } from '@angular/router';
 import { HistoryDetail, HistoryService } from '../../core/history/history.service';
 
+const noCardio = { durationSec: null, distanceM: null, level: null, kcal: null, heartRate: null };
+
 /** Fixed workout for previewing the celebration screen (dev only, not translated). */
 const DEMO: HistoryDetail = {
   summary: {
@@ -13,14 +15,21 @@ const DEMO: HistoryDetail = {
     exerciseCount: 2,
     setCount: 14,
     volumeKg: 8420,
+    activityId: null,
+    cardioCount: 0,
+    distanceM: 0,
+    bodyWeightKg: null,
+    energy: null,
   },
   exercises: [
     {
       exerciseId: 'demo',
+      exerciseKey: 'demo',
+      cardio: false,
       timeMs: 0,
       sets: [
-        { id: 'a', weightKg: 85, reps: 8, isExtra: false, record: true },
-        { id: 'b', weightKg: 87.5, reps: 6, isExtra: false, record: true },
+        { id: 'a', weightKg: 85, reps: 8, ...noCardio, isExtra: false, record: true },
+        { id: 'b', weightKg: 87.5, reps: 6, ...noCardio, isExtra: false, record: true },
       ],
     },
   ],
