@@ -1,7 +1,9 @@
 import { TestBed } from '@angular/core/testing';
+import { TranslocoTestingModule } from '@jsverse/transloco';
 import { catalogEntry, seedCatalog } from '../../../testing/catalog';
 import { SqlJsDriver } from '../../../testing/sqljs-driver';
 import { createTestDatabase } from '../../../testing/test-database';
+import { ExerciseCatalogService } from '../../core/exercises/exercise-catalog.service';
 import { PlansService } from '../../core/plans/plans.service';
 import { PlanEditorStore } from './plan-editor.store';
 
@@ -12,8 +14,14 @@ describe('PlanEditorStore', () => {
   beforeEach(async () => {
     const db = await createTestDatabase();
     driver = db.driver;
-    TestBed.configureTestingModule({ providers: [...db.providers, PlanEditorStore] });
-    await seedCatalog(['bench', 'row', 'squat'].map((key, i) => catalogEntry(`e${i}`, key)));
+    TestBed.configureTestingModule({
+      imports: [TranslocoTestingModule.forRoot({ langs: { de: {} } })],
+      providers: [...db.providers, PlanEditorStore],
+    });
+    await seedCatalog([
+      ...['bench', 'row', 'squat'].map((key, i) => catalogEntry(`e${i}`, key)),
+      catalogEntry('run', 'Grynd_Running', { category: 'cardio', images: [] }),
+    ]);
     store = TestBed.inject(PlanEditorStore);
   });
 
@@ -38,6 +46,13 @@ describe('PlanEditorStore', () => {
     expect(store.dirty()).toBe(false);
     expect(store.isNew()).toBe(false);
     expect(TestBed.inject(PlansService).plans()?.[0].plan.id).toBe(id);
+  });
+
+  it('adds cardio exercises with a target duration (decision 0024)', async () => {
+    await TestBed.inject(ExerciseCatalogService).load();
+    await store.init(null);
+    store.add(['e0', 'run']);
+    expect(store.draft().exercises.map((e) => e.targetDurationSec)).toEqual([null, 600]);
   });
 
   it('keeps the draft when init runs again (returning from the picker)', async () => {

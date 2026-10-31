@@ -6,6 +6,7 @@ import { PlanExerciseRepository, PlanRepository } from '../db/repositories/plan.
 import {
   addExercises,
   copyDraft,
+  DEFAULT_CARDIO_TARGETS,
   DEFAULT_TARGETS,
   emptyDraft,
   isDirty,
@@ -32,6 +33,14 @@ describe('plan draft', () => {
     const draft = addExercises(addExercises(base, ['a']), ['b', 'a', 'b']);
     expect(draft.exercises.map((e) => e.exerciseId)).toEqual(['a', 'b']);
     expect(draft.exercises[1]).toEqual({ exerciseId: 'b', ...DEFAULT_TARGETS });
+  });
+
+  it('gives cardio exercises a target duration instead of sets × reps (decision 0024)', () => {
+    const draft = addExercises(base, ['bench', 'run'], (id) => id === 'run');
+    expect(draft.exercises[0]).toMatchObject({ targetSets: 3, targetDurationSec: null });
+    expect(draft.exercises[1]).toEqual({ exerciseId: 'run', ...DEFAULT_CARDIO_TARGETS });
+    expect(DEFAULT_CARDIO_TARGETS).toMatchObject({ targetSets: 1, targetDurationSec: 600 });
+    expect(isDirty(updateExercise(draft, 1, { targetDurationSec: 900 }), draft)).toBe(true);
   });
 
   it('moves and removes items', () => {

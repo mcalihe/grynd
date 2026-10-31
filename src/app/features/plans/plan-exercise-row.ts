@@ -2,10 +2,25 @@ import { CdkDragHandle } from '@angular/cdk/drag-drop';
 import { ChangeDetectionStrategy, Component, input, model } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { NgIcon } from '@ng-icons/core';
+import { formatDuration } from '../../shared/components/number-stepper/number-stepper.logic';
 
 /** "3 × 8–12", or "3 × 10" for a fixed rep count. */
 export function targetSummary(sets: number, repMin: number, repMax: number): string {
   return repMin === repMax ? `${sets} × ${repMin}` : `${sets} × ${repMin}–${repMax}`;
+}
+
+type Translate = (key: string, params?: Record<string, unknown>) => string;
+
+/** Cardio target (decision 0024): "10 Min.", "2 × 10 Min.", "12:30" or "Ohne Ziel". */
+export function cardioSummary(t: Translate, sets: number, durationSec: number | null): string {
+  if (!durationSec) {
+    return t('plans.cardioTarget.none');
+  }
+  const duration =
+    durationSec % 60 === 0
+      ? t('plans.cardioTarget.minutes', { minutes: durationSec / 60 })
+      : formatDuration(durationSec);
+  return sets > 1 ? `${sets} × ${duration}` : duration;
 }
 
 /**

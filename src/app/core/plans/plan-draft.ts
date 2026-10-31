@@ -28,6 +28,16 @@ export const DEFAULT_TARGETS = {
   targetDurationSec: null,
 } as const;
 
+/**
+ * New cardio exercises (decision 0024): one entry of 10 minutes. The rep and rest columns keep
+ * their defaults because they are NOT NULL, but cardio does not use them.
+ */
+export const DEFAULT_CARDIO_TARGETS = {
+  ...DEFAULT_TARGETS,
+  targetSets: 1,
+  targetDurationSec: 600,
+} as const;
+
 export function emptyDraft(): PlanDraft {
   return { name: '', weekdays: [], exercises: [] };
 }
@@ -86,12 +96,22 @@ export function moveItem<T>(items: readonly T[], from: number, to: number): T[] 
   return result;
 }
 
-/** Appends exercises with default targets; ones already in the plan are skipped. */
-export function addExercises(draft: PlanDraft, exerciseIds: readonly string[]): PlanDraft {
+/**
+ * Appends exercises with default targets (cardio ones with a target duration); ones already in
+ * the plan are skipped.
+ */
+export function addExercises(
+  draft: PlanDraft,
+  exerciseIds: readonly string[],
+  isCardio: (exerciseId: string) => boolean = () => false,
+): PlanDraft {
   const present = new Set(draft.exercises.map((e) => e.exerciseId));
   const added = exerciseIds
     .filter((id, index) => !present.has(id) && exerciseIds.indexOf(id) === index)
-    .map((exerciseId) => ({ exerciseId, ...DEFAULT_TARGETS }));
+    .map((exerciseId) => ({
+      exerciseId,
+      ...(isCardio(exerciseId) ? DEFAULT_CARDIO_TARGETS : DEFAULT_TARGETS),
+    }));
   return { ...draft, exercises: [...draft.exercises, ...added] };
 }
 

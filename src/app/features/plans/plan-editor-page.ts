@@ -1,21 +1,25 @@
 import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
 import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { NgIcon } from '@ng-icons/core';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmDropdownMenuImports } from '@spartan-ng/helm/dropdown-menu';
 import { HlmInput } from '@spartan-ng/helm/input';
+import { isCardio } from '../../core/energy/activities';
 import { ExerciseCatalogService } from '../../core/exercises/exercise-catalog.service';
+import { DraftExercise } from '../../core/plans/plan-draft';
 import { ExerciseNotesService } from '../../core/exercises/exercise-notes.service';
 import { ConfirmService } from '../../core/services/confirm.service';
 import { HapticsService } from '../../core/services/haptics.service';
 import { NumberStepper } from '../../shared/components/number-stepper/number-stepper';
+import { DURATION_FORMAT } from '../../shared/components/number-stepper/number-stepper.logic';
 import { PageHeader } from '../../shared/components/page-header/page-header';
 import { StickyAction } from '../../shared/components/sticky-action/sticky-action';
 import { WeekdayChips } from '../../shared/components/weekday-chips/weekday-chips';
 import { PlanCopy, PlanEditorStore } from './plan-editor.store';
-import { PlanExerciseRow, targetSummary } from './plan-exercise-row';
+import { cardioSummary, PlanExerciseRow, targetSummary } from './plan-exercise-row';
 
 /**
  * Create or edit a plan (Figma Plan bearbeiten 37:28096, Plan erstellen 63:12060 / 63:12408).
@@ -137,44 +141,67 @@ import { PlanExerciseRow, targetSummary } from './plan-exercise-row';
                   [draggable]="true"
                   (cdkDragStarted)="haptics.selectionStart()"
                   [name]="catalog.nameById(exercise.exerciseId)"
-                  [summary]="summary(exercise.targetSets, exercise.repMin, exercise.repMax)"
+                  [summary]="summary(exercise)"
                   [hasNote]="notes.hasNote(exercise.exerciseId)"
                 >
                   <div class="flex flex-col gap-3">
-                    <div class="grid grid-cols-2 gap-2">
-                      <app-number-stepper
-                        [stretch]="true"
-                        [label]="'plans.targets.sets' | transloco"
-                        [value]="exercise.targetSets"
-                        [min]="1"
-                        [max]="20"
-                        (valueChange)="store.update(i, { targetSets: $event ?? 1 })"
-                      />
-                      <app-number-stepper
-                        [stretch]="true"
-                        [label]="'plans.targets.rest' | transloco"
-                        [value]="exercise.restSeconds"
-                        [stepSize]="15"
-                        [max]="600"
-                        (valueChange)="store.update(i, { restSeconds: $event ?? 0 })"
-                      />
-                      <app-number-stepper
-                        [stretch]="true"
-                        [label]="'plans.targets.repMin' | transloco"
-                        [value]="exercise.repMin"
-                        [min]="1"
-                        [max]="100"
-                        (valueChange)="store.update(i, { repMin: $event ?? 1 })"
-                      />
-                      <app-number-stepper
-                        [stretch]="true"
-                        [label]="'plans.targets.repMax' | transloco"
-                        [value]="exercise.repMax"
-                        [min]="1"
-                        [max]="100"
-                        (valueChange)="store.update(i, { repMax: $event ?? 1 })"
-                      />
-                    </div>
+                    @if (isCardio(exercise.exerciseId)) {
+                      <div class="grid grid-cols-2 gap-2">
+                        <app-number-stepper
+                          [stretch]="true"
+                          [label]="'plans.targets.duration' | transloco"
+                          [value]="exercise.targetDurationSec"
+                          [format]="durationFormat"
+                          [stepSize]="60"
+                          [max]="86399"
+                          [origin]="600"
+                          (valueChange)="store.update(i, { targetDurationSec: $event || null })"
+                        />
+                        <app-number-stepper
+                          [stretch]="true"
+                          [label]="'plans.targets.entries' | transloco"
+                          [value]="exercise.targetSets"
+                          [min]="1"
+                          [max]="20"
+                          (valueChange)="store.update(i, { targetSets: $event ?? 1 })"
+                        />
+                      </div>
+                    } @else {
+                      <div class="grid grid-cols-2 gap-2">
+                        <app-number-stepper
+                          [stretch]="true"
+                          [label]="'plans.targets.sets' | transloco"
+                          [value]="exercise.targetSets"
+                          [min]="1"
+                          [max]="20"
+                          (valueChange)="store.update(i, { targetSets: $event ?? 1 })"
+                        />
+                        <app-number-stepper
+                          [stretch]="true"
+                          [label]="'plans.targets.rest' | transloco"
+                          [value]="exercise.restSeconds"
+                          [stepSize]="15"
+                          [max]="600"
+                          (valueChange)="store.update(i, { restSeconds: $event ?? 0 })"
+                        />
+                        <app-number-stepper
+                          [stretch]="true"
+                          [label]="'plans.targets.repMin' | transloco"
+                          [value]="exercise.repMin"
+                          [min]="1"
+                          [max]="100"
+                          (valueChange)="store.update(i, { repMin: $event ?? 1 })"
+                        />
+                        <app-number-stepper
+                          [stretch]="true"
+                          [label]="'plans.targets.repMax' | transloco"
+                          [value]="exercise.repMax"
+                          [min]="1"
+                          [max]="100"
+                          (valueChange)="store.update(i, { repMax: $event ?? 1 })"
+                        />
+                      </div>
+                    }
                     <button
                       hlmBtn
                       variant="ghost"
@@ -214,9 +241,27 @@ export class PlanEditorPage implements OnInit {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly transloco = inject(TranslocoService);
+  /** Emits once the translation file is loaded and on every language change. */
+  private readonly translation = toSignal(this.transloco.selectTranslation());
 
-  protected readonly summary = targetSummary;
+  protected readonly durationFormat = DURATION_FORMAT;
   protected saving = false;
+
+  protected isCardio(exerciseId: string): boolean {
+    return isCardio(this.catalog.byId().get(exerciseId));
+  }
+
+  /** "3 × 8–12", or "10 Min." for cardio (decision 0024). */
+  protected summary(exercise: DraftExercise): string {
+    this.translation();
+    return this.isCardio(exercise.exerciseId)
+      ? cardioSummary(
+          (key, params) => this.transloco.translate(key, params),
+          exercise.targetSets,
+          exercise.targetDurationSec,
+        )
+      : targetSummary(exercise.targetSets, exercise.repMin, exercise.repMax);
+  }
 
   /** The :id lives on the parent route (…/:id/edit); /plans/new has none. */
   private get planId(): string | null {

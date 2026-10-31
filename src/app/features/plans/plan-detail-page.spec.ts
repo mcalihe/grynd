@@ -9,12 +9,21 @@ import { HistorySummary } from '../../core/history/history-stats';
 import { HistoryService } from '../../core/history/history.service';
 import { PlansService } from '../../core/plans/plans.service';
 import { PlanDetailPage } from './plan-detail-page';
-import { targetSummary } from './plan-exercise-row';
+import { cardioSummary, targetSummary } from './plan-exercise-row';
 
 describe('targetSummary', () => {
   it('shows a range or a fixed rep count', () => {
     expect(targetSummary(3, 8, 12)).toBe('3 × 8–12');
     expect(targetSummary(3, 10, 10)).toBe('3 × 10');
+  });
+
+  it('shows the target duration of cardio exercises (decision 0024)', () => {
+    const t = (key: string, params?: Record<string, unknown>) =>
+      key === 'plans.cardioTarget.minutes' ? `${params?.['minutes']} Min.` : 'Ohne Ziel';
+    expect(cardioSummary(t, 1, 600)).toBe('10 Min.');
+    expect(cardioSummary(t, 2, 600)).toBe('2 × 10 Min.');
+    expect(cardioSummary(t, 1, 750)).toBe('12:30');
+    expect(cardioSummary(t, 1, null)).toBe('Ohne Ziel');
   });
 });
 
@@ -31,9 +40,23 @@ describe('PlanDetailPage', () => {
         repMin: 8,
         repMax: 10,
         restSeconds: 90,
+        targetDurationSec: null,
+      },
+      {
+        planExerciseId: 'pe2',
+        exerciseId: 'run',
+        targetSets: 1,
+        repMin: 8,
+        repMax: 12,
+        restSeconds: 90,
+        targetDurationSec: 600,
       },
     ],
   };
+  const catalog = new Map([
+    ['e1', { id: 'e1', category: 'strength' }],
+    ['run', { id: 'run', category: 'cardio' }],
+  ]);
 
   const workout = (id: string, planId: string): HistorySummary => ({
     id,
@@ -62,7 +85,11 @@ describe('PlanDetailPage', () => {
         { provide: PlansService, useValue: { getDraft: async () => (found ? draft : undefined) } },
         {
           provide: ExerciseCatalogService,
-          useValue: { load: async () => undefined, nameById: () => 'Bankdrücken' },
+          useValue: {
+            load: async () => undefined,
+            nameById: (id: string) => (id === 'run' ? 'Laufband' : 'Bankdrücken'),
+            byId: signal(catalog),
+          },
         },
         {
           provide: HistoryService,
@@ -110,6 +137,19 @@ describe('PlanDetailPage', () => {
     el.querySelector<HTMLButtonElement>('app-plan-exercise-row button')?.click();
     fixture.detectChanges();
     expect(el.textContent).toContain('plans.restSeconds');
+  });
+
+  it('shows cardio exercises with their duration and without rest or weight step', async () => {
+    const { fixture } = await setup();
+    const el: HTMLElement = fixture.nativeElement;
+    const cardio = el.querySelectorAll('app-plan-exercise-row')[1];
+    expect(cardio.textContent).toContain('plans.cardioTarget.minutes');
+
+    cardio.querySelector<HTMLButtonElement>('button')?.click();
+    fixture.detectChanges();
+    expect(cardio.textContent).not.toContain('plans.restSeconds');
+    expect(cardio.textContent).not.toContain('weightStep.detail');
+    expect(cardio.textContent).toContain('exerciseNote.add');
   });
 
   it('shows the weight step in the details and changes it in the sheet', async () => {

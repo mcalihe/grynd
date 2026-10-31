@@ -17,7 +17,8 @@ import { ExerciseNotesService } from '../../core/exercises/exercise-notes.servic
 import { ExerciseSettingsService } from '../../core/exercises/exercise-settings.service';
 import { sessionDurationMs } from '../../core/history/history-stats';
 import { HistoryService } from '../../core/history/history.service';
-import { PlanDraft } from '../../core/plans/plan-draft';
+import { isCardio } from '../../core/energy/activities';
+import { DraftExercise, PlanDraft } from '../../core/plans/plan-draft';
 import { PlansService } from '../../core/plans/plans.service';
 import { ConfirmService } from '../../core/services/confirm.service';
 import { SettingsService } from '../../core/settings/settings.service';
@@ -32,7 +33,7 @@ import { StickyAction } from '../../shared/components/sticky-action/sticky-actio
 import { WeekdayChips } from '../../shared/components/weekday-chips/weekday-chips';
 import { WeightStepSheet } from '../../shared/components/weight-step/weight-step-sheet';
 import { HistoryFormat } from '../history/history-format';
-import { PlanExerciseRow, targetSummary } from './plan-exercise-row';
+import { cardioSummary, PlanExerciseRow, targetSummary } from './plan-exercise-row';
 
 /**
  * Read-only plan view with «Bearbeiten» and «Training starten» (Figma 37:27708, decision 0010).
@@ -105,24 +106,28 @@ import { PlanExerciseRow, targetSummary } from './plan-exercise-row';
           @for (exercise of plan.exercises; track exercise.planExerciseId) {
             <app-plan-exercise-row
               [name]="catalog.nameById(exercise.exerciseId)"
-              [summary]="summary(exercise.targetSets, exercise.repMin, exercise.repMax)"
+              [summary]="summary(exercise)"
               [hasNote]="notes.hasNote(exercise.exerciseId)"
             >
               <div class="flex flex-col gap-3">
-                <p class="text-sm text-muted-foreground">
-                  {{ 'plans.restSeconds' | transloco: { seconds: exercise.restSeconds } }}
-                </p>
-                <button
-                  hlmBtn
-                  variant="ghost"
-                  size="sm"
-                  class="-ml-2 self-start"
-                  (click)="editWeightStep(exercise.exerciseId)"
-                >
-                  <ng-icon name="lucideDumbbell" />{{
-                    'weightStep.detail' | transloco: { step: weightStepLabel(exercise.exerciseId) }
-                  }}
-                </button>
+                <!-- Cardio has no rest or weight step (decision 0024). -->
+                @if (!isCardio(exercise.exerciseId)) {
+                  <p class="text-sm text-muted-foreground">
+                    {{ 'plans.restSeconds' | transloco: { seconds: exercise.restSeconds } }}
+                  </p>
+                  <button
+                    hlmBtn
+                    variant="ghost"
+                    size="sm"
+                    class="-ml-2 self-start"
+                    (click)="editWeightStep(exercise.exerciseId)"
+                  >
+                    <ng-icon name="lucideDumbbell" />{{
+                      'weightStep.detail'
+                        | transloco: { step: weightStepLabel(exercise.exerciseId) }
+                    }}
+                  </button>
+                }
                 @if (notes.hasNote(exercise.exerciseId)) {
                   <app-exercise-note
                     [text]="notes.noteFor(exercise.exerciseId)"
@@ -195,7 +200,8 @@ export class PlanDetailPage implements OnInit {
   private readonly clock = inject(Clock);
 
   protected readonly plan = signal<PlanDraft | undefined>(undefined);
-  protected readonly summary = targetSummary;
+  /** Emits once the translation file is loaded and on every language change. */
+  private readonly translation = toSignal(this.transloco.selectTranslation());
   protected readonly noteExerciseId = signal('');
   protected readonly noteOpen = signal(false);
   protected readonly stepExerciseId = signal('');
@@ -217,6 +223,22 @@ export class PlanDetailPage implements OnInit {
       }),
     };
   });
+
+  protected isCardio(exerciseId: string): boolean {
+    return isCardio(this.catalog.byId().get(exerciseId));
+  }
+
+  /** "3 × 8–12", or "10 Min." for cardio (decision 0024). */
+  protected summary(exercise: DraftExercise): string {
+    this.translation();
+    return this.isCardio(exercise.exerciseId)
+      ? cardioSummary(
+          (key, params) => this.transloco.translate(key, params),
+          exercise.targetSets,
+          exercise.targetDurationSec,
+        )
+      : targetSummary(exercise.targetSets, exercise.repMin, exercise.repMax);
+  }
 
   async ngOnInit(): Promise<void> {
     void this.history.load();
