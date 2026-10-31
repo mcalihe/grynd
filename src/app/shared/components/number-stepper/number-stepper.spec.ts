@@ -57,7 +57,7 @@ describe('number stepper logic', () => {
     expect(scrubValue(null, 3, 1, bpm)).toBe(123);
   });
 
-  it('formats and parses durations (decision 0024)', () => {
+  it('formats and parses durations (decision 0025)', () => {
     expect(formatDuration(1530)).toBe('25:30');
     expect(formatDuration(3900)).toBe('1:05:00');
     expect(formatDuration(null)).toBe('–');

@@ -4,7 +4,7 @@ import { ConfirmService } from '../services/confirm.service';
 import { WorkoutService } from './workout.service';
 
 /**
- * Starts a workout from the plan detail or «Ausdauer starten» (decision 0024). Only one workout
+ * Starts a workout from the plan detail or «Ausdauer starten» (decision 0025). Only one workout
  * runs at a time: while one is active, it offers to continue that one instead (plan.md §8).
  */
 @Injectable({ providedIn: 'root' })

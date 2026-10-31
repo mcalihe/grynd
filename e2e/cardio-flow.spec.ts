@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 /**
- * Cardio and calories (decision 0024): a run without a plan, timed by the clock, and a treadmill
+ * Cardio and calories (decision 0025): a run without a plan, timed by the clock, and a treadmill
  * entry in a plan. Each test gets a fresh browser context, so the database starts empty.
  */
 test('cardio without a plan: clock, distance, device calories → history', async ({ page }) => {

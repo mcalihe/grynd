@@ -32,7 +32,7 @@ export interface CompleteStats {
   volumeKg: number;
   sets: number;
   records: number;
-  /** Calories (decision 0024); null when the body weight for the estimate is missing. */
+  /** Calories (decision 0025); null when the body weight for the estimate is missing. */
   kcal: number | null;
   estimated: boolean;
   distanceM: number;
@@ -55,7 +55,7 @@ export type CompleteCard =
   'duration' | 'kcal' | 'volume' | 'sets' | 'distance' | 'tempo' | 'records';
 
 /**
- * Which cards the celebration shows, in order (decision 0024): the duration, volume and sets for
+ * Which cards the celebration shows, in order (decision 0025): the duration, volume and sets for
  * strength, distance and the average tempo of a single cardio activity, calories, records.
  */
 export function completeCards(detail: HistoryDetail, stats: CompleteStats): CompleteCard[] {
@@ -96,7 +96,7 @@ export function cardSpansRow(card: CompleteCard, cards: readonly CompleteCard[])
  * Celebration after «Training abschliessen» (decision 0015): confetti cannons and fireworks, a
  * trophy springs in, the title rises word by word and the key figures count up. «Weiter» (and
  * Android back) leads to the history detail of the workout. Calories, distance and tempo per
- * decision 0024.
+ * decision 0025.
  */
 @Component({
   selector: 'app-workout-complete-page',

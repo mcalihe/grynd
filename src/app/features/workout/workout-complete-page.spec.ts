@@ -93,7 +93,7 @@ describe('WorkoutCompletePage', () => {
 
   afterEach(() => vi.clearAllMocks());
 
-  it('picks the cards for strength, cardio and mixed workouts (decision 0024)', () => {
+  it('picks the cards for strength, cardio and mixed workouts (decision 0025)', () => {
     const strength = detail(true);
     const withKcal: HistoryDetail = {
       ...strength,

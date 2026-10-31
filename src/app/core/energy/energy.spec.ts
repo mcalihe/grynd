@@ -3,7 +3,7 @@ import { cardioMet, cyclingMet, entryKcal, runningMet, sessionEnergy, walkingMet
 
 const minutes = (n: number) => n * 60;
 
-describe('MET from speed (decision 0024)', () => {
+describe('MET from speed (decision 0025)', () => {
   it('uses the ACSM walking equation', () => {
     // 5 km/h = 83.3 m/min → VO2 11.83 ml/kg/min → 3.38 MET
     expect(walkingMet(5)).toBeCloseTo(3.38, 2);

@@ -18,7 +18,7 @@ import { activeDurationMs } from './pauses';
 import { CardioValues, prefillCardio, prefillSets, SetValues } from './prefill';
 import { recordSetIds } from './records';
 
-/** Cardio columns of a strength set (decision 0024). */
+/** Cardio columns of a strength set (decision 0025). */
 const NO_CARDIO = {
   durationSec: null,
   distanceM: null,
@@ -27,7 +27,7 @@ const NO_CARDIO = {
   heartRate: null,
 } as const;
 
-/** Every value a set or cardio entry carries (decision 0024). */
+/** Every value a set or cardio entry carries (decision 0025). */
 export type EntryValues = SetValues &
   CardioValues & {
     kcal: number | null;
@@ -37,14 +37,14 @@ export type EntryValues = SetValues &
 export interface WorkoutExercise {
   entry: SessionExercise;
   sets: SetLog[];
-  /** Logged by duration instead of kg × reps (decision 0024). */
+  /** Logged by duration instead of kg × reps (decision 0025). */
   cardio: boolean;
 }
 
 export interface ActiveWorkout {
   session: WorkoutSession;
   planName: string;
-  /** The activity of a cardio workout without a plan (decision 0024); null otherwise. */
+  /** The activity of a cardio workout without a plan (decision 0025); null otherwise. */
   activity: Exercise | null;
   exercises: WorkoutExercise[];
   /** Oldest first; the last one is open while the workout is paused. */
@@ -96,7 +96,7 @@ export class WorkoutService {
   readonly workout = this.state.asReadonly();
   readonly current = signal(0);
   readonly isActive = computed(() => this.state() !== null);
-  /** A cardio workout started without a plan: one activity, timed by the clock (decision 0024). */
+  /** A cardio workout started without a plan: one activity, timed by the clock (decision 0025). */
   readonly standalone = computed(() => this.state()?.activity != null);
   /** The clock stands still and no exercise time is tracked (decision 0023). */
   readonly paused = computed(
@@ -108,7 +108,7 @@ export class WorkoutService {
     const result = new Set<string>();
     for (const { entry, sets, cardio } of this.state()?.exercises ?? []) {
       if (cardio) {
-        continue; // no cardio records yet (decision 0024)
+        continue; // no cardio records yet (decision 0025)
       }
       const completed = sets
         .filter((s) => s.completedAt !== null)
@@ -138,7 +138,7 @@ export class WorkoutService {
 
   /**
    * Copies the plan into a new active session with prefilled sets; cardio exercises get entries
-   * with their target duration instead (decision 0024). The session keeps today's body weight.
+   * with their target duration instead (decision 0025). The session keeps today's body weight.
    */
   async start(planId: string): Promise<string> {
     if (await this.sessions.findActive()) {
@@ -199,7 +199,7 @@ export class WorkoutService {
   }
 
   /**
-   * Starts a cardio workout without a plan (decision 0024): one activity with one open entry
+   * Starts a cardio workout without a plan (decision 0025): one activity with one open entry
    * (distance and level from last time). Finishing logs the active time as its duration.
    */
   async startCardio(exerciseId: string): Promise<string> {
@@ -463,7 +463,7 @@ export class WorkoutService {
     const planName = session.planId
       ? ((await this.plans.getDraft(session.planId))?.name ?? '')
       : '';
-    // A cardio workout without a plan is named after its activity (decision 0024).
+    // A cardio workout without a plan is named after its activity (decision 0025).
     const first = catalog.get(entries[0]?.exerciseId ?? '');
     const activity = !session.planId && isCardio(first) ? (first ?? null) : null;
     const pauses = await this.pauses.findBySession(session.id);
@@ -489,7 +489,7 @@ export class WorkoutService {
     // Ending while paused: the pause ends with the workout, so it never counts.
     const now = this.clock.nowUtc();
     const open = workout.pauses.find((pause) => pause.resumedAt === null);
-    // Without a plan the clock is the stopwatch: its active time becomes the entry (decision 0024).
+    // Without a plan the clock is the stopwatch: its active time becomes the entry (decision 0025).
     const timed = this.standalone() ? workout.exercises[0]?.sets[0] : undefined;
     const activeSec = Math.round(this.elapsedMs(now) / 1000);
     await this.database.driver.transaction(async () => {

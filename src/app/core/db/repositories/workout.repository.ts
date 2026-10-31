@@ -55,7 +55,7 @@ export class SessionExerciseRepository extends BaseRepository<SessionExercise> {
 
   /**
    * Exercise ids used most recently across all sessions (for "Recently used"), optionally only
-   * of one catalog category (the cardio start sheet, decision 0024).
+   * of one catalog category (the cardio start sheet, decision 0025).
    */
   async findRecentExerciseIds(limit: number, category?: string): Promise<string[]> {
     const rows = await this.db.query<{ exerciseId: string }>(

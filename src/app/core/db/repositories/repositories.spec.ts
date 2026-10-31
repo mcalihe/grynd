@@ -222,7 +222,7 @@ describe('repositories', () => {
       ]);
     });
 
-    it('stores cardio entries and the body weight of a session (decision 0024)', async () => {
+    it('stores cardio entries and the body weight of a session (decision 0025)', async () => {
       const plan = await seed();
       const session = await TestBed.inject(WorkoutSessionRepository).insert({
         planId: plan.id,

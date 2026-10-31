@@ -315,7 +315,7 @@ describe('WorkoutService', () => {
     expect((await repo.findById(second))?.status).toBe('aborted');
     expect((await repo.findFinished()).map((s) => s.id)).toEqual([first]);
   });
-  describe('cardio (decision 0024)', () => {
+  describe('cardio (decision 0025)', () => {
     async function cardioPlan(): Promise<string> {
       let draft = addExercises(
         { name: 'Beine', weekdays: [], exercises: [] },

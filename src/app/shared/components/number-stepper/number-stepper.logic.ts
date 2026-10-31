@@ -94,7 +94,7 @@ export function majorEvery(step: number): number {
   return [4, 5, 10].find((k) => isMultiple(k * step, 5)) ?? 5;
 }
 
-/** How a stepper shows, edits and reads its value: plain numbers or durations (decision 0024). */
+/** How a stepper shows, edits and reads its value: plain numbers or durations (decision 0025). */
 export interface ValueFormat {
   /** Shown value; `–` when empty. */
   format(value: number | null, locale: string, decimals: number): string;

@@ -35,7 +35,7 @@ const DEMO: HistoryDetail = {
   ],
 };
 
-/** A run without a plan (decision 0024): calories, distance and pace instead of sets. */
+/** A run without a plan (decision 0025): calories, distance and pace instead of sets. */
 const CARDIO: HistoryDetail = {
   summary: {
     ...DEMO.summary,

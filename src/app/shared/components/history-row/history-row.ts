@@ -29,7 +29,7 @@ import { NgIcon } from '@ng-icons/core';
 export class HistoryRow {
   readonly name = input.required<string>();
   readonly details = input('');
-  /** The activity's icon for cardio without a plan (decision 0024). */
+  /** The activity's icon for cardio without a plan (decision 0025). */
   readonly icon = input('lucideDumbbell');
 
   readonly open = output<void>();

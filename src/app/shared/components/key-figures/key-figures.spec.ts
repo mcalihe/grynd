@@ -34,7 +34,7 @@ describe('KeyFigures', () => {
     expect(el.querySelectorAll('[aria-pressed="true"]')).toHaveLength(1);
   });
 
-  it('lets an odd last figure span both columns (decision 0024)', () => {
+  it('lets an odd last figure span both columns (decision 0025)', () => {
     const fixture = TestBed.createComponent(KeyFigures);
     fixture.componentRef.setInput('figures', figures);
     fixture.componentRef.setInput('columns', 2);

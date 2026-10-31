@@ -1,4 +1,4 @@
-# 0024 – Ausdauertraining und Kalorien
+# 0025 – Ausdauertraining und Kalorien
 
 **Datum:** 2026-10-31 · **Status:** entschieden (ergänzt [0011](0011-workout-flow.md), [0016](0016-history-statistics.md) und [0023](0023-pause-workout.md); erweitert das Backup-Format)
 

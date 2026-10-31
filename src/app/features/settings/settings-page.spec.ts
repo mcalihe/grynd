@@ -50,7 +50,7 @@ describe('SettingsPage', () => {
     expect(settings.settings().distanceUnit).toBe('mi');
   });
 
-  it('sets and clears the body weight in the chosen unit (decision 0024)', async () => {
+  it('sets and clears the body weight in the chosen unit (decision 0025)', async () => {
     const { fixture, el, settings } = await render();
     const card = () => el.querySelector<HTMLElement>('[data-setting=body-weight]')!;
     const plus = () => card().querySelectorAll<HTMLButtonElement>('app-number-stepper button')[1];

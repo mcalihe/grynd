@@ -26,7 +26,7 @@ import {
 } from '../../shared/components/segmented-control/segmented-control';
 
 /**
- * Einstellungen (Figma 84:2796 / 84:3950): theme, units, language, body weight (decision 0024),
+ * Einstellungen (Figma 84:2796 / 84:3950): theme, units, language, body weight (decision 0025),
  * timer autostart, backup, the «What's new» page (decision 0020) and the app version. Every change
  * is saved right away.
  */

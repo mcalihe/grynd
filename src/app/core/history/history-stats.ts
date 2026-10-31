@@ -9,14 +9,14 @@ export interface HistorySummary {
   /** Null only for sessions without a plan; the plan itself may be deleted. */
   planId: string | null;
   planName: string;
-  /** The activity of a cardio workout without a plan (decision 0024); null with a plan. */
+  /** The activity of a cardio workout without a plan (decision 0025); null with a plan. */
   activityId: string | null;
   startedAt: UtcTimestamp;
   finishedAt: UtcTimestamp;
   /** Time the workout was paused, derived from the pause timestamps (decision 0023). */
   pausedMs: number;
   exerciseCount: number;
-  /** Completed strength sets; cardio entries are no sets (decision 0024). */
+  /** Completed strength sets; cardio entries are no sets (decision 0025). */
   setCount: number;
   /** Σ kg × reps of the strength sets. */
   volumeKg: number;
@@ -26,7 +26,7 @@ export interface HistorySummary {
   distanceM: number;
   /** Body weight of the estimate: the workout's own, else the current setting. */
   bodyWeightKg: number | null;
-  /** Calories (decision 0024); null where an estimate needs the missing body weight. */
+  /** Calories (decision 0025); null where an estimate needs the missing body weight. */
   energy: Energy | null;
 }
 

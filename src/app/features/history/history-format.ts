@@ -18,7 +18,7 @@ import { formatDistance, formatTempo, tempo } from '../../core/units/distance';
 import { kgToDisplay, weightDecimals } from '../../core/units/weight';
 import { formatDuration } from '../../shared/components/number-stepper/number-stepper.logic';
 
-/** A cardio entry as the history shows it (decision 0024). */
+/** A cardio entry as the history shows it (decision 0025). */
 export interface CardioEntryValues {
   durationSec: number | null;
   distanceM: number | null;
@@ -151,7 +151,7 @@ export class HistoryFormat {
 
   /**
    * History row details: "Heute · 54 Min. · 6 Übungen"; a cardio workout without a plan ends
-   * with its distance instead (decision 0024).
+   * with its distance instead (decision 0025).
    */
   sessionDetails(session: HistorySummary, now: Date): string {
     const last = session.activityId
@@ -200,7 +200,7 @@ export class HistoryFormat {
     return value ? formatTempo(value, unit, this.locale()) : '';
   }
 
-  /** "25:00 · 5,2 km · 4:48 /km · Stufe 8 · 142 bpm · ≈ 310 kcal" (decision 0024). */
+  /** "25:00 · 5,2 km · 4:48 /km · Stufe 8 · 142 bpm · ≈ 310 kcal" (decision 0025). */
   cardio(exerciseKey: string, entry: CardioEntryValues, energy: Energy | null): string {
     const parts = [
       entry.durationSec ? formatDuration(entry.durationSec) : '',

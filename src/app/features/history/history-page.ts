@@ -75,7 +75,7 @@ export class HistoryPage implements OnInit {
   ngOnInit(): void {
     this.state.view.set(this.current());
     void this.history.load();
-    // Workouts without a plan are named after their activity (decision 0024).
+    // Workouts without a plan are named after their activity (decision 0025).
     void this.catalog.load();
   }
 

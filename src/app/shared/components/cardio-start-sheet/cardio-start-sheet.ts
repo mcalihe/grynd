@@ -12,7 +12,7 @@ export interface CardioStartItem {
 }
 
 /**
- * Bottom sheet behind «Ausdauer starten» (decision 0024, code only): recently used activities
+ * Bottom sheet behind «Ausdauer starten» (decision 0025, code only): recently used activities
  * first, then all A–Z. A tap emits `pick` and closes the sheet; the caller starts the workout.
  */
 @Component({

@@ -63,7 +63,7 @@ export class App {
   protected readonly showPausedWorkout = computed(() => this.showNav() && this.workout.paused());
   protected readonly pausedElapsedMs = computed(() => this.workout.elapsedMs(this.clock.nowUtc()));
   private readonly catalog = inject(ExerciseCatalogService);
-  /** The plan name, or the activity of a cardio workout without a plan (decision 0024). */
+  /** The plan name, or the activity of a cardio workout without a plan (decision 0025). */
   protected readonly workoutName = computed(() => {
     const active = this.workout.workout();
     return active?.planName || this.catalog.name(active?.activity ?? undefined);

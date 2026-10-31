@@ -19,7 +19,7 @@ export interface HistorySet {
   id: string;
   weightKg: number | null;
   reps: number | null;
-  /** Cardio values (decision 0024); null for strength sets. */
+  /** Cardio values (decision 0025); null for strength sets. */
   durationSec: number | null;
   distanceM: number | null;
   level: number | null;
@@ -33,7 +33,7 @@ export interface HistoryExercise {
   exerciseId: string;
   /** Catalog key, for the activity profile of cardio exercises. */
   exerciseKey: string;
-  /** Logged by duration instead of kg × reps (decision 0024). */
+  /** Logged by duration instead of kg × reps (decision 0025). */
   cardio: boolean;
   /** Sum of the exercise's time intervals. */
   timeMs: number;
@@ -57,7 +57,7 @@ export interface HistoryDetail {
 /**
  * Finished workouts (plan.md §8 «Verlauf»). Aborted and deleted sessions never show up; only
  * completed sets count. Records are measured against sessions started earlier.
- * Calories (decision 0024) follow the body weight setting for workouts without their own.
+ * Calories (decision 0025) follow the body weight setting for workouts without their own.
  */
 @Injectable({ providedIn: 'root' })
 export class HistoryService {
@@ -90,7 +90,7 @@ export class HistoryService {
     this.loaded.set(true);
   }
 
-  /** Strength sets only: cardio counts for no muscle group, strength or volume (decision 0024). */
+  /** Strength sets only: cardio counts for no muscle group, strength or volume (decision 0025). */
   async loadFacts(): Promise<void> {
     this.factState.set(
       await this.database.driver.query<HistorySetFact>(
@@ -169,7 +169,7 @@ export class HistoryService {
     this.factState.update((list) => list.filter((f) => f.sessionId !== id));
   }
 
-  /** Calories with the workout's body weight, else today's setting (decision 0024). */
+  /** Calories with the workout's body weight, else today's setting (decision 0025). */
   private withEnergy(summary: StoredSummary, cardio: readonly CardioFact[]): HistorySummary {
     const bodyWeightKg = summary.bodyWeightKg ?? this.settings.settings().bodyWeightKg;
     return {

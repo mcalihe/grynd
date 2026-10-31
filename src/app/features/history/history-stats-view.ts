@@ -41,7 +41,7 @@ import { HistoryFormat } from './history-format';
 
 /**
  * Tiles of the overview, in order; tapping one shows it in the chart. Calories always, distance
- * once the history has any (decision 0024).
+ * once the history has any (decision 0025).
  */
 const METRICS: readonly StatsMetric[] = ['count', 'duration', 'volume', 'sets', 'energy'];
 const PERIODS: readonly StatsPeriod[] = ['week', 'month', 'year'];
@@ -308,7 +308,7 @@ export class HistoryStatsView implements OnInit {
     }
     return tiles;
   });
-  /** Calories leave out workouts that lack the body weight (decision 0024). */
+  /** Calories leave out workouts that lack the body weight (decision 0025). */
   protected readonly kcalHint = computed(() =>
     this.format.count(
       this.totals().withoutKcal,

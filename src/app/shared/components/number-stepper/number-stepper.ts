@@ -146,7 +146,7 @@ export class NumberStepper {
   readonly decimals = input(0);
   /** Where an empty value starts (± and scrub), e.g. 120 bpm; null = `min`. */
   readonly origin = input<number | null>(null);
-  /** Plain number (default) or a duration in seconds shown as m:ss (decision 0024). */
+  /** Plain number (default) or a duration in seconds shown as m:ss (decision 0025). */
   readonly format = input<ValueFormat>(NUMBER_FORMAT);
   readonly disabled = input(false);
   /** Fill the container instead of the fixed 121 px from the set row. */

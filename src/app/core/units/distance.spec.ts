@@ -7,7 +7,7 @@ import {
   tempo,
 } from './distance';
 
-describe('distance units (decision 0024)', () => {
+describe('distance units (decision 0025)', () => {
   it('shows metres in km or mi, rounded to 0.01', () => {
     expect(metersToDisplay(5234, 'km')).toBe(5.23);
     expect(metersToDisplay(M_PER_MI * 3.1, 'mi')).toBe(3.1);

@@ -19,7 +19,7 @@ import { NumberStepper } from '../../shared/components/number-stepper/number-ste
 import { formatElapsed } from '../../shared/components/workout-clock/format-elapsed';
 
 /**
- * Body of a cardio workout without a plan (decision 0024, code only): the activity, a big clock
+ * Body of a cardio workout without a plan (decision 0025, code only): the activity, a big clock
  * (the workout time without pauses, which becomes the entry's duration), the live tempo once a
  * distance is entered, and the fields of the activity. Unlike decision 0023 the fields stay
  * editable while paused, since device values are read after stopping.

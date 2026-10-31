@@ -26,7 +26,7 @@ import { PlanCard } from '../../shared/components/plan-card/plan-card';
 
 /**
  * Plan list (Figma Pläne 37:27416, empty state 84:3262). No primary button on this screen.
- * «Ausdauer starten» starts a cardio workout without a plan (decision 0024).
+ * «Ausdauer starten» starts a cardio workout without a plan (decision 0025).
  */
 @Component({
   selector: 'app-plans-page',
@@ -117,7 +117,7 @@ export class PlansPage implements OnInit {
   protected readonly today = this.service.todayPlans;
   protected readonly todayIds = computed(() => new Set(this.today().map((p) => p.plan.id)));
 
-  /** «Ausdauer starten» (decision 0024): every cardio activity of the catalog, A–Z. */
+  /** «Ausdauer starten» (decision 0025): every cardio activity of the catalog, A–Z. */
   protected readonly cardioOpen = signal(false);
   private readonly recentCardioIds = signal<string[]>([]);
   protected readonly cardioItems = computed<CardioStartItem[]>(() =>

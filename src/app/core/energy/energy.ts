@@ -1,7 +1,7 @@
 import { ActivityProfile, activityProfile, MetModel, STRENGTH_MET } from './activities';
 
 /**
- * Calorie estimates (decision 0024): MET × body weight (kg) × hours. Calories from a device
+ * Calorie estimates (decision 0025): MET × body weight (kg) × hours. Calories from a device
  * replace the estimate of their entry; heart rate and level are not used.
  */
 

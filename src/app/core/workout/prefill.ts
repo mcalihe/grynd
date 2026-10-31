@@ -21,7 +21,7 @@ export function prefillSets(
   });
 }
 
-/** What a cardio entry carries over (decision 0024); calories and heart rate never do. */
+/** What a cardio entry carries over (decision 0025); calories and heart rate never do. */
 export interface CardioValues {
   durationSec: number | null;
   distanceM: number | null;
@@ -29,7 +29,7 @@ export interface CardioValues {
 }
 
 /**
- * Values for a new session's cardio entries (decision 0024): the duration from the plan's target,
+ * Values for a new session's cardio entries (decision 0025): the duration from the plan's target,
  * else from last time; distance and level from the last finished session, position by position
  * like sets.
  */

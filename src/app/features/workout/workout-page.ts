@@ -63,7 +63,7 @@ interface ExerciseMoment {
  * A finished exercise is celebrated once (decision 0015); when all are done, the finish button pulses.
  * Paused (decision 0023), the clock stands still, the exercises can't be touched and the user may
  * leave for the rest of the app until continuing.
- * A cardio workout without a plan (decision 0024) shows `CardioSession` instead of the pager.
+ * A cardio workout without a plan (decision 0025) shows `CardioSession` instead of the pager.
  */
 @Component({
   selector: 'app-workout-page',
@@ -104,7 +104,7 @@ interface ExerciseMoment {
 
     @if (workout.workout(); as w) {
       @if (workout.standalone()) {
-        <!-- Cardio without a plan (decision 0024): one activity, the clock is the stopwatch. -->
+        <!-- Cardio without a plan (decision 0025): one activity, the clock is the stopwatch. -->
         <header class="flex h-13 shrink-0 items-center justify-between gap-2 px-4">
           <h1 class="min-w-0 truncate text-xl font-semibold">
             {{ catalog.name(w.activity ?? undefined) }}
@@ -367,7 +367,7 @@ export class WorkoutPage {
     afterNextRender(() => {
       const pager = this.pager()?.nativeElement;
       if (!pager) {
-        // Without a plan there is no pager: the one activity is tracked right away (decision 0024).
+        // Without a plan there is no pager: the one activity is tracked right away (decision 0025).
         void this.workout.setCurrent(0);
         return;
       }

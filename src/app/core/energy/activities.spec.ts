@@ -2,7 +2,7 @@ import catalog from '../../../../public/data/exercises.json';
 import { APP_ICONS } from '../icons';
 import { ACTIVITIES, activityProfile, isCardio } from './activities';
 
-describe('activity profiles (decision 0024)', () => {
+describe('activity profiles (decision 0025)', () => {
   const cardioKeys = catalog.exercises.filter((e) => e.category === 'cardio').map((e) => e.key);
 
   it('has a profile for every cardio exercise of the catalog and nothing else', () => {

@@ -11,7 +11,7 @@ export function targetSummary(sets: number, repMin: number, repMax: number): str
 
 type Translate = (key: string, params?: Record<string, unknown>) => string;
 
-/** Cardio target (decision 0024): "10 Min.", "2 × 10 Min.", "12:30" or "Ohne Ziel". */
+/** Cardio target (decision 0025): "10 Min.", "2 × 10 Min.", "12:30" or "Ohne Ziel". */
 export function cardioSummary(t: Translate, sets: number, durationSec: number | null): string {
   if (!durationSec) {
     return t('plans.cardioTarget.none');

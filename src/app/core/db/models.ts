@@ -65,7 +65,7 @@ export interface PlanExercise extends BaseEntity {
   repMin: number;
   repMax: number;
   restSeconds: number;
-  /** Target duration of a cardio exercise (decision 0024); null = no target or strength. */
+  /** Target duration of a cardio exercise (decision 0025); null = no target or strength. */
   targetDurationSec: number | null;
 }
 
@@ -76,7 +76,7 @@ export interface WorkoutSession extends BaseEntity {
   startedAt: UtcTimestamp;
   finishedAt: UtcTimestamp | null;
   status: WorkoutSessionStatus;
-  /** Body weight from the settings at the start, for the calorie estimate (decision 0024). */
+  /** Body weight from the settings at the start, for the calorie estimate (decision 0025). */
   bodyWeightKg: number | null;
 }
 
@@ -97,7 +97,7 @@ export interface SessionExercise extends BaseEntity {
   repMin: number | null;
   repMax: number | null;
   restSeconds: number | null;
-  /** Copied from the plan at session start; cardio only (decision 0024). */
+  /** Copied from the plan at session start; cardio only (decision 0025). */
   targetDurationSec: number | null;
 }
 
@@ -113,7 +113,7 @@ export interface SetLog extends BaseEntity {
   /** Always kilograms; pounds are display-only. */
   weightKg: number | null;
   reps: number | null;
-  /** Cardio entry (decision 0024): duration instead of kg × reps. */
+  /** Cardio entry (decision 0025): duration instead of kg × reps. */
   durationSec: number | null;
   /** Always metres; km and mi are display-only. */
   distanceM: number | null;

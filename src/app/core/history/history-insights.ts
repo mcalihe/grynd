@@ -93,7 +93,7 @@ export interface PeriodTotals {
   volumeKg: number;
   setCount: number;
   records: number;
-  /** Calories of the workouts that have them (decision 0024). */
+  /** Calories of the workouts that have them (decision 0025). */
   kcal: number;
   /** Workouts without calories (body weight missing): the sum is incomplete. */
   withoutKcal: number;
@@ -330,7 +330,7 @@ export function exerciseProgress(
 export interface PlanBreakdown {
   planId: string | null;
   planName: string;
-  /** Cardio workouts without a plan are grouped by activity (decision 0024). */
+  /** Cardio workouts without a plan are grouped by activity (decision 0025). */
   activityId: string | null;
   count: number;
   durationMs: number;
@@ -338,7 +338,7 @@ export interface PlanBreakdown {
 
 /**
  * What makes two workouts comparable: the same plan, or for cardio without a plan the same
- * activity (decision 0024). Null when neither is known.
+ * activity (decision 0025). Null when neither is known.
  */
 function sessionGroup(session: HistorySummary): string | null {
   if (session.planId) {

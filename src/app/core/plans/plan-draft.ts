@@ -7,7 +7,7 @@ export interface DraftExercise {
   repMin: number;
   repMax: number;
   restSeconds: number;
-  /** Cardio target (decision 0024); null for strength or a cardio exercise without target. */
+  /** Cardio target (decision 0025); null for strength or a cardio exercise without target. */
   targetDurationSec: number | null;
 }
 
@@ -29,7 +29,7 @@ export const DEFAULT_TARGETS = {
 } as const;
 
 /**
- * New cardio exercises (decision 0024): one entry of 10 minutes. The rep and rest columns keep
+ * New cardio exercises (decision 0025): one entry of 10 minutes. The rep and rest columns keep
  * their defaults because they are NOT NULL, but cardio does not use them.
  */
 export const DEFAULT_CARDIO_TARGETS = {

@@ -48,7 +48,7 @@ describe('PlanEditorStore', () => {
     expect(TestBed.inject(PlansService).plans()?.[0].plan.id).toBe(id);
   });
 
-  it('adds cardio exercises with a target duration (decision 0024)', async () => {
+  it('adds cardio exercises with a target duration (decision 0025)', async () => {
     await TestBed.inject(ExerciseCatalogService).load();
     await store.init(null);
     store.add(['e0', 'run']);

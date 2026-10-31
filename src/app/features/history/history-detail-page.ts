@@ -28,7 +28,7 @@ import { HistoryViewState } from './history-view';
 /**
  * One finished workout (Figma Verlauf-Detail 84:3364, «Vergleich»): key figures against the last
  * workout of the same plan, a link to the plan history, then per exercise its time, volume and the
- * completed sets with «Rekord»/«Extra». Calories, distance and cardio entries per decision 0024.
+ * completed sets with «Rekord»/«Extra». Calories, distance and cardio entries per decision 0025.
  * The menu deletes the workout (soft delete).
  */
 @Component({
@@ -203,7 +203,7 @@ export class HistoryDetailPage implements OnInit {
 
   /**
    * Duration and calories, then volume and sets for strength, distance for cardio, records for
-   * strength (decision 0024); each with the change since the previous comparable workout.
+   * strength (decision 0025); each with the change since the previous comparable workout.
    */
   protected readonly figures = computed<KeyFigure[]>(() => {
     const detail = this.detail();
@@ -263,7 +263,7 @@ export class HistoryDetailPage implements OnInit {
     return figures;
   });
 
-  /** One cardio entry with its calories: the device's, else the estimate (decision 0024). */
+  /** One cardio entry with its calories: the device's, else the estimate (decision 0025). */
   protected cardioText(exerciseKey: string, set: HistorySet): string {
     const energy = entryKcal({ exerciseKey, ...set }, this.summary()?.bodyWeightKg ?? null);
     return this.format.cardio(exerciseKey, set, energy);

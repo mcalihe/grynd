@@ -30,7 +30,7 @@ import { LongPress } from '../set-row/long-press';
 
 export type CardioRowState = 'open' | 'completed' | 'menu-open';
 
-/** Which inputs an activity shows besides duration, calories and heart rate (decision 0024). */
+/** Which inputs an activity shows besides duration, calories and heart rate (decision 0025). */
 export interface CardioFields {
   distance: boolean;
   level: boolean;
@@ -40,7 +40,7 @@ export interface CardioFields {
 const MAX_DURATION_SEC = 86_399;
 
 /**
- * One cardio entry in a workout (decision 0024, code only): number, duration (m:ss) and distance,
+ * One cardio entry in a workout (decision 0025, code only): number, duration (m:ss) and distance,
  * check; below level, calories from the device and average heart rate. Behaves like the set row:
  * long-press, right-click or a tap on the number opens the menu, checking celebrates.
  * `distance` is always metres; `distanceUnit` only changes what is shown and typed.

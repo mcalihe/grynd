@@ -176,7 +176,7 @@ describe('HistoryService', () => {
     await workout.start(planId);
     expect(workout.workout()!.exercises[0].sets[0].weightKg).toBe(80);
   });
-  describe('cardio and calories (decision 0024)', () => {
+  describe('cardio and calories (decision 0025)', () => {
     /** A run without a plan: 25 minutes, 5 km, optionally with device calories. */
     async function run(kcal: number | null = null): Promise<string> {
       await workout.startCardio('run');

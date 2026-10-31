@@ -14,7 +14,7 @@ export interface KeyFigure {
 /**
  * Key figures (Figma «Kennzahlen» 84:3425): value, label and an optional delta per figure. As
  * `selectable` tiles the figures pick what a chart shows (Verlauf · Statistik). With two columns
- * an odd last figure spans the row (decision 0024).
+ * an odd last figure spans the row (decision 0025).
  */
 @Component({
   selector: 'app-key-figures',

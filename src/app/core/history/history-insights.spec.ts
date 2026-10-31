@@ -149,7 +149,7 @@ describe('periods', () => {
     });
   });
 
-  it('sums calories and distance per bucket (decision 0024)', () => {
+  it('sums calories and distance per bucket (decision 0025)', () => {
     const sessions = [
       session('a', local(2026, 9, 28, 9), 60, { energy: { kcal: 400, estimated: true } }),
       session('b', local(2026, 9, 28, 19), 30, { distanceM: 5000, energy: null }),
@@ -337,7 +337,7 @@ describe('one workout and one plan', () => {
     expect(previousSessionOf(sessions, { ...sessions[0], planId: null })).toBeUndefined();
   });
 
-  it('compares cardio workouts without a plan with the same activity (decision 0024)', () => {
+  it('compares cardio workouts without a plan with the same activity (decision 0025)', () => {
     const run = (id: string, day: Date, activityId: string) =>
       session(id, day, 25, { planId: null, planName: '', activityId });
     const runs = [run('r3', d3, 'run'), run('row', d2, 'rower'), run('r1', d1, 'run')];

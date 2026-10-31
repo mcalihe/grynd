@@ -1,4 +1,4 @@
-/** Distances are stored in metres; km and mi are display-only (decision 0024). */
+/** Distances are stored in metres; km and mi are display-only (decision 0025). */
 export type DistanceUnit = 'km' | 'mi';
 
 /** Exact international mile. */

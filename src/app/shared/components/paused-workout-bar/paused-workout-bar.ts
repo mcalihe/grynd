@@ -38,7 +38,7 @@ import { formatElapsed } from '../workout-clock/format-elapsed';
   `,
 })
 export class PausedWorkoutBar {
-  /** Plan name, or the activity of a cardio workout without a plan (decision 0024). */
+  /** Plan name, or the activity of a cardio workout without a plan (decision 0025). */
   readonly name = input('');
   readonly elapsedMs = input(0);
 

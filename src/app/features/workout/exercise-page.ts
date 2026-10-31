@@ -36,7 +36,7 @@ export function repTarget(repMin: number | null, repMax: number | null): string 
  * set progress, muscle badge and menu, the target line, the exercise note (decisions 0019, 0021),
  * set rows and «+ Satz». The menu also picks the weight step of the exercise (decision 0022).
  * Cardio exercises show cardio rows and their target duration instead, without weight step or
- * timer autostart (decision 0024).
+ * timer autostart (decision 0025).
  */
 @Component({
   selector: 'app-exercise-page',
@@ -212,7 +212,7 @@ export class ExercisePage {
   protected readonly exercise = computed(
     () => this.catalog.byId().get(this.item().entry.exerciseId) ?? { muscleGroup: null, key: '' },
   );
-  /** Fields of the cardio activity (decision 0024). */
+  /** Fields of the cardio activity (decision 0025). */
   protected readonly profile = computed(() => activityProfile(this.exercise().key));
   /** «1 Eintrag · Ziel 10 Min.» */
   protected readonly cardioTargetLine = computed(() => {
@@ -270,7 +270,7 @@ export class ExercisePage {
   protected async complete(set: SetLog): Promise<void> {
     const { entry, sets: before, cardio } = this.item();
     if (await this.workout.toggleComplete(set.id)) {
-      // No rest timer after a cardio entry (decision 0024).
+      // No rest timer after a cardio entry (decision 0025).
       if (!cardio) {
         this.setCompleted.emit(entry.restSeconds ?? 90);
       }

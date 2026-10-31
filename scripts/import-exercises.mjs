@@ -2,7 +2,7 @@
 //
 //   pnpm catalog:import
 //
-// Own cardio activities that free-exercise-db lacks (decision 0024) come from
+// Own cardio activities that free-exercise-db lacks (decision 0025) come from
 // scripts/data/cardio-activities.json: category cardio, no images.
 //
 // Output (committed):

@@ -1,7 +1,7 @@
 import type { APP_ICONS } from '../icons';
 import { TempoKind } from '../units/distance';
 
-/** Catalog category of cardio exercises (free-exercise-db and our own, decision 0024). */
+/** Catalog category of cardio exercises (free-exercise-db and our own, decision 0025). */
 export const CARDIO_CATEGORY = 'cardio';
 
 /** A cardio exercise is logged by duration instead of kg × reps. */
@@ -9,7 +9,7 @@ export function isCardio(exercise: { category: string | null } | null | undefine
   return exercise?.category === CARDIO_CATEGORY;
 }
 
-/** How the MET follows the speed, where the Compendium or ACSM give one (decision 0024). */
+/** How the MET follows the speed, where the Compendium or ACSM give one (decision 0025). */
 export type MetModel = 'walking' | 'running' | 'cycling';
 
 export interface ActivityProfile {
@@ -66,7 +66,7 @@ const other = (met: number, distance = false): ActivityProfile => ({
 });
 
 /**
- * Profile per catalog key (decision 0024). A test checks that every cardio exercise of the
+ * Profile per catalog key (decision 0025). A test checks that every cardio exercise of the
  * catalog has one, so new catalog entries cannot slip through.
  */
 export const ACTIVITIES: Readonly<Record<string, ActivityProfile>> = {

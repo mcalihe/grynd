@@ -1,7 +1,7 @@
 import { Migration } from '../migrations';
 
 /**
- * Cardio entries and calorie estimates (decision 0024). Only nullable columns, so older rows and
+ * Cardio entries and calorie estimates (decision 0025). Only nullable columns, so older rows and
  * backups stay valid: a cardio entry is a `set_log` row with a duration instead of kg × reps,
  * a cardio exercise in a plan has a target duration, and a workout keeps the body weight it
  * started with.

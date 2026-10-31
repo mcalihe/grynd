@@ -85,7 +85,7 @@ function sample(): Record<BackupTable, BackupRow[]> {
 
 const photos = () => ({ img1: btoa('jpeg') });
 const catalog = new Set(['e1']);
-/** Schema of the current app (migration 6 added cardio entries, decision 0024). */
+/** Schema of the current app (migration 6 added cardio entries, decision 0025). */
 const SCHEMA = 6;
 const validate = (raw: unknown) => validateBackup(raw, SCHEMA, catalog);
 

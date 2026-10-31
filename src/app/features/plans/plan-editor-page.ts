@@ -251,7 +251,7 @@ export class PlanEditorPage implements OnInit {
     return isCardio(this.catalog.byId().get(exerciseId));
   }
 
-  /** "3 × 8–12", or "10 Min." for cardio (decision 0024). */
+  /** "3 × 8–12", or "10 Min." for cardio (decision 0025). */
   protected summary(exercise: DraftExercise): string {
     this.translation();
     return this.isCardio(exercise.exerciseId)

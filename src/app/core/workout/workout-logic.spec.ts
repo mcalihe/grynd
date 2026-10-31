@@ -37,7 +37,7 @@ describe('prefillSets', () => {
   });
 });
 
-describe('prefillCardio (decision 0024)', () => {
+describe('prefillCardio (decision 0025)', () => {
   const last = [
     { durationSec: 1200, distanceM: 4000, level: 8 },
     { durationSec: 300, distanceM: 1000, level: 10 },

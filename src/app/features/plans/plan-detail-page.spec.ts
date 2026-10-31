@@ -17,7 +17,7 @@ describe('targetSummary', () => {
     expect(targetSummary(3, 10, 10)).toBe('3 × 10');
   });
 
-  it('shows the target duration of cardio exercises (decision 0024)', () => {
+  it('shows the target duration of cardio exercises (decision 0025)', () => {
     const t = (key: string, params?: Record<string, unknown>) =>
       key === 'plans.cardioTarget.minutes' ? `${params?.['minutes']} Min.` : 'Ohne Ziel';
     expect(cardioSummary(t, 1, 600)).toBe('10 Min.');

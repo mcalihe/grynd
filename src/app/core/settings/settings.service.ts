@@ -10,7 +10,7 @@ export type WeightUnit = 'kg' | 'lb';
 export interface Settings {
   theme: ThemeMode;
   unit: WeightUnit;
-  /** Kept apart from the weight unit: kg + mi and lb + km both occur (decision 0024). */
+  /** Kept apart from the weight unit: kg + mi and lb + km both occur (decision 0025). */
   distanceUnit: DistanceUnit;
   /** null = follow the device language until the user picks one. */
   lang: AppLang | null;

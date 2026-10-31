@@ -110,7 +110,7 @@ import { cardioSummary, PlanExerciseRow, targetSummary } from './plan-exercise-r
               [hasNote]="notes.hasNote(exercise.exerciseId)"
             >
               <div class="flex flex-col gap-3">
-                <!-- Cardio has no rest or weight step (decision 0024). -->
+                <!-- Cardio has no rest or weight step (decision 0025). -->
                 @if (!isCardio(exercise.exerciseId)) {
                   <p class="text-sm text-muted-foreground">
                     {{ 'plans.restSeconds' | transloco: { seconds: exercise.restSeconds } }}
@@ -228,7 +228,7 @@ export class PlanDetailPage implements OnInit {
     return isCardio(this.catalog.byId().get(exerciseId));
   }
 
-  /** "3 × 8–12", or "10 Min." for cardio (decision 0024). */
+  /** "3 × 8–12", or "10 Min." for cardio (decision 0025). */
   protected summary(exercise: DraftExercise): string {
     this.translation();
     return this.isCardio(exercise.exerciseId)
