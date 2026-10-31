@@ -81,6 +81,18 @@ test('plan → workout → history', async ({ page }) => {
     '61',
   );
 
+  // Rest (decision 0025): 2:00 instead of 1:30, plus 15 s, for this workout only
+  await page.getByRole('button', { name: 'Übungsmenü' }).click();
+  await page.getByRole('menuitem', { name: 'Pausendauer: 1:30' }).click();
+  await page.getByRole('radio', { name: '2:00' }).click();
+  await page.getByRole('button', { name: 'Übungsmenü' }).click();
+  await page.getByRole('menuitem', { name: 'Pausendauer: 2:00' }).click();
+  await page.getByRole('button', { name: 'SEKUNDEN erhöhen' }).click();
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: 'Übungsmenü' }).click();
+  await expect(page.getByRole('menuitem', { name: 'Pausendauer: 2:15' })).toBeVisible();
+  await page.keyboard.press('Escape');
+
   // Pause (decision 0023): the sets can't be touched; leave for the app and come back later
   await page.getByRole('button', { name: 'Training pausieren' }).click();
   await expect(page.getByRole('heading', { name: 'Training pausiert' })).toBeVisible();

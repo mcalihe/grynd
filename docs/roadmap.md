@@ -197,6 +197,10 @@ Umgesetzt in `ccr-cd9d91b1-bugiex`, Entscheide in [0022](decisions/0022-weight-s
 
 Umgesetzt in `ccr-9fc67d84-p4ss53`, Entscheide in [0023](decisions/0023-pause-workout.md). Pause-Button im Trainingskopf: Uhr und Timer stehen still, die Sätze warten unter einem Overlay mit «Weiter trainieren» und «Zu den Plänen». Ein pausiertes Training wartet auf den Tab-Screens als Leiste über der Navigation und öffnet sich beim Start nicht von selbst. Pausen zählen nicht zur Dauer; Tabelle `workout_pause` (Migration 5), im Backup ab Schema 5. Ohne Figma-Entwurf, Vorschau der Leiste unter `/dev/components`.
 
+## Pausendauer pro Übung im Training ✅
+
+Umgesetzt in `ccr-08af1e7e-a5p2v3`, Entscheide in [0025](decisions/0025-rest-per-exercise.md). Das Übungsmenü im Training hat «Pausendauer: 1:30»; ein Sheet bietet die Timer-Dauern als Chips und einen Stepper in 15-s-Schritten (0–600 s). Gilt nur für die Übung in diesem Training, der Plan bleibt unverändert. Ohne Figma-Entwurf, Vorschau unter `/dev/components`.
+
 ---
 
 ## Entscheide aus M0

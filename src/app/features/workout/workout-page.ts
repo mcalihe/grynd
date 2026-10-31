@@ -29,6 +29,7 @@ import { Clock, toUtc } from '../../core/utils/time';
 import { ExerciseNoteSheet } from '../../shared/components/exercise-note/exercise-note-sheet';
 import { toastAddImagesResult } from '../../shared/components/exercise-note/note-image-feedback';
 import { WeightStepSheet } from '../../shared/components/weight-step/weight-step-sheet';
+import { RestDurationSheet } from '../../shared/components/rest-duration/rest-duration-sheet';
 import { RollingNumber } from '../../shared/components/rolling-number/rolling-number';
 import { SegmentProgress } from '../../shared/components/segment-progress/segment-progress';
 import { StickyAction } from '../../shared/components/sticky-action/sticky-action';
@@ -69,6 +70,7 @@ interface ExerciseMoment {
     ExerciseCelebration,
     ExerciseNoteSheet,
     WeightStepSheet,
+    RestDurationSheet,
     OverviewSheet,
     RollingNumber,
     SegmentProgress,
@@ -151,6 +153,7 @@ interface ExerciseMoment {
                 (exerciseCompleted)="exerciseCompleted(i)"
                 (editNote)="editNote(item.entry.exerciseId)"
                 (editWeightStep)="editWeightStep(item.entry.exerciseId)"
+                (editRest)="editRest(item.entry.id)"
               />
             </section>
           }
@@ -240,6 +243,13 @@ interface ExerciseMoment {
         (pick)="exerciseSettings.setWeightStep(stepExerciseId(), unit(), $event)"
       />
 
+      <app-rest-duration-sheet
+        [(open)]="restOpen"
+        [title]="catalog.nameById(restItem()?.entry?.exerciseId ?? '')"
+        [seconds]="restItem()?.entry?.restSeconds ?? 90"
+        (pick)="setRest($event)"
+      />
+
       @if (moment(); as m) {
         <app-exercise-celebration
           [praise]="(m.done === m.total ? 'workout.allDone' : m.praise) | transloco"
@@ -283,6 +293,12 @@ export class WorkoutPage {
   /** Exercise whose weight step the sheet picks. */
   protected readonly stepExerciseId = signal('');
   protected readonly stepOpen = signal(false);
+  /** Session exercise whose rest the sheet sets; by id, so a reorder keeps the right one. */
+  protected readonly restEntryId = signal('');
+  protected readonly restOpen = signal(false);
+  protected readonly restItem = computed(
+    () => this.workout.workout()?.exercises.find((e) => e.entry.id === this.restEntryId()) ?? null,
+  );
   protected readonly busy = signal(false);
   protected readonly moment = signal<ExerciseMoment | null>(null);
   /** Refreshed every second for the workout clock; the time itself comes from the timestamps. */
@@ -420,6 +436,21 @@ export class WorkoutPage {
   protected editWeightStep(exerciseId: string): void {
     this.stepExerciseId.set(exerciseId);
     this.stepOpen.set(true);
+  }
+
+  protected editRest(entryId: string): void {
+    this.restEntryId.set(entryId);
+    this.restOpen.set(true);
+  }
+
+  /** Only for this workout: the plan keeps its rest (a session is a copy of the plan). */
+  protected setRest(seconds: number): void {
+    const index = this.workout
+      .workout()
+      ?.exercises.findIndex((e) => e.entry.id === this.restEntryId());
+    if (index !== undefined && index >= 0) {
+      void this.workout.setRestSeconds(index, seconds);
+    }
   }
 
   protected saveNote(text: string): void {

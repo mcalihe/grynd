@@ -187,6 +187,21 @@
     />
   </section>
 
+  <section class="flex flex-col gap-3">
+    <h2 class="text-sm font-semibold text-muted-foreground">
+      Rest duration · code only (decision 0025)
+    </h2>
+    <button hlmBtn variant="ghost" size="sm" class="self-start" (click)="restOpen.set(true)">
+      Pausendauer: {{ demoRest() }} s
+    </button>
+    <app-rest-duration-sheet
+      [(open)]="restOpen"
+      title="Kniebeuge"
+      [seconds]="demoRest()"
+      (pick)="demoRest.set($event)"
+    />
+  </section>
+
   <section class="-mx-4 flex flex-col gap-3">
     <h2 class="px-4 text-sm font-semibold text-muted-foreground">
       Page header · Plan card · Sticky
