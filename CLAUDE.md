@@ -16,7 +16,7 @@ App id: `com.michaelisler.grynd`. The developer has no Mac: iOS builds run in CI
 - UI only from Spartan helm components in `src/app/shared/ui` and our own components in `src/app/shared/components`. Check `docs/design/component-map.md` before building UI from Figma.
 - Never hardcode colors, spacing or radii. Use Tailwind classes backed by the design tokens (`--primary`, `--muted-foreground`, …).
 - Progress is always `primary`. `success` is only for status messages (badges, toasts, trends).
-- Never hardcode user-facing text; everything goes through Transloco (de and en).
+- Never hardcode user-facing text; everything goes through Transloco (de and en). Translation files use flat keys (`"plans.empty.title": "…"`, no nested objects) and both languages have the same keys.
 - State with signals in services. No new dependencies without asking first, and only with permissive licenses (MIT, Apache, BSD, ISC, …; no GPL/AGPL): Grynd is source-available under PolyForm Strict (`LICENSE`, decision 0017).
 - Max one primary button per screen, fixed at the bottom, full width (exception: Plans screen has none).
 - Every table: UUIDv7 `id` generated in the app, `createdAt`, `updatedAt`, `deletedAt` (soft delete).
@@ -62,7 +62,7 @@ Releases are automatic (release-please, `docs/release.md`): the commits on `main
 - Breaking change (e.g. backup format or DB migration without upgrade path): `feat!:` plus a `BREAKING CHANGE: …` footer.
 - One logical change per commit; on a branch every commit follows these rules too. The PR title summarizes the whole PR in the same format.
 - Never edit the version (`package.json`, `app-info.ts`, `.release-please-manifest.json`) or `CHANGELOG.md` by hand. To force a version, add a `Release-As: x.y.z` footer.
-- Release notes for users (decision 0020): a `feat` or `fix` users notice also adds an entry to `RELEASE_NOTES` (`src/app/core/whats-new/release-notes.ts`) under the next version (`feat` → next minor, only fixes → next patch; extend the entry if it exists) with title and text in `public/i18n/de.json` and `en.json` (`releaseNotes.<id>`). Write for everyone: what they can do now, short, no technical terms, Swiss spelling (ss) in German. Skip what users would not care about. The release PR fails CI until its version has an entry (`items: []` if there is nothing to tell); the app shows the notes once after the update and in Settings → What's new.
+- Release notes for users (decision 0020): a `feat` or `fix` users notice also adds an entry to `RELEASE_NOTES` (`src/app/core/whats-new/release-notes.ts`) under the next version (`feat` → next minor, only fixes → next patch; extend the entry if it exists) with title and text in `public/i18n/de.json` and `en.json` (`releaseNotes.<id>.title`, `releaseNotes.<id>.text`). Write for everyone: what they can do now, short, no technical terms, Swiss spelling (ss) in German. Skip what users would not care about. The release PR fails CI until its version has an entry (`items: []` if there is nothing to tell); the app shows the notes once after the update and in Settings → What's new.
 
 ## Workflow
 

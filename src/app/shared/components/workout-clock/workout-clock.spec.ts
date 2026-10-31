@@ -29,7 +29,7 @@ describe('WorkoutClock', () => {
       imports: [
         WorkoutClock,
         TranslocoTestingModule.forRoot({
-          langs: { de: { workout: { end: 'Training beenden ({{time}})' } } },
+          langs: { de: { 'workout.end': 'Training beenden ({{time}})' } },
           translocoConfig: { availableLangs: ['de'], defaultLang: 'de' },
         }),
       ],

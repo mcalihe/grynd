@@ -29,11 +29,9 @@ describe('HistoryPage', () => {
         TranslocoTestingModule.forRoot({
           langs: {
             de: {
-              history: {
-                thisWeek: 'Diese Woche',
-                lastWeek: 'Vorwoche',
-                empty: { title: 'Noch keine Trainings' },
-              },
+              'history.thisWeek': 'Diese Woche',
+              'history.lastWeek': 'Vorwoche',
+              'history.empty.title': 'Noch keine Trainings',
             },
           },
           translocoConfig: { defaultLang: 'de', availableLangs: ['de'] },

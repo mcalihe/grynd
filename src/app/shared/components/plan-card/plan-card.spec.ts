@@ -11,7 +11,7 @@ describe('layout components', () => {
       imports: [
         TranslocoTestingModule.forRoot({
           langs: {
-            de: { plans: { exerciseCount: '{{count}} Übungen', exerciseCountOne: '1 Übung' } },
+            de: { 'plans.exerciseCount': '{{count}} Übungen', 'plans.exerciseCountOne': '1 Übung' },
           },
           translocoConfig: { availableLangs: ['de'], defaultLang: 'de' },
         }),

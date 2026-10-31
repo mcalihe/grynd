@@ -76,10 +76,11 @@ describe('RELEASE_NOTES', () => {
 
   it('has a title and a text in every language', () => {
     for (const [lang, translation] of Object.entries({ de, en })) {
-      const texts = translation.releaseNotes as Record<string, { title?: string; text?: string }>;
+      const texts: Record<string, string | undefined> = translation;
       for (const { id } of RELEASE_NOTES.flatMap((entry) => entry.items)) {
-        expect(texts[id]?.title, `${lang}: releaseNotes.${id}.title`).toBeTruthy();
-        expect(texts[id]?.text, `${lang}: releaseNotes.${id}.text`).toBeTruthy();
+        for (const key of [`releaseNotes.${id}.title`, `releaseNotes.${id}.text`]) {
+          expect(texts[key], `${lang}: ${key}`).toBeTruthy();
+        }
       }
     }
   });
