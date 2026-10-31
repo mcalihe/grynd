@@ -29,8 +29,21 @@ test('search and filters stay visible while scrolling', async ({ page }) => {
   await page.getByRole('menuitemcheckbox', { name: 'Alle Geräte' }).click();
   await expect(page.getByRole('button', { name: 'Alle Geräte', exact: true })).toBeVisible();
 
+  // «Filter löschen» clears muscles and equipment in one go
+  await page.getByRole('button', { name: 'Brust', exact: true }).click();
+  await page.getByRole('button', { name: 'Alle Geräte', exact: true }).click();
+  await page.getByRole('menuitemcheckbox', { name: 'Kurzhantel' }).click();
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: 'Filter löschen' }).click();
+  await expect(page.getByRole('button', { name: 'Brust', exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'false',
+  );
+  await expect(page.getByRole('button', { name: 'Alle Geräte', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Filter löschen' })).toHaveCount(0);
+
   // Search understands muscle and equipment words
   await search.fill('bizeps kurzhantel');
-  await expect(page.getByText(/\d+ Übung/)).toBeVisible();
+  await expect(page.getByRole('heading', { name: /\d+ Übung/ })).toBeVisible();
   await expect(page.getByText('Keine Übung gefunden')).not.toBeVisible();
 });

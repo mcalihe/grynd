@@ -123,7 +123,7 @@ interface ListEntry {
         }
       </div>
 
-      <div class="flex items-center gap-2">
+      <div class="-my-1.5 flex h-11 items-center gap-2">
         @let picked = equipment();
         <button
           type="button"
@@ -165,13 +165,15 @@ interface ListEntry {
             }
           </hlm-dropdown-menu>
         </ng-template>
-        <p class="ml-auto text-sm text-muted-foreground tabular-nums" aria-live="polite">
-          {{
-            (results().length === 1 ? 'picker.countOne' : 'picker.countMany')
-              | transloco: { count: results().length }
-          }}
-        </p>
+        @if (chipsActive()) {
+          <button hlmBtn variant="ghost" size="sm" class="-mr-3 ml-auto" (click)="clearChips()">
+            <ng-icon name="lucideX" />{{ 'picker.clearFilters' | transloco }}
+          </button>
+        }
       </div>
+      <p class="sr-only" aria-live="polite">
+        {{ countLabel() | transloco: { count: results().length } }}
+      </p>
     </div>
 
     <div
@@ -192,7 +194,11 @@ interface ListEntry {
         </div>
       } @else {
         <section class="flex shrink-0 flex-col gap-1">
-          @if (!filterActive() && recent().length) {
+          @if (filterActive()) {
+            <h2 class="text-sm font-medium text-muted-foreground tabular-nums">
+              {{ countLabel() | transloco: { count: results().length } }}
+            </h2>
+          } @else if (recent().length) {
             <h2 class="text-sm font-medium text-muted-foreground">
               {{ 'picker.recent' | transloco }}
             </h2>
@@ -329,6 +335,9 @@ export class ExercisePickerPage implements OnInit {
     equipment: this.equipment(),
   }));
   protected readonly filterActive = computed(() => isFilterActive(this.filter()));
+  protected readonly chipsActive = computed(
+    () => this.muscles().length > 0 || this.equipment().length > 0,
+  );
 
   /** Sorted by display name in the UI language. */
   private readonly sorted = computed(() => {
@@ -403,6 +412,16 @@ export class ExercisePickerPage implements OnInit {
       next.add(id);
     }
     this.selected.set(next);
+  }
+
+  protected countLabel(): string {
+    return this.results().length === 1 ? 'picker.countOne' : 'picker.countMany';
+  }
+
+  /** Clears muscle and equipment filters; the search stays. */
+  protected clearChips(): void {
+    this.muscles.set([]);
+    this.equipment.set([]);
   }
 
   protected resetFilters(): void {

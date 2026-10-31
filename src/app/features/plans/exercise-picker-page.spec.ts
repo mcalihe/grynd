@@ -168,6 +168,38 @@ describe('ExercisePickerPage', () => {
     expect(trigger()?.textContent).toContain('picker.allEquipment');
   });
 
+  it('clears muscle and equipment filters at once and keeps the search', async () => {
+    const { fixture } = await setup();
+    const el: HTMLElement = fixture.nativeElement;
+    const clearAll = () =>
+      [...el.querySelectorAll<HTMLButtonElement>('button')].find((b) =>
+        b.textContent?.includes('picker.clearFilters'),
+      );
+    const chip = (label: string) =>
+      [...el.querySelectorAll<HTMLButtonElement>('[role=group] button')].find(
+        (b) => b.textContent?.trim() === label,
+      );
+    const input = el.querySelector<HTMLInputElement>('input[type=search]')!;
+    expect(clearAll()).toBeUndefined();
+
+    input.value = 'rud';
+    input.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    expect(clearAll()).toBeUndefined();
+    expect(el.querySelector('section h2')?.textContent).toContain('picker.countOne');
+
+    chip('muscles.arms')?.click();
+    fixture.detectChanges();
+    expect(names(el)).toEqual([]);
+
+    clearAll()?.click();
+    fixture.detectChanges();
+    expect(clearAll()).toBeUndefined();
+    expect(chip('muscles.arms')?.getAttribute('aria-pressed')).toBe('false');
+    expect(input.value).toBe('rud');
+    expect(names(el)).toEqual(['Rudern']);
+  });
+
   it('finds exercises by muscle and equipment words', async () => {
     const { fixture } = await setup();
     const el: HTMLElement = fixture.nativeElement;
