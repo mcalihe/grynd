@@ -8,7 +8,7 @@ import { formatClock, REST_DURATIONS_SEC } from '../timer-bar/timer-bar';
 export const REST_MAX_SEC = 600;
 
 /**
- * Bottom sheet to set the rest of an exercise during a workout (decision 0025): the timer's
+ * Bottom sheet to set the rest of an exercise during a workout (decision 0026): the timer's
  * presets as chips, the current one in primary, and a stepper in 15 s steps for other values.
  * A chip emits `pick` and closes the sheet; the stepper emits each change and keeps it open.
  */

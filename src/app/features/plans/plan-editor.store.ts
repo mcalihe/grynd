@@ -11,6 +11,8 @@ import {
   removeExercise,
   updateExercise,
 } from '../../core/plans/plan-draft';
+import { isCardio } from '../../core/energy/activities';
+import { ExerciseCatalogService } from '../../core/exercises/exercise-catalog.service';
 import { PlansService } from '../../core/plans/plans.service';
 
 /** Plan to duplicate and how to name the copy (the name is translated by the caller). */
@@ -26,6 +28,7 @@ export interface PlanCopy {
 @Injectable()
 export class PlanEditorStore {
   private readonly plans = inject(PlansService);
+  private readonly catalog = inject(ExerciseCatalogService);
 
   private readonly snapshot = signal<PlanDraft>(emptyDraft());
   private loadedKey?: string;
@@ -69,7 +72,8 @@ export class PlanEditorStore {
   }
 
   add(exerciseIds: readonly string[]): void {
-    this.draft.update((d) => addExercises(d, exerciseIds));
+    const byId = this.catalog.byId();
+    this.draft.update((d) => addExercises(d, exerciseIds, (id) => isCardio(byId.get(id))));
   }
 
   remove(index: number): void {

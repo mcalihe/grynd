@@ -27,14 +27,15 @@ import {
   clamp,
   edgeScroll,
   edgeSpeed,
-  formatNumber,
-  majorEvery,
-  parseNumber,
+  emptyBase,
+  NUMBER_FORMAT,
   RulerFrame,
   rulerOffset,
   scrubValue,
   stepValue,
+  StepperBounds,
   SWIPE_THRESHOLD_PX,
+  ValueFormat,
 } from './number-stepper.logic';
 
 /** A click this soon after a scrub ends belongs to the scrub, not to what is under the finger. */
@@ -116,7 +117,7 @@ interface Scrub {
           inputmode="decimal"
           [attr.aria-label]="label()"
           enterkeyhint="done"
-          [value]="value() ?? ''"
+          [value]="editText()"
           (blur)="commit(field.value)"
           (keydown.enter)="field.blur()"
         />
@@ -143,6 +144,10 @@ export class NumberStepper {
   readonly min = input(0);
   readonly max = input(9999);
   readonly decimals = input(0);
+  /** Where an empty value starts (± and scrub), e.g. 120 bpm; null = `min`. */
+  readonly origin = input<number | null>(null);
+  /** Plain number (default) or a duration in seconds shown as m:ss (decision 0025). */
+  readonly format = input<ValueFormat>(NUMBER_FORMAT);
   readonly disabled = input(false);
   /** Fill the container instead of the fixed 121 px from the set row. */
   readonly stretch = input(false);
@@ -175,7 +180,11 @@ export class NumberStepper {
   };
 
   protected readonly display = computed(() =>
-    formatNumber(this.value(), this.lang(), this.decimals()),
+    this.format().format(this.value(), this.lang(), this.decimals()),
+  );
+
+  protected readonly editText = computed(() =>
+    this.format().edit(this.value(), this.lang(), this.decimals()),
   );
 
   constructor() {
@@ -187,8 +196,13 @@ export class NumberStepper {
     });
   }
 
-  private get bounds() {
-    return { min: this.min(), max: this.max(), decimals: this.decimals() };
+  private get bounds(): StepperBounds {
+    return {
+      min: this.min(),
+      max: this.max(),
+      decimals: this.decimals(),
+      origin: this.origin(),
+    };
   }
 
   private get view(): Window | null {
@@ -201,11 +215,12 @@ export class NumberStepper {
 
   /** Spinbutton keys: arrows ±1 step, Page Up/Down ±1 labelled ruler interval, Home/End, Enter. */
   protected onKey(event: KeyboardEvent): void {
-    if (this.disabled() || this.editing()) {
+    // Keys typed in the edit field are its own: Enter there commits and must not reopen it.
+    if (this.disabled() || this.editing() || event.target !== event.currentTarget) {
       return;
     }
     const step = this.stepSize();
-    const page = majorEvery(step) * step;
+    const page = this.format().majorEvery(step) * step;
     const deltas: Record<string, number> = {
       ArrowUp: step,
       ArrowRight: step,
@@ -282,7 +297,7 @@ export class NumberStepper {
 
   private frameOf(scrub: Scrub): RulerFrame {
     return {
-      base: scrub.start ?? this.min(),
+      base: scrub.start ?? emptyBase(this.bounds),
       step: this.stepSize(),
       originX: scrub.originX,
       scrollPx: scrub.scrollPx,
@@ -405,6 +420,8 @@ export class NumberStepper {
       inputBinding('min', this.min),
       inputBinding('max', this.max),
       inputBinding('decimals', this.decimals),
+      inputBinding('origin', this.origin),
+      inputBinding('format', this.format),
       inputBinding('locale', this.lang),
       inputBinding('originX', () => originX),
       inputBinding('scrollPx', () => this.ruler().scrollPx),
@@ -451,7 +468,7 @@ export class NumberStepper {
   }
 
   protected commit(text: string): void {
-    const parsed = parseNumber(text);
+    const parsed = this.format().parse(text);
     this.value.set(parsed === null ? null : clamp(parsed, this.bounds));
     this.editing.set(false);
   }

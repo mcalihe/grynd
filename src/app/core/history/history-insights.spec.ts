@@ -12,7 +12,7 @@ import {
   periodTotals,
   planBreakdown,
   planHistory,
-  previousSessionOfPlan,
+  previousSessionOf,
   recordsBySession,
   shares,
   trainingsPerWeek,
@@ -38,6 +38,11 @@ const session = (
   exerciseCount: 3,
   setCount: 9,
   volumeKg: 1000,
+  activityId: null,
+  cardioCount: 0,
+  distanceM: 0,
+  bodyWeightKg: null,
+  energy: null,
   ...extra,
 });
 
@@ -120,8 +125,12 @@ describe('periods', () => {
 
   it('sums sessions and records within a range', () => {
     const sessions = [
-      session('a', local(2026, 9, 1), 60, { setCount: 10, volumeKg: 2000 }),
-      session('b', local(2026, 9, 29), 30, { setCount: 5, volumeKg: 500 }),
+      session('a', local(2026, 9, 1), 60, {
+        setCount: 10,
+        volumeKg: 2000,
+        energy: { kcal: 280, estimated: true },
+      }),
+      session('b', local(2026, 9, 29), 30, { setCount: 5, volumeKg: 500, distanceM: 5000 }),
       session('old', local(2026, 8, 31, 23, 59)),
     ];
     const records = new Map([
@@ -134,7 +143,20 @@ describe('periods', () => {
       volumeKg: 2500,
       setCount: 15,
       records: 2,
+      kcal: 280,
+      withoutKcal: 1,
+      distanceM: 5000,
     });
+  });
+
+  it('sums calories and distance per bucket (decision 0025)', () => {
+    const sessions = [
+      session('a', local(2026, 9, 28, 9), 60, { energy: { kcal: 400, estimated: true } }),
+      session('b', local(2026, 9, 28, 19), 30, { distanceM: 5000, energy: null }),
+    ];
+    const buckets = periodBuckets('week', periodRange('week', 0, now));
+    expect(bucketSeries(sessions, buckets, 'energy')[0]).toBe(400);
+    expect(bucketSeries(sessions, buckets, 'distance')[0]).toBe(5000);
   });
 
   it('builds a bar series per bucket', () => {
@@ -280,10 +302,21 @@ describe('breakdowns', () => {
       session('b', local(2026, 9, 2), 60),
       session('c', local(2026, 9, 3), 50),
       session('old', local(2026, 8, 3), 50, { planId: 'legs', planName: 'Beine' }),
+      session('run1', local(2026, 9, 4), 25, { planId: null, planName: '', activityId: 'run' }),
+      session('run2', local(2026, 9, 5), 30, { planId: null, planName: '', activityId: 'run' }),
+      session('row', local(2026, 9, 6), 20, { planId: null, planName: '', activityId: 'rower' }),
     ];
     expect(planBreakdown(sessions, periodRange('month', 0, now))).toEqual([
-      { planId: 'p1', planName: 'Oberkörper', count: 2, durationMs: 110 * 60_000 },
-      { planId: 'legs', planName: 'Beine', count: 1, durationMs: 40 * 60_000 },
+      {
+        planId: 'p1',
+        planName: 'Oberkörper',
+        activityId: null,
+        count: 2,
+        durationMs: 110 * 60_000,
+      },
+      { planId: null, planName: '', activityId: 'run', count: 2, durationMs: 55 * 60_000 },
+      { planId: 'legs', planName: 'Beine', activityId: null, count: 1, durationMs: 40 * 60_000 },
+      { planId: null, planName: '', activityId: 'rower', count: 1, durationMs: 20 * 60_000 },
     ]);
   });
 });
@@ -299,9 +332,17 @@ describe('one workout and one plan', () => {
   ];
 
   it('finds the previous workout of the same plan', () => {
-    expect(previousSessionOfPlan(sessions, sessions[0])?.id).toBe('s1');
-    expect(previousSessionOfPlan(sessions, sessions[2])).toBeUndefined();
-    expect(previousSessionOfPlan(sessions, { ...sessions[0], planId: null })).toBeUndefined();
+    expect(previousSessionOf(sessions, sessions[0])?.id).toBe('s1');
+    expect(previousSessionOf(sessions, sessions[2])).toBeUndefined();
+    expect(previousSessionOf(sessions, { ...sessions[0], planId: null })).toBeUndefined();
+  });
+
+  it('compares cardio workouts without a plan with the same activity (decision 0025)', () => {
+    const run = (id: string, day: Date, activityId: string) =>
+      session(id, day, 25, { planId: null, planName: '', activityId });
+    const runs = [run('r3', d3, 'run'), run('row', d2, 'rower'), run('r1', d1, 'run')];
+    expect(previousSessionOf(runs, runs[0])?.id).toBe('r1');
+    expect(previousSessionOf(runs, runs[1])).toBeUndefined();
   });
 
   it('compares each exercise with the last time it was trained', () => {

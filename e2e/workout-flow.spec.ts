@@ -81,7 +81,7 @@ test('plan → workout → history', async ({ page }) => {
     '61',
   );
 
-  // Rest (decision 0025): 2:00 instead of 1:30, plus 15 s, for this workout only
+  // Rest (decision 0026): 2:00 instead of 1:30, plus 15 s, for this workout only
   await page.getByRole('button', { name: 'Übungsmenü' }).click();
   await page.getByRole('menuitem', { name: 'Pausendauer: 1:30' }).click();
   await page.getByRole('radio', { name: '2:00' }).click();

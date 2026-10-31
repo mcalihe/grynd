@@ -1,5 +1,5 @@
 {
-  "version": "f00c92c7dcf1-7c06ee9c",
+  "version": "f00c92c7dcf1-5a851792",
   "source": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
   "exercises": [
     {
@@ -6336,6 +6336,127 @@
       "images": [
         "exercises/Groiners.webp"
       ]
+    },
+    {
+      "id": "01a192f3-1d72-77b8-972a-c8de837a82ac",
+      "key": "Grynd_Hiking",
+      "nameDe": "Wandern",
+      "nameEn": "Hiking",
+      "primaryMuscles": [
+        "quadriceps"
+      ],
+      "secondaryMuscles": [
+        "calves",
+        "glutes",
+        "hamstrings"
+      ],
+      "muscleGroup": "legs",
+      "force": null,
+      "equipment": "body only",
+      "level": "beginner",
+      "category": "cardio",
+      "images": []
+    },
+    {
+      "id": "01a192f3-1d72-77bb-868a-69a98fdf95c7",
+      "key": "Grynd_Inline_Skating",
+      "nameDe": "Inline-Skaten",
+      "nameEn": "Inline Skating",
+      "primaryMuscles": [
+        "quadriceps"
+      ],
+      "secondaryMuscles": [
+        "glutes",
+        "adductors",
+        "abductors"
+      ],
+      "muscleGroup": "legs",
+      "force": null,
+      "equipment": "other",
+      "level": "beginner",
+      "category": "cardio",
+      "images": []
+    },
+    {
+      "id": "01a192f3-1d72-77b9-abfd-cff86e965adb",
+      "key": "Grynd_Nordic_Walking",
+      "nameDe": "Nordic Walking",
+      "nameEn": "Nordic Walking",
+      "primaryMuscles": [
+        "quadriceps"
+      ],
+      "secondaryMuscles": [
+        "calves",
+        "glutes",
+        "lats",
+        "triceps"
+      ],
+      "muscleGroup": "legs",
+      "force": null,
+      "equipment": "other",
+      "level": "beginner",
+      "category": "cardio",
+      "images": []
+    },
+    {
+      "id": "01a192f3-1d71-7351-ae7d-2bb071daaab8",
+      "key": "Grynd_Running",
+      "nameDe": "Laufen",
+      "nameEn": "Running",
+      "primaryMuscles": [
+        "quadriceps"
+      ],
+      "secondaryMuscles": [
+        "calves",
+        "glutes",
+        "hamstrings"
+      ],
+      "muscleGroup": "legs",
+      "force": null,
+      "equipment": "body only",
+      "level": "beginner",
+      "category": "cardio",
+      "images": []
+    },
+    {
+      "id": "01a192f3-1d72-77ba-a23e-948e618ba878",
+      "key": "Grynd_Swimming",
+      "nameDe": "Schwimmen",
+      "nameEn": "Swimming",
+      "primaryMuscles": [
+        "lats"
+      ],
+      "secondaryMuscles": [
+        "shoulders",
+        "triceps",
+        "quadriceps"
+      ],
+      "muscleGroup": "back",
+      "force": null,
+      "equipment": "body only",
+      "level": "beginner",
+      "category": "cardio",
+      "images": []
+    },
+    {
+      "id": "01a192f3-1d72-77b7-9805-3044951dab04",
+      "key": "Grynd_Walking",
+      "nameDe": "Gehen",
+      "nameEn": "Walking",
+      "primaryMuscles": [
+        "quadriceps"
+      ],
+      "secondaryMuscles": [
+        "calves",
+        "glutes",
+        "hamstrings"
+      ],
+      "muscleGroup": "legs",
+      "force": null,
+      "equipment": "body only",
+      "level": "beginner",
+      "category": "cardio",
+      "images": []
     },
     {
       "id": "01a0f3b7-93cc-786e-b32c-10901f6fa97e",

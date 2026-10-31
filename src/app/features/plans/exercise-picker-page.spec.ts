@@ -1,7 +1,9 @@
 import { computed, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, provideRouter, Router } from '@angular/router';
+import { By } from '@angular/platform-browser';
 import { TranslocoTestingModule } from '@jsverse/transloco';
+import { NgIcon } from '@ng-icons/core';
 import { catalogEntry } from '../../../testing/catalog';
 import { Exercise } from '../../core/db/models';
 import { SessionExerciseRepository } from '../../core/db/repositories/workout.repository';
@@ -30,10 +32,10 @@ describe('ExercisePickerPage', () => {
   const add = vi.fn();
   const confirm = vi.fn();
 
-  async function setup() {
+  async function setup(catalog: Exercise[] = exercises) {
     add.mockReset();
     confirm.mockReset();
-    const list = signal(exercises);
+    const list = signal(catalog);
     TestBed.configureTestingModule({
       imports: [
         ExercisePickerPage,
@@ -198,6 +200,44 @@ describe('ExercisePickerPage', () => {
     expect(chip('muscles.arms')?.getAttribute('aria-pressed')).toBe('false');
     expect(input.value).toBe('rud');
     expect(names(el)).toEqual(['Rudern']);
+  });
+
+  it('shows cardio with the «Ausdauer» chip, its icon and meta (decision 0025)', async () => {
+    const run = {
+      ...catalogEntry('e3', 'Grynd_Running', {
+        nameDe: 'Laufen',
+        category: 'cardio',
+        muscleGroup: 'legs',
+        equipment: 'body only',
+        images: [],
+      }),
+      createdAt: '',
+      updatedAt: '',
+      deletedAt: null,
+    } as Exercise;
+    const { fixture } = await setup([...exercises, run]);
+    const el: HTMLElement = fixture.nativeElement;
+    const cardio = () => el.querySelector<HTMLButtonElement>('[role=group] [data-chip=cardio]')!;
+    const clearAll = () =>
+      [...el.querySelectorAll<HTMLButtonElement>('button')].find((b) =>
+        b.textContent?.includes('picker.clearFilters'),
+      );
+
+    cardio().click();
+    fixture.detectChanges();
+    expect(names(el)).toEqual(['Laufen']);
+    expect(cardio().getAttribute('aria-pressed')).toBe('true');
+    expect(rows(el)[0].textContent).toContain('kinds.cardio');
+    const icon = fixture.debugElement
+      .queryAll(By.directive(NgIcon))
+      .map((d) => d.injector.get(NgIcon).name())
+      .find((name) => name === 'lucideFootprints');
+    expect(icon).toBe('lucideFootprints');
+
+    clearAll()?.click();
+    fixture.detectChanges();
+    expect(cardio().getAttribute('aria-pressed')).toBe('false');
+    expect(names(el)).toEqual(['Bankdrücken', 'Curls', 'Laufen', 'Rudern']);
   });
 
   it('finds exercises by muscle and equipment words', async () => {

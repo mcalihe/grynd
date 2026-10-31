@@ -24,6 +24,11 @@ const session = (id: string, start: Date, minutes: number): HistorySummary => ({
   exerciseCount: 3,
   setCount: 9,
   volumeKg: 1000,
+  activityId: null,
+  cardioCount: 0,
+  distanceM: 0,
+  bodyWeightKg: null,
+  energy: null,
 });
 
 // Thursday, 1 Oct 2026

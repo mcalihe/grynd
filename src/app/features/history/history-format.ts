@@ -1,6 +1,9 @@
 import { inject, Injectable } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { TranslocoService } from '@jsverse/transloco';
+import { activityProfile } from '../../core/energy/activities';
+import { Energy } from '../../core/energy/energy';
+import { ExerciseCatalogService } from '../../core/exercises/exercise-catalog.service';
 import { DateRange, StatsPeriod, StrengthKind } from '../../core/history/history-insights';
 import {
   dayLabel,
@@ -11,7 +14,18 @@ import {
 } from '../../core/history/history-stats';
 import { DeltaTone } from '../../shared/components/key-figures/key-figures';
 import { SettingsService } from '../../core/settings/settings.service';
+import { formatDistance, formatTempo, tempo } from '../../core/units/distance';
 import { kgToDisplay, weightDecimals } from '../../core/units/weight';
+import { formatDuration } from '../../shared/components/number-stepper/number-stepper.logic';
+
+/** A cardio entry as the history shows it (decision 0025). */
+export interface CardioEntryValues {
+  durationSec: number | null;
+  distanceM: number | null;
+  level: number | null;
+  kcal: number | null;
+  heartRate: number | null;
+}
 
 /**
  * Locale-aware texts for the history screens. Every method reads `ready`, so computeds that use
@@ -22,6 +36,7 @@ export class HistoryFormat {
   private readonly transloco = inject(TranslocoService);
   private readonly ready = toSignal(this.transloco.selectTranslation());
   private readonly settings = inject(SettingsService);
+  private readonly catalog = inject(ExerciseCatalogService);
   readonly locale = toSignal(this.transloco.langChanges$, { initialValue: 'de' });
 
   t(key: string, params?: Record<string, unknown>): string {
@@ -134,13 +149,68 @@ export class HistoryFormat {
     );
   }
 
-  /** History row details: "Heute · 54 Min. · 6 Übungen". */
+  /**
+   * History row details: "Heute · 54 Min. · 6 Übungen"; a cardio workout without a plan ends
+   * with its distance instead (decision 0025).
+   */
   sessionDetails(session: HistorySummary, now: Date): string {
-    return [
-      this.day(new Date(session.startedAt), now),
-      this.duration(sessionDurationMs(session)),
-      this.count(session.exerciseCount, 'plans.exerciseCountOne', 'plans.exerciseCount'),
-    ].join(' · ');
+    const last = session.activityId
+      ? session.distanceM > 0
+        ? this.distance(session.distanceM)
+        : ''
+      : this.count(session.exerciseCount, 'plans.exerciseCountOne', 'plans.exerciseCount');
+    return [this.day(new Date(session.startedAt), now), this.duration(sessionDurationMs(session))]
+      .concat(last ? [last] : [])
+      .join(' · ');
+  }
+
+  /** The plan name, or the activity of a cardio workout without a plan, else "Training". */
+  sessionName(session: Pick<HistorySummary, 'planName' | 'activityId'>): string {
+    return (
+      session.planName ||
+      (session.activityId ? this.catalog.nameById(session.activityId) : '') ||
+      this.t('history.untitled')
+    );
+  }
+
+  /** Icon of a workout: the activity's for cardio without a plan, else a dumbbell. */
+  sessionIcon(session: Pick<HistorySummary, 'activityId'>): string {
+    const activity = session.activityId ? this.catalog.byId().get(session.activityId) : undefined;
+    return activity ? activityProfile(activity.key).icon : 'lucideDumbbell';
+  }
+
+  /** "310 kcal", or "≈ 310 kcal" for an estimate. */
+  kcal(energy: Energy | number): string {
+    const { kcal, estimated } =
+      typeof energy === 'number' ? { kcal: energy, estimated: false } : energy;
+    return this.t(estimated ? 'history.kcalEstimated' : 'history.kcal', {
+      kcal: this.number(kcal, 0),
+    });
+  }
+
+  /** "5,2 km" / "3,23 mi" in the chosen distance unit. */
+  distance(meters: number): string {
+    return formatDistance(meters, this.settings.settings().distanceUnit, this.locale());
+  }
+
+  /** «4:48 /km», «25,3 km/h» or «2:00 /500 m» for the activity; empty without distance. */
+  tempo(exerciseKey: string, durationSec: number | null, distanceM: number | null): string {
+    const unit = this.settings.settings().distanceUnit;
+    const value = tempo(activityProfile(exerciseKey).tempo, durationSec, distanceM, unit);
+    return value ? formatTempo(value, unit, this.locale()) : '';
+  }
+
+  /** "25:00 · 5,2 km · 4:48 /km · Stufe 8 · 142 bpm · ≈ 310 kcal" (decision 0025). */
+  cardio(exerciseKey: string, entry: CardioEntryValues, energy: Energy | null): string {
+    const parts = [
+      entry.durationSec ? formatDuration(entry.durationSec) : '',
+      entry.distanceM ? this.distance(entry.distanceM) : '',
+      this.tempo(exerciseKey, entry.durationSec, entry.distanceM),
+      entry.level !== null ? this.t('history.level', { level: this.number(entry.level, 1) }) : '',
+      entry.heartRate ? this.t('history.heartRate', { bpm: entry.heartRate }) : '',
+      energy && energy.kcal > 0 ? this.kcal(energy) : '',
+    ];
+    return parts.filter(Boolean).join(' · ');
   }
 
   workouts(count: number): string {

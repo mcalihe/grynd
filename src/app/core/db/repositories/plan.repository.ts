@@ -21,6 +21,7 @@ export class PlanExerciseRepository extends BaseRepository<PlanExercise> {
         'repMin',
         'repMax',
         'restSeconds',
+        'targetDurationSec',
       ],
     });
   }

@@ -10,7 +10,15 @@ import { displayVersion } from '../../core/app-info';
 import { BackupService } from '../../core/backup/backup.service';
 import { ConfirmService } from '../../core/services/confirm.service';
 import { AppLang } from '../../core/i18n/language';
-import { SettingsService, ThemeMode, WeightUnit } from '../../core/settings/settings.service';
+import {
+  BODY_WEIGHT_RANGE,
+  SettingsService,
+  ThemeMode,
+  WeightUnit,
+} from '../../core/settings/settings.service';
+import { DistanceUnit } from '../../core/units/distance';
+import { displayToKg, kgToDisplay } from '../../core/units/weight';
+import { NumberStepper } from '../../shared/components/number-stepper/number-stepper';
 import { PageHeader } from '../../shared/components/page-header/page-header';
 import {
   SegmentedControl,
@@ -18,12 +26,22 @@ import {
 } from '../../shared/components/segmented-control/segmented-control';
 
 /**
- * Einstellungen (Figma 84:2796 / 84:3950): theme, units, language, timer autostart, backup, the
- * «What's new» page (decision 0020) and the app version. Every change is saved right away.
+ * Einstellungen (Figma 84:2796 / 84:3950): theme, units, language, body weight (decision 0025),
+ * timer autostart, backup, the «What's new» page (decision 0020) and the app version. Every change
+ * is saved right away.
  */
 @Component({
   selector: 'app-settings-page',
-  imports: [PageHeader, SegmentedControl, HlmSwitch, HlmButton, NgIcon, RouterLink, TranslocoPipe],
+  imports: [
+    PageHeader,
+    SegmentedControl,
+    NumberStepper,
+    HlmSwitch,
+    HlmButton,
+    NgIcon,
+    RouterLink,
+    TranslocoPipe,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'flex flex-1 flex-col' },
   template: `
@@ -47,12 +65,23 @@ import {
         <h2 class="text-sm font-medium text-muted-foreground">
           {{ 'settings.units' | transloco }}
         </h2>
-        <div class="rounded-xl border bg-card p-4">
-          <app-segmented-control
-            [options]="unitOptions"
-            [value]="settings().unit"
-            (valueChange)="update({ unit: $event })"
-          />
+        <div class="flex flex-col gap-3 rounded-xl border bg-card p-4">
+          <div class="flex flex-col gap-2">
+            <span class="text-xs text-muted-foreground">{{ 'settings.weight' | transloco }}</span>
+            <app-segmented-control
+              [options]="unitOptions"
+              [value]="settings().unit"
+              (valueChange)="update({ unit: $event })"
+            />
+          </div>
+          <div class="flex flex-col gap-2">
+            <span class="text-xs text-muted-foreground">{{ 'settings.distance' | transloco }}</span>
+            <app-segmented-control
+              [options]="distanceOptions"
+              [value]="settings().distanceUnit"
+              (valueChange)="update({ distanceUnit: $event })"
+            />
+          </div>
         </div>
       </section>
 
@@ -73,6 +102,27 @@ import {
         <h2 class="text-sm font-medium text-muted-foreground">
           {{ 'settings.training' | transloco }}
         </h2>
+        <div
+          class="flex items-center gap-3 rounded-xl border bg-card p-4"
+          data-setting="body-weight"
+        >
+          <span class="flex min-w-0 flex-1 flex-col gap-1">
+            <span class="text-sm font-semibold">{{ 'settings.bodyWeight.title' | transloco }}</span>
+            <span class="text-xs text-muted-foreground">
+              {{ 'settings.bodyWeight.text' | transloco }}
+            </span>
+          </span>
+          <app-number-stepper
+            [label]="'workout.set.' + settings().unit | transloco"
+            [value]="bodyWeight()"
+            [stepSize]="bodyWeightInput().step"
+            [decimals]="1"
+            [min]="bodyWeightInput().min"
+            [max]="bodyWeightInput().max"
+            [origin]="bodyWeightInput().origin"
+            (valueChange)="setBodyWeight($event)"
+          />
+        </div>
         <div class="flex items-center gap-3 rounded-xl border bg-card p-4">
           <span class="flex min-w-0 flex-1 flex-col gap-1">
             <span class="text-sm font-semibold">{{ 'settings.autostart.title' | transloco }}</span>
@@ -175,6 +225,21 @@ export class SettingsPage {
     { value: 'kg', label: 'kg' },
     { value: 'lb', label: 'lb' },
   ];
+  protected readonly distanceOptions: SegmentedOption<DistanceUnit>[] = [
+    { value: 'km', label: 'km' },
+    { value: 'mi', label: 'mi' },
+  ];
+
+  /** Body weight in the chosen unit; 0.5 kg or 1 lb steps, empty until set. */
+  protected readonly bodyWeight = computed(() =>
+    kgToDisplay(this.settings().bodyWeightKg, this.settings().unit),
+  );
+  protected readonly bodyWeightInput = computed(() =>
+    this.settings().unit === 'kg'
+      ? { step: 0.5, min: BODY_WEIGHT_RANGE.min, max: BODY_WEIGHT_RANGE.max, origin: 75 }
+      : { step: 1, min: 45, max: 880, origin: 165 },
+  );
+
   /** Language names stay in their own language. */
   protected readonly langOptions: SegmentedOption<AppLang>[] = [
     { value: 'de', label: 'Deutsch' },
@@ -226,6 +291,14 @@ export class SettingsPage {
     } finally {
       this.busy.set(false);
     }
+  }
+
+  protected setBodyWeight(value: number | null): void {
+    const kg = displayToKg(value, this.settings().unit);
+    this.update({
+      bodyWeightKg:
+        kg === null ? null : Math.min(BODY_WEIGHT_RANGE.max, Math.max(BODY_WEIGHT_RANGE.min, kg)),
+    });
   }
 
   protected update(patch: Parameters<SettingsService['update']>[0]): void {

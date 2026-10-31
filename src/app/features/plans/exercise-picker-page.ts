@@ -22,6 +22,7 @@ import { HlmDropdownMenuImports } from '@spartan-ng/helm/dropdown-menu';
 import { HlmInput } from '@spartan-ng/helm/input';
 import { Exercise, MuscleGroup } from '../../core/db/models';
 import { SessionExerciseRepository } from '../../core/db/repositories/workout.repository';
+import { activityProfile, isCardio } from '../../core/energy/activities';
 import { ExerciseCatalogService } from '../../core/exercises/exercise-catalog.service';
 import {
   EQUIPMENT,
@@ -121,6 +122,16 @@ interface ListEntry {
             {{ 'muscles.' + muscle | transloco }}
           </button>
         }
+        <!-- Cardio in the same row: a group of its own would grow the pinned head (0025). -->
+        <button
+          type="button"
+          data-chip="cardio"
+          [class]="chipClass(cardio())"
+          [attr.aria-pressed]="cardio()"
+          (click)="cardio.set(!cardio())"
+        >
+          {{ 'kinds.cardio' | transloco }}
+        </button>
       </div>
 
       <div class="-my-1.5 flex h-11 items-center gap-2">
@@ -240,7 +251,7 @@ interface ListEntry {
               class="size-full object-cover"
             />
           } @else {
-            <ng-icon name="lucideDumbbell" size="24" />
+            <ng-icon [name]="fallbackIcon(exercise)" size="24" />
           }
         </span>
         <span class="flex min-w-0 flex-1 flex-col gap-1">
@@ -292,6 +303,8 @@ export class ExercisePickerPage implements OnInit {
 
   protected readonly query = signal('');
   protected readonly muscles = signal<readonly MuscleGroup[]>([]);
+  /** «Ausdauer» chip (decision 0025). */
+  protected readonly cardio = signal(false);
   protected readonly equipment = signal<readonly EquipmentFilter[]>([]);
   protected readonly selected = signal<ReadonlySet<string>>(new Set());
   private readonly recentIds = signal<string[]>([]);
@@ -330,13 +343,14 @@ export class ExercisePickerPage implements OnInit {
   private readonly filter = computed(() => ({
     query: this.query(),
     muscles: this.muscles(),
+    cardio: this.cardio(),
     // Push/pull stays in the data and the search core, but the picker doesn't offer it (0024).
     forces: [],
     equipment: this.equipment(),
   }));
   protected readonly filterActive = computed(() => isFilterActive(this.filter()));
   protected readonly chipsActive = computed(
-    () => this.muscles().length > 0 || this.equipment().length > 0,
+    () => this.muscles().length > 0 || this.cardio() || this.equipment().length > 0,
   );
 
   /** Sorted by display name in the UI language. */
@@ -392,9 +406,17 @@ export class ExercisePickerPage implements OnInit {
     }`;
   }
 
+  /** Exercises without a photo: the activity icon for cardio, a dumbbell otherwise (0025). */
+  protected fallbackIcon(exercise: Exercise): string {
+    return isCardio(exercise) ? activityProfile(exercise.key).icon : 'lucideDumbbell';
+  }
+
+  /** «Brust · Langhantel», or «Ausdauer · Maschine» for cardio (decision 0025). */
   protected meta(exercise: Exercise): string {
     const parts: string[] = [];
-    if (exercise.muscleGroup) {
+    if (isCardio(exercise)) {
+      parts.push(this.transloco.translate('kinds.cardio'));
+    } else if (exercise.muscleGroup) {
       parts.push(this.transloco.translate(`muscles.${exercise.muscleGroup}`));
     }
     const chip = equipmentFilterOf(exercise.equipment);
@@ -418,16 +440,16 @@ export class ExercisePickerPage implements OnInit {
     return this.results().length === 1 ? 'picker.countOne' : 'picker.countMany';
   }
 
-  /** Clears muscle and equipment filters; the search stays. */
+  /** Clears muscle, cardio and equipment filters; the search stays. */
   protected clearChips(): void {
     this.muscles.set([]);
+    this.cardio.set(false);
     this.equipment.set([]);
   }
 
   protected resetFilters(): void {
     this.query.set('');
-    this.muscles.set([]);
-    this.equipment.set([]);
+    this.clearChips();
   }
 
   protected add(): void {

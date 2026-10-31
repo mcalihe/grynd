@@ -34,6 +34,7 @@ import { WeightStepSheet } from '../../shared/components/weight-step/weight-step
 import { RestDurationSheet } from '../../shared/components/rest-duration/rest-duration-sheet';
 import { KeyFigure, KeyFigures } from '../../shared/components/key-figures/key-figures';
 import { NumberStepper } from '../../shared/components/number-stepper/number-stepper';
+import { DURATION_FORMAT } from '../../shared/components/number-stepper/number-stepper.logic';
 import { MonthCalendar } from '../../shared/components/month-calendar/month-calendar';
 import { PeriodPager } from '../../shared/components/period-pager/period-pager';
 import { Sparkline } from '../../shared/components/sparkline/sparkline';
@@ -41,6 +42,11 @@ import { calendarMonth } from '../../core/history/history-insights';
 import { SegmentProgress } from '../../shared/components/segment-progress/segment-progress';
 import { SegmentedControl } from '../../shared/components/segmented-control/segmented-control';
 import { SetRow, SetRowState } from '../../shared/components/set-row/set-row';
+import { CardioRow, CardioRowState } from '../../shared/components/cardio-row/cardio-row';
+import {
+  CardioStartItem,
+  CardioStartSheet,
+} from '../../shared/components/cardio-start-sheet/cardio-start-sheet';
 import { StickyAction } from '../../shared/components/sticky-action/sticky-action';
 import { TimerBar } from '../../shared/components/timer-bar/timer-bar';
 import { WeekdayChips } from '../../shared/components/weekday-chips/weekday-chips';
@@ -70,6 +76,8 @@ import { ExerciseCelebration } from '../workout/exercise-celebration';
     HlmSheetImports,
     HlmAlertDialogImports,
     SetRow,
+    CardioRow,
+    CardioStartSheet,
     NumberStepper,
     ValueScrubber,
     ProgressRing,
@@ -162,7 +170,16 @@ export class ComponentsShowcase {
   // Weight step (decision 0022)
   protected readonly demoStep = signal(2);
   protected readonly stepOpen = signal(false);
-  // Rest per exercise in a workout (decision 0025)
+  protected readonly cardioOpen = signal(false);
+  protected readonly cardioPicked = signal('');
+  protected readonly cardioItems: CardioStartItem[] = [
+    { id: 'Grynd_Running', name: 'Laufen', icon: 'lucideFootprints' },
+    { id: 'Rowing_Stationary', name: 'Rudergerät', icon: 'lucideWaves' },
+    { id: 'Bicycling_Stationary', name: 'Ergometer', icon: 'lucideBike' },
+    { id: 'Grynd_Hiking', name: 'Wandern', icon: 'lucideMountain' },
+    { id: 'Rope_Jumping', name: 'Seilspringen', icon: 'lucideActivity' },
+  ];
+  // Rest per exercise in a workout (decision 0026)
   protected readonly demoRest = signal(90);
   protected readonly restOpen = signal(false);
   protected readonly monthBars: BarChartBar[] = Array.from({ length: 30 }, (_, i) => {
@@ -188,6 +205,11 @@ export class ComponentsShowcase {
       exerciseCount: 6,
       setCount: 18,
       volumeKg: 8420,
+      activityId: null,
+      cardioCount: 0,
+      distanceM: 0,
+      bodyWeightKg: null,
+      energy: null,
     })),
   );
   protected readonly muscles: DonutSegment[] = (
@@ -212,6 +234,7 @@ export class ComponentsShowcase {
     'destructive',
   ] as const;
   protected readonly setStates: SetRowState[] = ['open', 'completed', 'record', 'menu-open'];
+  protected readonly cardioStates: CardioRowState[] = ['open', 'completed', 'menu-open'];
   protected readonly ringValues = [0, 1 / 3, 1 / 2, 2 / 3, 1];
   protected readonly segments = [
     { done: 3, total: 3 },
@@ -222,6 +245,7 @@ export class ComponentsShowcase {
     { done: 0, total: 3 },
   ];
   protected readonly restSeconds = signal(90);
+  protected readonly durationFormat = DURATION_FORMAT;
   /** Live demo of the rolling clock: counts down from 0:15 and restarts. */
   protected readonly demoRemainingMs = signal(15_000);
   private readonly demoTick = setInterval(

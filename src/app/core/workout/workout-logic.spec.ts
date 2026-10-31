@@ -1,5 +1,5 @@
 import { closeStaleInterval, keepInterval } from './intervals';
-import { prefillSets } from './prefill';
+import { prefillCardio, prefillSets } from './prefill';
 import { SetLog } from '../db/models';
 import { estimatedOneRepMax, recordSetIds } from './records';
 import { exerciseJustDone, workoutPercent } from './workout.service';
@@ -33,6 +33,31 @@ describe('prefillSets', () => {
   it('falls back to the plan minimum for missing reps', () => {
     expect(prefillSets(1, 10, [{ weightKg: 20, reps: null }])).toEqual([
       { weightKg: 20, reps: 10 },
+    ]);
+  });
+});
+
+describe('prefillCardio (decision 0025)', () => {
+  const last = [
+    { durationSec: 1200, distanceM: 4000, level: 8 },
+    { durationSec: 300, distanceM: 1000, level: 10 },
+  ];
+
+  it('takes the duration from the plan and distance and level from last time', () => {
+    expect(prefillCardio(1, 600, last)).toEqual([{ durationSec: 600, distanceM: 4000, level: 8 }]);
+  });
+
+  it('repeats the last entry and falls back to last time without a target', () => {
+    expect(prefillCardio(3, null, last)).toEqual([
+      { durationSec: 1200, distanceM: 4000, level: 8 },
+      { durationSec: 300, distanceM: 1000, level: 10 },
+      { durationSec: 300, distanceM: 1000, level: 10 },
+    ]);
+  });
+
+  it('starts empty without history', () => {
+    expect(prefillCardio(1, null, [])).toEqual([
+      { durationSec: null, distanceM: null, level: null },
     ]);
   });
 });

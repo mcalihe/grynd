@@ -25,6 +25,36 @@
 
   <section class="flex flex-col gap-3">
     <h2 class="text-sm font-semibold text-muted-foreground">
+      Cardio Row · decision 0025 (code only)
+    </h2>
+    @for (state of cardioStates; track state) {
+      <app-cardio-row
+        [number]="$index + 1"
+        [duration]="1500"
+        [distance]="5200"
+        [level]="8"
+        [kcal]="state === 'completed' ? 310 : null"
+        [heartRate]="state === 'completed' ? 142 : null"
+        [state]="state"
+      />
+    }
+    <app-cardio-row
+      [number]="4"
+      [duration]="600"
+      [distance]="1609.344"
+      distanceUnit="mi"
+      [fields]="{ distance: true, level: false }"
+      [extra]="true"
+    />
+    <app-cardio-row [number]="1" [duration]="900" [fields]="{ distance: false, level: false }" />
+    <p class="text-xs text-muted-foreground">Galaxy Fold (280 px):</p>
+    <div class="w-[248px]">
+      <app-cardio-row [number]="1" [duration]="1500" [distance]="5200" [level]="8" />
+    </div>
+  </section>
+
+  <section class="flex flex-col gap-3">
+    <h2 class="text-sm font-semibold text-muted-foreground">
       Number Stepper 56:48064 · Value Scrubber · decision 0018
     </h2>
     <p class="text-xs text-muted-foreground">
@@ -42,6 +72,20 @@
       [max]="600"
       [stretch]="true"
     />
+    <p class="text-xs text-muted-foreground">
+      Decision 0025: a duration in seconds shown as m:ss (type «25» or «25:30»), and an empty value
+      that starts at an origin (heart rate 120).
+    </p>
+    <div class="flex gap-2">
+      <app-number-stepper
+        label="DAUER"
+        [value]="1500"
+        [stepSize]="60"
+        [max]="86399"
+        [format]="durationFormat"
+      />
+      <app-number-stepper label="BPM" [value]="null" [min]="30" [max]="240" [origin]="120" />
+    </div>
     <!-- The transform makes the fixed overlay fill this frame instead of the screen. -->
     <div class="relative h-90 [transform:translateZ(0)] overflow-hidden rounded-lg border">
       <app-value-scrubber
@@ -119,9 +163,10 @@
     <h2 class="px-4 text-sm font-semibold text-muted-foreground">
       Paused workout bar · code only (decision 0023)
     </h2>
-    <app-paused-workout-bar planName="Oberkörper" [elapsedMs]="1453000" />
+    <app-paused-workout-bar name="Oberkörper" [elapsedMs]="1453000" />
+    <app-paused-workout-bar name="Laufen" [elapsedMs]="1500000" />
     <app-paused-workout-bar [elapsedMs]="3729000" />
-    <app-paused-workout-bar planName="Ganzkörper mit sehr langem Plannamen" [elapsedMs]="0" />
+    <app-paused-workout-bar name="Ganzkörper mit sehr langem Plannamen" [elapsedMs]="0" />
   </section>
 
   <section class="flex flex-col gap-3">
@@ -189,7 +234,23 @@
 
   <section class="flex flex-col gap-3">
     <h2 class="text-sm font-semibold text-muted-foreground">
-      Rest duration · code only (decision 0025)
+      Cardio start sheet · code only (decision 0025)
+    </h2>
+    <button hlmBtn variant="secondary" class="self-start" (click)="cardioOpen.set(true)">
+      <ng-icon name="lucideActivity" />Ausdauer starten
+    </button>
+    <p class="text-xs text-muted-foreground">Picked: {{ cardioPicked() || '–' }}</p>
+    <app-cardio-start-sheet
+      [(open)]="cardioOpen"
+      [items]="cardioItems"
+      [recent]="cardioItems.slice(0, 2)"
+      (pick)="cardioPicked.set($event)"
+    />
+  </section>
+
+  <section class="flex flex-col gap-3">
+    <h2 class="text-sm font-semibold text-muted-foreground">
+      Rest duration · code only (decision 0026)
     </h2>
     <button hlmBtn variant="ghost" size="sm" class="self-start" (click)="restOpen.set(true)">
       Pausendauer: {{ demoRest() }} s

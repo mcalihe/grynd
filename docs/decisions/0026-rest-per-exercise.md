@@ -9,6 +9,7 @@ Die Pausendauer wird pro Plan-Übung im Editor gesetzt und beim Start in die Ses
 - **Übungsmenü (drei Punkte):** «Pausendauer: 1:30» unter «Gewichtsschritt». So lässt sich die Pause jeder Übung ändern, auch einer späteren und auch bei laufendem Timer.
 - **Nur für dieses Training:** Die Pause ist Plandaten, und ein Training ist eine Kopie des Plans. Die Änderung schreibt `session_exercise.restSeconds` (wie das Timer-Popover), der Plan bleibt unverändert. Anders als der Gewichtsschritt ([0022](0022-weight-step.md)), der eine Eingabehilfe pro Übung ist.
 - **Auswahl als Bottom Sheet** (`RestDurationSheet`): Übungsname als Titel, Hinweis, die Dauern des Timer-Popovers (0:30, 1:00, 1:30, 2:00, 3:00) als Chips mit Radio-Semantik, darunter ein Stepper in 15-s-Schritten von 0 bis 600 s wie im Editor. Ein Chip speichert und schliesst, der Stepper speichert jede Änderung und lässt das Sheet offen.
+- **Nicht bei Cardio-Übungen:** Nach einem Cardio-Eintrag startet kein Timer ([0025](0025-cardio-and-calories.md)), darum fehlt dort auch der Menüeintrag, wie der Gewichtsschritt.
 - **Ein laufender Timer bleibt, wie er ist:** Die neue Dauer gilt ab dem nächsten Start; für die laufende Pause gibt es −15 / +15.
 - **Wortwahl:** «Pausendauer» wie im Timer ([0023](0023-pause-workout.md)), damit es nicht mit «Training pausieren» verwechselt wird.
 
