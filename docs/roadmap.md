@@ -205,6 +205,10 @@ Umgesetzt in `ccr-87e98b54-k1dn0d`, Entscheide in [0025](decisions/0025-cardio-a
 
 Umgesetzt in `ccr-08af1e7e-a5p2v3`, Entscheide in [0026](decisions/0026-rest-per-exercise.md). Das Übungsmenü im Training hat «Pausendauer: 1:30»; ein Sheet bietet die Timer-Dauern als Chips und einen Stepper in 15-s-Schritten (0–600 s). Die Pause gilt sofort und wird auch in der Plan-Übung gespeichert (einzige Ausnahme von «Training = Kopie des Plans»), ebenso beim Timer-Popover. Ohne Figma-Entwurf, Vorschau unter `/dev/components`.
 
+## Export nach Wahl, Backup zusammenführen ✅
+
+Umgesetzt in `ccr-75552d4f-c8pzbr`, Entscheide in [0027](decisions/0027-plan-sharing-and-backup-merge.md). Export-Sheet mit Auswahl (alle oder einzelne Pläne, Trainings, Notizen, Fotos, Gewichtsschritte) als Code zum Kopieren oder als Datei; ohne Verlauf eine Vorlage, die unter Pläne → «Plan importieren» als Kopie dazukommt, ohne etwas zu überschreiben. Backup-Import mit Vorschau, Zusammenführen oder Ersetzen und «Rückgängig»; strengere Prüfung von Backups (Zeitstempel, erlaubte Werte, Bereiche, Unique-Regeln). Ohne Figma-Entwurf, Vorschau unter `/dev/components`. Offen: manueller Test von Zwischenablage, System-Menü und Dateiauswahl auf Android und iOS.
+
 ---
 
 ## Entscheide aus M0

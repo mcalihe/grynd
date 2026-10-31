@@ -31,6 +31,7 @@ import { toastAddImagesResult } from '../../shared/components/exercise-note/note
 import { PageHeader } from '../../shared/components/page-header/page-header';
 import { StickyAction } from '../../shared/components/sticky-action/sticky-action';
 import { WeekdayChips } from '../../shared/components/weekday-chips/weekday-chips';
+import { ExportSheet } from '../../shared/components/export-sheet/export-sheet';
 import { WeightStepSheet } from '../../shared/components/weight-step/weight-step-sheet';
 import { HistoryFormat } from '../history/history-format';
 import { cardioSummary, PlanExerciseRow, targetSummary } from './plan-exercise-row';
@@ -38,7 +39,7 @@ import { cardioSummary, PlanExerciseRow, targetSummary } from './plan-exercise-r
 /**
  * Read-only plan view with «Bearbeiten» and «Training starten» (Figma 37:27708, decision 0010).
  * Exercise notes and weight steps are not plan data, so they can be edited here directly
- * (decisions 0019, 0021, 0022).
+ * (decisions 0019, 0021, 0022). The share icon exports the plan (decision 0027).
  */
 @Component({
   selector: 'app-plan-detail-page',
@@ -50,6 +51,7 @@ import { cardioSummary, PlanExerciseRow, targetSummary } from './plan-exercise-r
     ExerciseNote,
     ExerciseNoteSheet,
     WeightStepSheet,
+    ExportSheet,
     HlmButton,
     NgIcon,
     TranslocoPipe,
@@ -58,9 +60,22 @@ import { cardioSummary, PlanExerciseRow, targetSummary } from './plan-exercise-r
   host: { class: 'flex flex-1 flex-col' },
   template: `
     <app-page-header variant="bar" (back)="back()">
-      <button headerAction hlmBtn variant="ghost" size="sm" (click)="edit()">
-        {{ 'plans.editAction' | transloco }}
-      </button>
+      <div headerAction class="flex items-center gap-1">
+        <button
+          hlmBtn
+          variant="ghost"
+          size="sm"
+          data-action="share"
+          [attr.aria-label]="'plans.share.action' | transloco"
+          [disabled]="!plan()"
+          (click)="shareOpen.set(true)"
+        >
+          <ng-icon name="lucideShare2" />
+        </button>
+        <button hlmBtn variant="ghost" size="sm" (click)="edit()">
+          {{ 'plans.editAction' | transloco }}
+        </button>
+      </div>
     </app-page-header>
 
     @if (plan(); as plan) {
@@ -175,6 +190,8 @@ import { cardioSummary, PlanExerciseRow, targetSummary } from './plan-exercise-r
         [step]="exerciseSettings.weightStepFor(stepExerciseId(), unit())"
         (pick)="exerciseSettings.setWeightStep(stepExerciseId(), unit(), $event)"
       />
+
+      <app-export-sheet [(open)]="shareOpen" [planId]="id()" />
     }
   `,
 })
@@ -207,6 +224,7 @@ export class PlanDetailPage implements OnInit {
   protected readonly stepExerciseId = signal('');
   protected readonly stepOpen = signal(false);
   protected readonly unit = computed(() => this.settings.settings().unit);
+  protected readonly shareOpen = signal(false);
 
   /** Entry to the plan history: number of workouts, the last one and the average time. */
   protected readonly planHistory = computed(() => {

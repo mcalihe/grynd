@@ -1,19 +1,15 @@
-import { DOCUMENT } from '@angular/common';
 import { inject, Injectable } from '@angular/core';
-import { Capacitor } from '@capacitor/core';
-import { Directory, Encoding, Filesystem } from '@capacitor/filesystem';
-import { Share } from '@capacitor/share';
 import { DatabaseService } from '../db/database.service';
 import { MIGRATIONS } from '../db/migrations';
 import { ExerciseNotesService } from '../exercises/exercise-notes.service';
 import { NoteImageStore } from '../exercises/note-image-store';
 import { ExerciseSettingsService } from '../exercises/exercise-settings.service';
+import { PlansService } from '../plans/plans.service';
 import { Clock } from '../utils/time';
 import { RestTimerService } from '../workout/rest-timer.service';
 import { WorkoutService } from '../workout/workout.service';
 import {
   Backup,
-  backupFileName,
   BackupResult,
   BackupRow,
   BackupTable,
@@ -22,10 +18,14 @@ import {
   tableColumns,
   validateBackup,
 } from './backup';
+import { mergeBackups } from './merge';
+
+/** How a backup meets the data on this device (decision 0027). */
+export type ImportMode = 'replace' | 'merge';
 
 export const SCHEMA_VERSION = Math.max(...MIGRATIONS.map((m) => m.version));
 
-/** Export to and restore from a JSON file (plan.md §8 «Einstellungen», decision 0013). */
+/** Export to and restore from a JSON file (plan.md §8 «Einstellungen», decisions 0013, 0027). */
 @Injectable({ providedIn: 'root' })
 export class BackupService {
   private readonly database = inject(DatabaseService);
@@ -35,7 +35,7 @@ export class BackupService {
   private readonly imageFiles = inject(NoteImageStore);
   private readonly exerciseSettings = inject(ExerciseSettingsService);
   private readonly clock = inject(Clock);
-  private readonly document = inject(DOCUMENT);
+  private readonly plans = inject(PlansService);
 
   /** All user data, including soft-deleted rows, and the files of live note photos. */
   async create(): Promise<Backup> {
@@ -64,28 +64,6 @@ export class BackupService {
     return buildBackup(data, SCHEMA_VERSION, this.clock.nowUtc(), images);
   }
 
-  /** Browser: download. App: write to the cache and open the share sheet. */
-  async export(): Promise<void> {
-    const json = JSON.stringify(await this.create(), null, 2);
-    const name = backupFileName(this.clock.now());
-    if (Capacitor.isNativePlatform()) {
-      const { uri } = await Filesystem.writeFile({
-        path: name,
-        data: json,
-        directory: Directory.Cache,
-        encoding: Encoding.UTF8,
-      });
-      await Share.share({ title: name, url: uri });
-      return;
-    }
-    const url = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
-    const link = this.document.createElement('a');
-    link.href = url;
-    link.download = name;
-    link.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-  }
-
   /** Parses and validates file contents without touching the database. */
   async parse(text: string): Promise<BackupResult> {
     let raw: unknown;
@@ -94,8 +72,25 @@ export class BackupService {
     } catch {
       return { ok: false, error: 'format' };
     }
+    return this.validate(raw);
+  }
+
+  /** Validates parsed JSON against this schema and the bundled catalog. */
+  async validate(raw: unknown): Promise<BackupResult> {
     const exercises = await this.database.driver.query<{ id: string }>('SELECT id FROM exercise');
     return validateBackup(raw, SCHEMA_VERSION, new Set(exercises.map((e) => e.id)));
+  }
+
+  /**
+   * Replaces the data on this device with the backup, or merges both, and returns the data from
+   * before, so the caller can offer «Undo» by restoring it.
+   */
+  async import(backup: Backup, mode: ImportMode): Promise<Backup> {
+    const before = await this.create();
+    await this.restore(
+      mode === 'merge' ? mergeBackups(before, backup, this.clock.nowUtc()) : backup,
+    );
+    return before;
   }
 
   /** Replaces all user data with the backup in one transaction; nothing changes if it fails. */
@@ -123,6 +118,7 @@ export class BackupService {
     }
     await this.notes.reload();
     await this.exerciseSettings.reload();
+    await this.plans.load();
     // A running workout may have been replaced (or brought back by the backup).
     if (!(await this.workout.restore())) {
       this.timer.stop();

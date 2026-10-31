@@ -4,6 +4,8 @@ import { Injectable, signal } from '@angular/core';
 export interface ConfirmOptions {
   title: string;
   message?: string;
+  /** Translation parameters for title and message. */
+  params?: Record<string, unknown>;
   confirm: string;
   cancel: string;
   /** Confirm button in the destructive style (discard, delete). */

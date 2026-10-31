@@ -5,10 +5,7 @@ import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { NgIcon } from '@ng-icons/core';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmSwitch } from '@spartan-ng/helm/switch';
-import { toast } from '@spartan-ng/brain/sonner';
 import { displayVersion } from '../../core/app-info';
-import { BackupService } from '../../core/backup/backup.service';
-import { ConfirmService } from '../../core/services/confirm.service';
 import { AppLang } from '../../core/i18n/language';
 import {
   BODY_WEIGHT_RANGE,
@@ -19,6 +16,8 @@ import {
 import { DistanceUnit } from '../../core/units/distance';
 import { displayToKg, kgToDisplay } from '../../core/units/weight';
 import { NumberStepper } from '../../shared/components/number-stepper/number-stepper';
+import { ExportSheet } from '../../shared/components/export-sheet/export-sheet';
+import { ImportSheet } from '../../shared/components/import-sheet/import-sheet';
 import { PageHeader } from '../../shared/components/page-header/page-header';
 import {
   SegmentedControl,
@@ -35,6 +34,8 @@ import {
   imports: [
     PageHeader,
     SegmentedControl,
+    ExportSheet,
+    ImportSheet,
     NumberStepper,
     HlmSwitch,
     HlmButton,
@@ -148,8 +149,7 @@ import {
               variant="secondary"
               size="lg"
               data-action="export"
-              [disabled]="busy()"
-              (click)="exportBackup()"
+              (click)="exportOpen.set(true)"
             >
               {{ 'settings.backup.export' | transloco }}
             </button>
@@ -158,19 +158,11 @@ import {
               variant="secondary"
               size="lg"
               data-action="import"
-              [disabled]="busy()"
-              (click)="file.click()"
+              (click)="importOpen.set(true)"
             >
               {{ 'settings.backup.import' | transloco }}
             </button>
           </div>
-          <input
-            #file
-            type="file"
-            accept="application/json,.json"
-            class="hidden"
-            (change)="importBackup(file)"
-          />
         </div>
       </section>
 
@@ -199,6 +191,9 @@ import {
 
       <p class="pt-1 text-center text-xs text-muted-foreground">Grynd {{ version }}</p>
     </div>
+
+    <app-export-sheet [(open)]="exportOpen" />
+    <app-import-sheet [(open)]="importOpen" />
   `,
 })
 export class SettingsPage {
@@ -207,11 +202,9 @@ export class SettingsPage {
   /** Emits once the translation file is loaded and on every language change. */
   private readonly translation = toSignal(this.transloco.selectTranslation());
 
-  private readonly backups = inject(BackupService);
-  private readonly confirm = inject(ConfirmService);
-
   protected readonly settings = this.service.settings;
-  protected readonly busy = signal(false);
+  protected readonly exportOpen = signal(false);
+  protected readonly importOpen = signal(false);
   protected readonly version = displayVersion();
 
   protected readonly themeOptions = computed<SegmentedOption<ThemeMode>[]>(() => {
@@ -245,53 +238,6 @@ export class SettingsPage {
     { value: 'de', label: 'Deutsch' },
     { value: 'en', label: 'English' },
   ];
-
-  protected async exportBackup(): Promise<void> {
-    this.busy.set(true);
-    try {
-      await this.backups.export();
-      toast.success(this.transloco.translate('settings.backup.exported'));
-    } catch {
-      toast.error(this.transloco.translate('settings.backup.exportFailed'));
-    } finally {
-      this.busy.set(false);
-    }
-  }
-
-  /** Validate first, then ask: a restore replaces all plans and workouts. */
-  protected async importBackup(input: HTMLInputElement): Promise<void> {
-    const file = input.files?.[0];
-    input.value = ''; // picking the same file again must fire «change» again
-    if (!file) {
-      return;
-    }
-    this.busy.set(true);
-    try {
-      const result = await this.backups.parse(await file.text());
-      if (!result.ok) {
-        toast.error(this.transloco.translate('settings.backup.importFailed'), {
-          description: this.transloco.translate(`settings.backup.errors.${result.error}`),
-        });
-        return;
-      }
-      const confirmed = await this.confirm.confirm({
-        title: 'settings.backup.confirm.title',
-        message: 'settings.backup.confirm.text',
-        confirm: 'settings.backup.confirm.confirm',
-        cancel: 'common.cancel',
-        destructive: true,
-      });
-      if (!confirmed) {
-        return;
-      }
-      await this.backups.restore(result.backup);
-      toast.success(this.transloco.translate('settings.backup.imported'));
-    } catch {
-      toast.error(this.transloco.translate('settings.backup.importFailed'));
-    } finally {
-      this.busy.set(false);
-    }
-  }
 
   protected setBodyWeight(value: number | null): void {
     const kg = displayToKg(value, this.settings().unit);

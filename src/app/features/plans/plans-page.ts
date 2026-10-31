@@ -15,6 +15,7 @@ import { SessionExerciseRepository } from '../../core/db/repositories/workout.re
 import { activityProfile, CARDIO_CATEGORY, isCardio } from '../../core/energy/activities';
 import { ExerciseCatalogService } from '../../core/exercises/exercise-catalog.service';
 import { PlansService } from '../../core/plans/plans.service';
+import { ImportSheet } from '../../shared/components/import-sheet/import-sheet';
 import { WorkoutLauncher } from '../../core/workout/workout-launcher.service';
 import { WorkoutService } from '../../core/workout/workout.service';
 import {
@@ -27,10 +28,11 @@ import { PlanCard } from '../../shared/components/plan-card/plan-card';
 /**
  * Plan list (Figma Pläne 37:27416, empty state 84:3262). No primary button on this screen.
  * «Ausdauer starten» starts a cardio workout without a plan (decision 0025).
+ * «Plan importieren» adds plans someone shared (decision 0027).
  */
 @Component({
   selector: 'app-plans-page',
-  imports: [PageHeader, PlanCard, CardioStartSheet, HlmButton, NgIcon, TranslocoPipe],
+  imports: [PageHeader, PlanCard, CardioStartSheet, ImportSheet, HlmButton, NgIcon, TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'flex flex-1 flex-col' },
   template: `
@@ -50,6 +52,9 @@ import { PlanCard } from '../../shared/components/plan-card/plan-card';
             </button>
             <button hlmBtn variant="ghost" data-action="start-cardio" (click)="openCardio()">
               <ng-icon name="lucideActivity" />{{ 'cardioStart.action' | transloco }}
+            </button>
+            <button hlmBtn variant="ghost" data-action="import" (click)="importOpen.set(true)">
+              <ng-icon name="lucideImport" />{{ 'plans.import' | transloco }}
             </button>
           </div>
         </section>
@@ -91,6 +96,15 @@ import { PlanCard } from '../../shared/components/plan-card/plan-card';
                 <ng-icon name="lucideActivity" />{{ 'cardioStart.action' | transloco }}
               </button>
             </div>
+            <button
+              hlmBtn
+              variant="ghost"
+              class="w-full"
+              data-action="import"
+              (click)="importOpen.set(true)"
+            >
+              <ng-icon name="lucideImport" />{{ 'plans.import' | transloco }}
+            </button>
           </section>
         </div>
       }
@@ -102,6 +116,7 @@ import { PlanCard } from '../../shared/components/plan-card/plan-card';
       [recent]="recentCardio()"
       (pick)="startCardio($event)"
     />
+    <app-import-sheet [(open)]="importOpen" title="import.titlePlan" />
   `,
 })
 export class PlansPage implements OnInit {
@@ -116,6 +131,7 @@ export class PlansPage implements OnInit {
   protected readonly plans = this.service.plans;
   protected readonly today = this.service.todayPlans;
   protected readonly todayIds = computed(() => new Set(this.today().map((p) => p.plan.id)));
+  protected readonly importOpen = signal(false);
 
   /** «Ausdauer starten» (decision 0025): every cardio activity of the catalog, A–Z. */
   protected readonly cardioOpen = signal(false);
