@@ -197,6 +197,19 @@ Umgesetzt in `ccr-cd9d91b1-bugiex`, Entscheide in [0022](decisions/0022-weight-s
 
 Umgesetzt in `ccr-9fc67d84-p4ss53`, Entscheide in [0023](decisions/0023-pause-workout.md). Pause-Button im Trainingskopf: Uhr und Timer stehen still, die Sätze warten unter einem Overlay mit «Weiter trainieren» und «Zu den Plänen». Ein pausiertes Training wartet auf den Tab-Screens als Leiste über der Navigation und öffnet sich beim Start nicht von selbst. Pausen zählen nicht zur Dauer; Tabelle `workout_pause` (Migration 5), im Backup ab Schema 5. Ohne Figma-Entwurf, Vorschau der Leiste unter `/dev/components`.
 
+## Ausdauer und Kalorien
+
+In Arbeit in `ccr-87e98b54-k1dn0d`, Entscheide in [0024](decisions/0024-cardio-and-calories.md). Cardio-Übungen im Plan (Dauer, Distanz, Stufe, kcal, Puls) und ein Training ohne Plan mit Live-Uhr; Kalorien geschätzt aus MET, aktiver Dauer und Körpergewicht, überschreibbar mit den kcal des Geräts. Ohne Figma-Entwurf.
+
+| # | Aufgabe |
+| --- | --- |
+| C.1 | Migration 6 (Cardio-Spalten, Zieldauer, Körpergewicht pro Training), Backup ab Schema 6 |
+| C.2 | Stepper mit Dauer-Format; eigene Aktivitäten im Katalog; Aktivitätsprofile, MET, Distanz-Einheiten (test-first) |
+| C.3 | Einstellungen: Körpergewicht, Distanz km/mi |
+| C.4 | `CardioRow`, Cardio im Plan (Zieldauer, Filter «Art») und im Training |
+| C.5 | Training ohne Plan: «Ausdauer starten», Live-Uhr, Name der Aktivität |
+| C.6 | Kalorien und Distanz im Verlauf, in der Statistik und auf dem Feier-Screen; E2E |
+
 ---
 
 ## Entscheide aus M0
