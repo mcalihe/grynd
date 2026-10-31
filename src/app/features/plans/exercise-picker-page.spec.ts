@@ -12,8 +12,18 @@ import { PlanEditorStore } from './plan-editor.store';
 
 const exercises = [
   catalogEntry('e0', 'bench', { nameDe: 'Bankdrücken', muscleGroup: 'chest' }),
-  catalogEntry('e1', 'row', { nameDe: 'Rudern', muscleGroup: 'back', force: 'pull' }),
-  catalogEntry('e2', 'curl', { nameDe: 'Curls', muscleGroup: 'arms', force: 'pull' }),
+  catalogEntry('e1', 'row', {
+    nameDe: 'Rudern',
+    muscleGroup: 'back',
+    force: 'pull',
+    equipment: 'cable',
+  }),
+  catalogEntry('e2', 'curl', {
+    nameDe: 'Curls',
+    muscleGroup: 'arms',
+    force: 'pull',
+    equipment: 'dumbbell',
+  }),
 ].map((e) => ({ ...e, createdAt: '', updatedAt: '', deletedAt: null }) as Exercise);
 
 describe('ExercisePickerPage', () => {
@@ -67,6 +77,8 @@ describe('ExercisePickerPage', () => {
     [...el.querySelectorAll<HTMLButtonElement>('button[aria-pressed], button[disabled]')].filter(
       (b) => b.querySelector('.truncate'),
     );
+  const names = (el: HTMLElement) =>
+    rows(el).map((r) => r.querySelector('.truncate')?.textContent?.trim());
 
   it('dims exercises already in the plan and adds the selection', async () => {
     const { fixture, navigate } = await setup();
@@ -101,5 +113,118 @@ describe('ExercisePickerPage', () => {
 
     expect(confirm).toHaveBeenCalledOnce();
     expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it('filters by muscle with one tap per chip', async () => {
+    const { fixture } = await setup();
+    const el: HTMLElement = fixture.nativeElement;
+    const chip = (label: string) =>
+      [...el.querySelectorAll<HTMLButtonElement>('[role=group] button')].find(
+        (b) => b.textContent?.trim() === label,
+      );
+    expect(chip('forces.push')).toBeUndefined();
+
+    chip('muscles.arms')?.click();
+    fixture.detectChanges();
+    expect(names(el)).toEqual(['Curls']);
+    expect(chip('muscles.arms')?.getAttribute('aria-pressed')).toBe('true');
+    expect(el.querySelector('[aria-live]')?.textContent).toContain('picker.countOne');
+
+    chip('muscles.arms')?.click();
+    fixture.detectChanges();
+    expect(names(el)).toEqual(['Bankdrücken', 'Curls', 'Rudern']);
+  });
+
+  it('filters by equipment from a dropdown that stays open while picking', async () => {
+    const { fixture } = await setup();
+    const el: HTMLElement = fixture.nativeElement;
+    const trigger = () =>
+      [...el.querySelectorAll<HTMLButtonElement>('button[aria-haspopup]')].find((b) =>
+        b.textContent?.match(/picker\.allEquipment|equipment\./),
+      );
+    const item = (label: string) =>
+      [...document.querySelectorAll<HTMLButtonElement>('[role=menuitemcheckbox]')].find(
+        (b) => b.textContent?.trim() === label,
+      );
+
+    trigger()?.click();
+    fixture.detectChanges();
+    item('equipment.cable')?.click();
+    fixture.detectChanges();
+
+    expect(names(el)).toEqual(['Rudern']);
+    expect(trigger()?.textContent).toContain('equipment.cable');
+    expect(item('equipment.dumbbell')).toBeDefined();
+
+    item('equipment.dumbbell')?.click();
+    fixture.detectChanges();
+    expect(names(el)).toEqual(['Curls', 'Rudern']);
+    expect(trigger()?.textContent).toContain('+1');
+
+    item('picker.allEquipment')?.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(names(el)).toEqual(['Bankdrücken', 'Curls', 'Rudern']);
+    expect(trigger()?.textContent).toContain('picker.allEquipment');
+  });
+
+  it('clears muscle and equipment filters at once and keeps the search', async () => {
+    const { fixture } = await setup();
+    const el: HTMLElement = fixture.nativeElement;
+    const clearAll = () =>
+      [...el.querySelectorAll<HTMLButtonElement>('button')].find((b) =>
+        b.textContent?.includes('picker.clearFilters'),
+      );
+    const chip = (label: string) =>
+      [...el.querySelectorAll<HTMLButtonElement>('[role=group] button')].find(
+        (b) => b.textContent?.trim() === label,
+      );
+    const input = el.querySelector<HTMLInputElement>('input[type=search]')!;
+    expect(clearAll()).toBeUndefined();
+
+    input.value = 'rud';
+    input.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    expect(clearAll()).toBeUndefined();
+    expect(el.querySelector('section h2')?.textContent).toContain('picker.countOne');
+
+    chip('muscles.arms')?.click();
+    fixture.detectChanges();
+    expect(names(el)).toEqual([]);
+
+    clearAll()?.click();
+    fixture.detectChanges();
+    expect(clearAll()).toBeUndefined();
+    expect(chip('muscles.arms')?.getAttribute('aria-pressed')).toBe('false');
+    expect(input.value).toBe('rud');
+    expect(names(el)).toEqual(['Rudern']);
+  });
+
+  it('finds exercises by muscle and equipment words', async () => {
+    const { fixture } = await setup();
+    const el: HTMLElement = fixture.nativeElement;
+    const input = el.querySelector<HTMLInputElement>('input[type=search]')!;
+    input.value = 'bizeps kurzhantel';
+    input.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    expect(names(el)).toEqual(['Curls']);
+  });
+
+  it('clears the search with its button', async () => {
+    const { fixture } = await setup();
+    const el: HTMLElement = fixture.nativeElement;
+    const input = el.querySelector<HTMLInputElement>('input[type=search]')!;
+    const clear = () => el.querySelector<HTMLButtonElement>('[aria-label="picker.clearSearch"]');
+    expect(clear()).toBeNull();
+
+    input.value = 'rud';
+    input.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    expect(rows(el)).toHaveLength(1);
+
+    clear()?.click();
+    fixture.detectChanges();
+    expect(input.value).toBe('');
+    expect(rows(el)).toHaveLength(3);
   });
 });

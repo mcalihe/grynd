@@ -341,6 +341,10 @@
       "title": "Pläne duplizieren",
       "text": "Brauchst du einen ähnlichen Plan? Öffne einen Plan zum Bearbeiten und wähle im Menü oben rechts «Plan duplizieren». Name, Wochentage und Übungen kannst du vor dem Speichern anpassen."
     },
+    "exerciseSearch": {
+      "title": "Übungen schneller finden",
+      "text": "Suche und Filter bleiben beim Scrollen oben. Tippe auf eine Muskelgruppe, wähle Geräte im Menü darunter oder schreib einfach «Brust Kurzhantel» in die Suche."
+    },
     "notePhotos": {
       "title": "Bilder in Notizen",
       "text": "Füge einer Übungsnotiz bis zu sechs Fotos hinzu, etwa von der Sitzeinstellung. Die Bilder bleiben auf deinem Gerät und sind nur für dich."
@@ -408,13 +412,16 @@
   },
   "picker": {
     "search": "Übungen durchsuchen",
+    "searchPlaceholder": "Übung, Muskel oder Gerät",
+    "clearSearch": "Suche löschen",
     "muscleGroup": "Muskelgruppe",
-    "movement": "Bewegung",
-    "equipment": "Equipment",
+    "allEquipment": "Alle Geräte",
+    "clearFilters": "Filter löschen",
     "resetFilters": "Filter zurücksetzen",
     "noResults": "Keine Übung gefunden",
     "recent": "Zuletzt verwendet",
-    "results": "Ergebnisse",
+    "countOne": "1 Übung",
+    "countMany": "{{count}} Übungen",
     "inPlan": "Im Plan",
     "choose": "Übungen auswählen",
     "addOne": "1 Übung hinzufügen",
