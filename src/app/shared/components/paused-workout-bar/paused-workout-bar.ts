@@ -5,7 +5,7 @@ import { formatElapsed } from '../workout-clock/format-elapsed';
 
 /**
  * A paused workout while the user is elsewhere in the app (code only, decision 0023): sits above
- * the bottom navigation with the plan name and the frozen workout time. A tap emits `open`, the
+ * the bottom navigation with the plan or activity name and the frozen workout time. A tap emits `open`, the
  * app opens the workout, which stays paused until the user continues.
  */
 @Component({
@@ -14,11 +14,11 @@ import { formatElapsed } from '../workout-clock/format-elapsed';
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'block px-4' },
   template: `
-    @let name = planName() || ('workout.title' | transloco);
+    @let label = name() || ('workout.title' | transloco);
     <button
       type="button"
       class="flex h-16 w-full items-center gap-3 rounded-full border bg-card p-2 pr-4 text-left shadow-md"
-      [attr.aria-label]="'workout.pausedBar.label' | transloco: { name, time: time() }"
+      [attr.aria-label]="'workout.pausedBar.label' | transloco: { name: label, time: time() }"
       (click)="open.emit()"
     >
       <span
@@ -28,7 +28,7 @@ import { formatElapsed } from '../workout-clock/format-elapsed';
         <ng-icon name="lucidePause" size="20" />
       </span>
       <span class="flex min-w-0 flex-1 flex-col gap-0.5">
-        <span class="truncate text-sm font-semibold">{{ name }}</span>
+        <span class="truncate text-sm font-semibold">{{ label }}</span>
         <span class="text-xs text-muted-foreground tabular-nums">
           {{ 'workout.pausedBar.status' | transloco: { time: time() } }}
         </span>
@@ -38,8 +38,8 @@ import { formatElapsed } from '../workout-clock/format-elapsed';
   `,
 })
 export class PausedWorkoutBar {
-  /** Empty for a workout without a plan; the bar then says «Training». */
-  readonly planName = input('');
+  /** Plan name, or the activity of a cardio workout without a plan (decision 0024). */
+  readonly name = input('');
   readonly elapsedMs = input(0);
 
   readonly open = output<void>();

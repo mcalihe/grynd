@@ -42,6 +42,10 @@ import { SegmentProgress } from '../../shared/components/segment-progress/segmen
 import { SegmentedControl } from '../../shared/components/segmented-control/segmented-control';
 import { SetRow, SetRowState } from '../../shared/components/set-row/set-row';
 import { CardioRow, CardioRowState } from '../../shared/components/cardio-row/cardio-row';
+import {
+  CardioStartItem,
+  CardioStartSheet,
+} from '../../shared/components/cardio-start-sheet/cardio-start-sheet';
 import { StickyAction } from '../../shared/components/sticky-action/sticky-action';
 import { TimerBar } from '../../shared/components/timer-bar/timer-bar';
 import { WeekdayChips } from '../../shared/components/weekday-chips/weekday-chips';
@@ -72,6 +76,7 @@ import { ExerciseCelebration } from '../workout/exercise-celebration';
     HlmAlertDialogImports,
     SetRow,
     CardioRow,
+    CardioStartSheet,
     NumberStepper,
     ValueScrubber,
     ProgressRing,
@@ -163,6 +168,15 @@ export class ComponentsShowcase {
   // Weight step (decision 0022)
   protected readonly demoStep = signal(2);
   protected readonly stepOpen = signal(false);
+  protected readonly cardioOpen = signal(false);
+  protected readonly cardioPicked = signal('');
+  protected readonly cardioItems: CardioStartItem[] = [
+    { id: 'Grynd_Running', name: 'Laufen', icon: 'lucideFootprints' },
+    { id: 'Rowing_Stationary', name: 'Rudergerät', icon: 'lucideWaves' },
+    { id: 'Bicycling_Stationary', name: 'Ergometer', icon: 'lucideBike' },
+    { id: 'Grynd_Hiking', name: 'Wandern', icon: 'lucideMountain' },
+    { id: 'Rope_Jumping', name: 'Seilspringen', icon: 'lucideActivity' },
+  ];
   protected readonly monthBars: BarChartBar[] = Array.from({ length: 30 }, (_, i) => {
     const trained = [0, 2, 4, 7, 9, 11, 14, 16, 18, 21, 23, 28].includes(i);
     return {

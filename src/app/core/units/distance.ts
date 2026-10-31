@@ -58,3 +58,32 @@ export function tempo(
     }
   }
 }
+
+function clock(seconds: number): string {
+  const minutes = Math.floor(seconds / 60);
+  return `${minutes}:${(seconds % 60).toString().padStart(2, '0')}`;
+}
+
+/** «4:48 /km», «25,3 km/h», «2:00 /500 m» in the given locale. */
+export function formatTempo(value: Tempo, unit: DistanceUnit, locale: string): string {
+  switch (value.kind) {
+    case 'pace':
+      return `${clock(value.secondsPer)} /${unit}`;
+    case 'speed': {
+      const speed = new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(
+        value.perHour,
+      );
+      return `${speed} ${unit === 'km' ? 'km/h' : 'mph'}`;
+    }
+    case 'split':
+      return `${clock(value.secondsPer)} /${value.meters} m`;
+  }
+}
+
+/** «5,2 km» / «3,1 mi» in the given locale. */
+export function formatDistance(meters: number, unit: DistanceUnit, locale: string): string {
+  const value = new Intl.NumberFormat(locale, { maximumFractionDigits: DISTANCE_DECIMALS }).format(
+    metersToDisplay(meters, unit) ?? 0,
+  );
+  return `${value} ${unit}`;
+}

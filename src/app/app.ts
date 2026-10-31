@@ -15,6 +15,7 @@ import { TranslocoService } from '@jsverse/transloco';
 import { filter, map, take } from 'rxjs';
 import { displayTitle } from './core/app-info';
 import { Clock } from './core/utils/time';
+import { ExerciseCatalogService } from './core/exercises/exercise-catalog.service';
 import { ThemeService } from './core/services/theme.service';
 import { WhatsNewService } from './core/whats-new/whats-new.service';
 import { WorkoutService } from './core/workout/workout.service';
@@ -61,6 +62,12 @@ export class App {
   /** A paused workout waits above the tabs (decision 0023); its time stands still. */
   protected readonly showPausedWorkout = computed(() => this.showNav() && this.workout.paused());
   protected readonly pausedElapsedMs = computed(() => this.workout.elapsedMs(this.clock.nowUtc()));
+  private readonly catalog = inject(ExerciseCatalogService);
+  /** The plan name, or the activity of a cardio workout without a plan (decision 0024). */
+  protected readonly workoutName = computed(() => {
+    const active = this.workout.workout();
+    return active?.planName || this.catalog.name(active?.activity ?? undefined);
+  });
 
   protected readonly whatsNew = inject(WhatsNewService);
   /** After an update, on a tab screen only: never in the middle of a workout or an editor. */

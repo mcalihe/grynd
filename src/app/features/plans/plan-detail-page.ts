@@ -20,10 +20,10 @@ import { HistoryService } from '../../core/history/history.service';
 import { isCardio } from '../../core/energy/activities';
 import { DraftExercise, PlanDraft } from '../../core/plans/plan-draft';
 import { PlansService } from '../../core/plans/plans.service';
-import { ConfirmService } from '../../core/services/confirm.service';
 import { SettingsService } from '../../core/settings/settings.service';
 import { weightStepLabel } from '../../core/units/weight';
 import { Clock } from '../../core/utils/time';
+import { WorkoutLauncher } from '../../core/workout/workout-launcher.service';
 import { WorkoutService } from '../../core/workout/workout.service';
 import { ExerciseNote } from '../../shared/components/exercise-note/exercise-note';
 import { ExerciseNoteSheet } from '../../shared/components/exercise-note/exercise-note-sheet';
@@ -185,7 +185,7 @@ export class PlanDetailPage implements OnInit {
   private readonly plans = inject(PlansService);
   private readonly router = inject(Router);
   private readonly workout = inject(WorkoutService);
-  private readonly confirm = inject(ConfirmService);
+  private readonly launcher = inject(WorkoutLauncher);
   protected readonly catalog = inject(ExerciseCatalogService);
   protected readonly notes = inject(ExerciseNotesService);
   private readonly transloco = inject(TranslocoService);
@@ -299,21 +299,7 @@ export class PlanDetailPage implements OnInit {
     void this.router.navigate(['/plans', this.id(), 'edit']);
   }
 
-  protected async start(): Promise<void> {
-    // Only one workout at a time: offer to continue the running one instead.
-    if (this.workout.isActive()) {
-      const resume = await this.confirm.confirm({
-        title: 'workout.resume.title',
-        message: 'workout.resume.text',
-        confirm: 'workout.resume.confirm',
-        cancel: 'common.cancel',
-      });
-      if (resume) {
-        await this.router.navigate(['/workout']);
-      }
-      return;
-    }
-    await this.workout.start(this.id());
-    await this.router.navigate(['/workout']);
+  protected start(): Promise<void> {
+    return this.launcher.launch(() => this.workout.start(this.id()));
   }
 }

@@ -40,7 +40,13 @@ describe('App', () => {
         },
         {
           provide: ExerciseCatalogService,
-          useValue: { load: () => new Promise(() => undefined), nameById: () => '' },
+          useValue: {
+            load: () => new Promise(() => undefined),
+            nameById: () => '',
+            name: () => '',
+            exercises: signal(null),
+            byId: signal(new Map()),
+          },
         },
         ...(workout ? [{ provide: WorkoutService, useValue: workout }] : []),
       ],

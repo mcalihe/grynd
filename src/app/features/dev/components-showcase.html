@@ -163,9 +163,10 @@
     <h2 class="px-4 text-sm font-semibold text-muted-foreground">
       Paused workout bar · code only (decision 0023)
     </h2>
-    <app-paused-workout-bar planName="Oberkörper" [elapsedMs]="1453000" />
+    <app-paused-workout-bar name="Oberkörper" [elapsedMs]="1453000" />
+    <app-paused-workout-bar name="Laufen" [elapsedMs]="1500000" />
     <app-paused-workout-bar [elapsedMs]="3729000" />
-    <app-paused-workout-bar planName="Ganzkörper mit sehr langem Plannamen" [elapsedMs]="0" />
+    <app-paused-workout-bar name="Ganzkörper mit sehr langem Plannamen" [elapsedMs]="0" />
   </section>
 
   <section class="flex flex-col gap-3">
@@ -228,6 +229,22 @@
       title="Kurzhantel-Bankdrücken"
       [step]="demoStep()"
       (pick)="demoStep.set($event)"
+    />
+  </section>
+
+  <section class="flex flex-col gap-3">
+    <h2 class="text-sm font-semibold text-muted-foreground">
+      Cardio start sheet · code only (decision 0024)
+    </h2>
+    <button hlmBtn variant="secondary" class="self-start" (click)="cardioOpen.set(true)">
+      <ng-icon name="lucideActivity" />Ausdauer starten
+    </button>
+    <p class="text-xs text-muted-foreground">Picked: {{ cardioPicked() || '–' }}</p>
+    <app-cardio-start-sheet
+      [(open)]="cardioOpen"
+      [items]="cardioItems"
+      [recent]="cardioItems.slice(0, 2)"
+      (pick)="cardioPicked.set($event)"
     />
   </section>
 

@@ -1,4 +1,11 @@
-import { displayToMeters, M_PER_MI, metersToDisplay, tempo } from './distance';
+import {
+  displayToMeters,
+  formatDistance,
+  formatTempo,
+  M_PER_MI,
+  metersToDisplay,
+  tempo,
+} from './distance';
 
 describe('distance units (decision 0024)', () => {
   it('shows metres in km or mi, rounded to 0.01', () => {
@@ -34,5 +41,16 @@ describe('distance units (decision 0024)', () => {
     expect(tempo('pace', 1500, null, 'km')).toBeNull();
     expect(tempo('pace', 0, 5000, 'km')).toBeNull();
     expect(tempo(null, 1500, 5000, 'km')).toBeNull();
+  });
+
+  it('formats tempo and distance', () => {
+    expect(formatTempo({ kind: 'pace', secondsPer: 288 }, 'km', 'de')).toBe('4:48 /km');
+    expect(formatTempo({ kind: 'speed', perHour: 25.3 }, 'km', 'de')).toBe('25,3 km/h');
+    expect(formatTempo({ kind: 'speed', perHour: 15 }, 'mi', 'en')).toBe('15 mph');
+    expect(formatTempo({ kind: 'split', secondsPer: 120, meters: 500 }, 'km', 'de')).toBe(
+      '2:00 /500 m',
+    );
+    expect(formatDistance(5234, 'km', 'de')).toBe('5,23 km');
+    expect(formatDistance(M_PER_MI * 3.1, 'mi', 'en')).toBe('3.1 mi');
   });
 });
