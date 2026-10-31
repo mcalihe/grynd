@@ -37,7 +37,7 @@ describe('PlanHistoryPage', () => {
       imports: [
         PlanHistoryPage,
         TranslocoTestingModule.forRoot({
-          langs: { de: { history: { plan: { trend: '{{delta}} seit {{since}}' } } } },
+          langs: { de: { 'history.plan.trend': '{{delta}} seit {{since}}' } },
           translocoConfig: { defaultLang: 'de', availableLangs: ['de'] },
         }),
       ],

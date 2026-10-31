@@ -9,7 +9,7 @@
 - **Tailwind v4 CSS-first.** Farben und Radien kommen aus `src/styles/tokens.css` (aus Figma generiert, siehe `scripts/figma-tokens.md`). Das Spartan-Tailwind-Preset liefert Varianten und Overlay-Styles. Das mitgelieferte Spartan-Farbthema wird **nicht** installiert.
 - **Spartan helm** liegt in `src/app/shared/ui` (`components.json`, Stil `vega`). Generierte Komponenten werden an die Figma-Komponente angepasst, zum Beispiel der Button an `9:206` (44/48/56 px, `rounded-lg`, Semibold, Zustände `pressed`/`disabled`).
 - **Inter** über `@fontsource-variable/inter`, lokal gebündelt, Zahlen in Tabellenziffern.
-- **i18n:** Transloco lädt `public/i18n/{de,en}.json`. Die Startsprache kommt aus `navigator.language`, Fallback ist Englisch.
+- **i18n:** Transloco lädt `public/i18n/{de,en}.json`. Die Startsprache kommt aus `navigator.language`, Fallback ist Englisch. Die Dateien nutzen flache Keys (`"plans.empty.title": "…"` statt verschachtelter Objekte): ein Key lässt sich im Code und in beiden Dateien mit derselben Suche finden, und Transloco muss nichts mehr flach machen (`flatten.aot`). `translations.spec.ts` prüft, dass die Dateien flach sind und de und en dieselben Keys haben.
 - **Theme:** `ThemeService` setzt `.dark` am `<html>`. Die Wahl liegt bis M7 in `localStorage`.
 - **Capacitor 8:** Android und iOS liegen im Repo. iOS nutzt Swift Package Manager und wird ab M8 in CI gebaut.
 - **Zeilenenden:** LF über `.gitattributes`, weil Windows sonst CRLF auscheckt und Prettier scheitert.

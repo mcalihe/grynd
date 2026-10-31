@@ -45,12 +45,13 @@ describe('WorkoutCompletePage', () => {
         TranslocoTestingModule.forRoot({
           langs: {
             de: {
-              workout: { complete: { title: 'Training geschafft!', records: 'Rekorde' } },
-              history: {
-                minutes: '{{minutes}} Min.',
-                volume: '{{volume}} {{unit}}',
-                stats: { duration: 'Dauer', volume: 'Volumen', sets: 'Sätze' },
-              },
+              'workout.complete.title': 'Training geschafft!',
+              'workout.complete.records': 'Rekorde',
+              'history.minutes': '{{minutes}} Min.',
+              'history.volume': '{{volume}} {{unit}}',
+              'history.stats.duration': 'Dauer',
+              'history.stats.volume': 'Volumen',
+              'history.stats.sets': 'Sätze',
             },
           },
           translocoConfig: { defaultLang: 'de', availableLangs: ['de'] },

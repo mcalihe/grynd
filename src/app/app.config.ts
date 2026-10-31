@@ -49,6 +49,8 @@ export const appConfig: ApplicationConfig = {
         reRenderOnLangChange: true,
         prodMode: !isDevMode(),
         missingHandler: { useFallbackTranslation: true },
+        // public/i18n/*.json use flat keys ("plans.empty.title"), so Transloco can skip flattening.
+        flatten: { aot: true },
       },
       loader: TranslocoHttpLoader,
     }),

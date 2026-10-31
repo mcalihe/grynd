@@ -63,12 +63,10 @@ describe('HistoryDetailPage', () => {
         TranslocoTestingModule.forRoot({
           langs: {
             de: {
-              history: {
-                volume: '{{volume}} {{unit}}',
-                minutes: '{{minutes}} Min.',
-                compare: 'Verglichen mit {{day}}',
-                exerciseVolume: 'Volumen {{volume}}',
-              },
+              'history.volume': '{{volume}} {{unit}}',
+              'history.minutes': '{{minutes}} Min.',
+              'history.compare': 'Verglichen mit {{day}}',
+              'history.exerciseVolume': 'Volumen {{volume}}',
             },
           },
           translocoConfig: { defaultLang: 'de', availableLangs: ['de'] },

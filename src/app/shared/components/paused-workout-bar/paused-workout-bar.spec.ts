@@ -10,13 +10,9 @@ describe('PausedWorkoutBar', () => {
         TranslocoTestingModule.forRoot({
           langs: {
             de: {
-              workout: {
-                title: 'Training',
-                pausedBar: {
-                  status: 'Pausiert · {{time}}',
-                  label: 'Pausiertes Training öffnen: {{name}}, {{time}}',
-                },
-              },
+              'workout.title': 'Training',
+              'workout.pausedBar.status': 'Pausiert · {{time}}',
+              'workout.pausedBar.label': 'Pausiertes Training öffnen: {{name}}, {{time}}',
             },
           },
           translocoConfig: { availableLangs: ['de'], defaultLang: 'de' },
