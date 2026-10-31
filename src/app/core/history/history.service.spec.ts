@@ -1,5 +1,7 @@
 import { TestBed } from '@angular/core/testing';
+import { TranslocoTestingModule } from '@jsverse/transloco';
 import { catalogEntry, seedCatalog } from '../../../testing/catalog';
+import { provideMemorySettings } from '../../../testing/settings';
 import { SqlJsDriver } from '../../../testing/sqljs-driver';
 import { createTestDatabase, FakeClock } from '../../../testing/test-database';
 import { addExercises } from '../plans/plan-draft';
@@ -20,7 +22,10 @@ describe('HistoryService', () => {
     const db = await createTestDatabase();
     driver = db.driver;
     clock = db.clock;
-    TestBed.configureTestingModule({ providers: db.providers });
+    TestBed.configureTestingModule({
+      imports: [TranslocoTestingModule.forRoot({ langs: { de: {} } })],
+      providers: [...db.providers, provideMemorySettings()],
+    });
     await seedCatalog(['bench', 'row'].map((key, i) => catalogEntry(`e${i}`, key)));
     const draft = addExercises({ name: 'Oberkörper', weekdays: [], exercises: [] }, ['e0', 'e1']);
     planId = await TestBed.inject(PlansService).save(draft);

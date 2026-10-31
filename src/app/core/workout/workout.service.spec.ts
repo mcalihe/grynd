@@ -1,10 +1,15 @@
 import { TestBed } from '@angular/core/testing';
+import { TranslocoTestingModule } from '@jsverse/transloco';
 import { catalogEntry, seedCatalog } from '../../../testing/catalog';
 import { SqlJsDriver } from '../../../testing/sqljs-driver';
+import { provideMemorySettings } from '../../../testing/settings';
 import { createTestDatabase, FakeClock } from '../../../testing/test-database';
+import { SettingsService } from '../settings/settings.service';
 import {
   ExerciseIntervalRepository,
   WorkoutPauseRepository,
+  SessionExerciseRepository,
+  SetLogRepository,
   WorkoutSessionRepository,
 } from '../db/repositories/workout.repository';
 import { addExercises, updateExercise } from '../plans/plan-draft';
@@ -21,8 +26,15 @@ describe('WorkoutService', () => {
     const db = await createTestDatabase();
     driver = db.driver;
     clock = db.clock;
-    TestBed.configureTestingModule({ providers: db.providers });
-    await seedCatalog(['bench', 'row'].map((key, i) => catalogEntry(`e${i}`, key)));
+    TestBed.configureTestingModule({
+      imports: [TranslocoTestingModule.forRoot({ langs: { de: {} } })],
+      providers: [...db.providers, provideMemorySettings()],
+    });
+    await seedCatalog([
+      ...['bench', 'row'].map((key, i) => catalogEntry(`e${i}`, key)),
+      catalogEntry('run', 'Grynd_Running', { category: 'cardio', images: [] }),
+      catalogEntry('tread', 'Running_Treadmill', { category: 'cardio' }),
+    ]);
     let draft = addExercises({ name: 'Oberkörper', weekdays: [], exercises: [] }, ['e0', 'e1']);
     draft = updateExercise(draft, 1, { targetSets: 2, repMin: 10, repMax: 12, restSeconds: 60 });
     planId = await TestBed.inject(PlansService).save(draft);
@@ -302,5 +314,113 @@ describe('WorkoutService', () => {
     expect((await repo.findById(first))?.status).toBe('finished');
     expect((await repo.findById(second))?.status).toBe('aborted');
     expect((await repo.findFinished()).map((s) => s.id)).toEqual([first]);
+  });
+  describe('cardio (decision 0024)', () => {
+    async function cardioPlan(): Promise<string> {
+      let draft = addExercises(
+        { name: 'Beine', weekdays: [], exercises: [] },
+        ['e0', 'tread'],
+        (id) => id === 'tread',
+      );
+      draft = updateExercise(draft, 1, { targetDurationSec: 900 });
+      return TestBed.inject(PlansService).save(draft);
+    }
+
+    it('copies the target duration, keeps the body weight and leaves reps out', async () => {
+      await TestBed.inject(SettingsService).update({ bodyWeightKg: 72 });
+      await service.start(await cardioPlan());
+
+      expect(workout().session.bodyWeightKg).toBe(72);
+      expect(workout().exercises.map((e) => e.cardio)).toEqual([false, true]);
+      expect(workout().exercises[1].entry).toMatchObject({
+        repMin: null,
+        repMax: null,
+        targetDurationSec: 900,
+      });
+      expect(setsOf(1)).toHaveLength(1);
+      expect(setsOf(1)[0]).toMatchObject({ weightKg: null, reps: null, durationSec: 900 });
+    });
+
+    it('prefills distance and level from last time, never calories or heart rate', async () => {
+      const id = await cardioPlan();
+      await service.start(id);
+      const entry = setsOf(1)[0];
+      await service.updateSet(entry.id, { distanceM: 3000, level: 6, kcal: 200, heartRate: 150 });
+      await service.toggleComplete(entry.id);
+      await service.finish();
+
+      await service.start(id);
+      expect(setsOf(1)[0]).toMatchObject({
+        durationSec: 900,
+        distanceM: 3000,
+        level: 6,
+        kcal: null,
+        heartRate: null,
+      });
+    });
+
+    it('adds and duplicates entries with their values but without calories', async () => {
+      await service.start(await cardioPlan());
+      await service.updateSet(setsOf(1)[0].id, { distanceM: 2500, kcal: 180, heartRate: 140 });
+      await service.addSet(1);
+      await service.duplicateSet(setsOf(1)[0].id);
+
+      expect(setsOf(1).map((s) => [s.durationSec, s.distanceM, s.kcal, s.reps])).toEqual([
+        [900, 2500, 180, null],
+        [900, 2500, null, null],
+        [900, 2500, null, null],
+      ]);
+    });
+
+    it('counts no records for cardio, even for old weight × reps entries', async () => {
+      const id = await cardioPlan();
+      await service.start(id);
+      await service.updateSet(setsOf(1)[0].id, { weightKg: 10, reps: 10 });
+      await service.toggleComplete(setsOf(1)[0].id);
+      await service.finish();
+      await service.start(id);
+      await service.updateSet(setsOf(1)[0].id, { weightKg: 50, reps: 10 });
+      await service.toggleComplete(setsOf(1)[0].id);
+      expect(service.records().size).toBe(0);
+    });
+
+    it('starts a cardio workout without a plan and logs the active time on finish', async () => {
+      await TestBed.inject(SettingsService).update({ bodyWeightKg: 80 });
+      await service.startCardio('run');
+
+      expect(workout().session).toMatchObject({ planId: null, bodyWeightKg: 80 });
+      expect(workout().activity?.key).toBe('Grynd_Running');
+      expect(service.standalone()).toBe(true);
+      expect(workout().exercises).toHaveLength(1);
+      await service.updateSet(setsOf(0)[0].id, { distanceM: 5000 });
+
+      clock.advance(10 * 60_000);
+      await service.pause();
+      clock.advance(5 * 60_000);
+      await service.resume();
+      clock.advance(15 * 60_000);
+      const sessionId = await service.finish();
+
+      const se = await TestBed.inject(SessionExerciseRepository).findBySession(sessionId);
+      const [entry] = await TestBed.inject(SetLogRepository).findBySessionExercise(se[0].id);
+      expect(entry).toMatchObject({ durationSec: 25 * 60, distanceM: 5000 });
+      expect(entry.completedAt).not.toBeNull();
+    });
+
+    it('starts no cardio workout while another one runs or for strength exercises', async () => {
+      await expect(service.startCardio('e0')).rejects.toThrow();
+      await service.startCardio('run');
+      await expect(service.startCardio('run')).rejects.toThrow();
+    });
+
+    it('lists recently used cardio activities', async () => {
+      await service.startCardio('run');
+      await service.finish();
+      await service.start(planId);
+      await service.finish();
+      const recent = TestBed.inject(SessionExerciseRepository);
+      expect(await recent.findRecentExerciseIds(3, 'cardio')).toEqual(['run']);
+      expect(await recent.findRecentExerciseIds(3)).toContain('e0');
+    });
   });
 });
