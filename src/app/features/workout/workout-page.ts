@@ -11,6 +11,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
 import { Router } from '@angular/router';
 import { KeepAwake } from '@capacitor-community/keep-awake';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
@@ -38,6 +39,7 @@ import { WorkoutClock } from '../../shared/components/workout-clock/workout-cloc
 import { CelebrationService } from '../../shared/motion/celebration.service';
 import { enter, play } from '../../shared/motion/motion';
 import { ExerciseCelebration } from './exercise-celebration';
+import { CardioSession } from './cardio-session';
 import { ExercisePage } from './exercise-page';
 import { OverviewSheet } from './overview-sheet';
 
@@ -61,10 +63,13 @@ interface ExerciseMoment {
  * A finished exercise is celebrated once (decision 0015); when all are done, the finish button pulses.
  * Paused (decision 0023), the clock stands still, the exercises can't be touched and the user may
  * leave for the rest of the app until continuing.
+ * A cardio workout without a plan (decision 0025) shows `CardioSession` instead of the pager.
  */
 @Component({
   selector: 'app-workout-page',
   imports: [
+    NgTemplateOutlet,
+    CardioSession,
     ExercisePage,
     ExerciseCelebration,
     ExerciseNoteSheet,
@@ -82,172 +87,198 @@ interface ExerciseMoment {
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'bg-background pt-safe px-safe fixed inset-0 z-10 flex flex-col' },
   template: `
-    @if (workout.workout(); as w) {
-      <header class="flex h-13 shrink-0 items-center justify-between px-4">
+    <ng-template #controls>
+      <div class="flex shrink-0 items-center gap-2">
         <button
           type="button"
-          class="flex h-11 items-center gap-2 rounded-full bg-secondary px-3 text-sm font-semibold text-secondary-foreground disabled:opacity-50"
-          [attr.aria-label]="'workout.overview' | transloco"
-          [disabled]="paused()"
-          (click)="overviewOpen.set(true)"
+          class="flex size-11 items-center justify-center rounded-full bg-secondary text-secondary-foreground"
+          [attr.aria-label]="(paused() ? 'workout.resumeWorkout' : 'workout.pause') | transloco"
+          [disabled]="busy()"
+          (click)="paused() ? resume() : pause()"
         >
-          <ng-icon name="lucideList" size="18" />
-          {{ current() + 1 }} / {{ w.exercises.length }}
-          <ng-icon name="lucideChevronDown" size="16" />
+          <ng-icon [name]="paused() ? 'lucidePlay' : 'lucidePause'" size="18" />
         </button>
-        <div class="flex items-center gap-2">
+        <app-workout-clock [elapsedMs]="elapsedMs()" (stop)="end()" />
+      </div>
+    </ng-template>
+
+    @if (workout.workout(); as w) {
+      @if (workout.standalone()) {
+        <!-- Cardio without a plan (decision 0025): one activity, the clock is the stopwatch. -->
+        <header class="flex h-13 shrink-0 items-center justify-between gap-2 px-4">
+          <h1 class="min-w-0 truncate text-xl font-semibold">
+            {{ catalog.name(w.activity ?? undefined) }}
+          </h1>
+          <ng-container *ngTemplateOutlet="controls" />
+        </header>
+        <app-cardio-session
+          class="min-h-0 flex-1"
+          [item]="w.exercises[0]"
+          [elapsedMs]="elapsedMs()"
+          [paused]="paused()"
+          (leave)="leave()"
+        />
+        <app-sticky-action [divider]="true">
+          <button hlmBtn size="lg" [disabled]="busy()" (click)="finish()">
+            <ng-icon name="lucideCheck" />{{ 'workout.finish' | transloco }}
+          </button>
+        </app-sticky-action>
+      } @else {
+        <header class="flex h-13 shrink-0 items-center justify-between px-4">
           <button
             type="button"
-            class="flex size-11 items-center justify-center rounded-full bg-secondary text-secondary-foreground"
-            [attr.aria-label]="(paused() ? 'workout.resumeWorkout' : 'workout.pause') | transloco"
-            [disabled]="busy()"
-            (click)="paused() ? resume() : pause()"
+            class="flex h-11 items-center gap-2 rounded-full bg-secondary px-3 text-sm font-semibold text-secondary-foreground disabled:opacity-50"
+            [attr.aria-label]="'workout.overview' | transloco"
+            [disabled]="paused()"
+            (click)="overviewOpen.set(true)"
           >
-            <ng-icon [name]="paused() ? 'lucidePlay' : 'lucidePause'" size="18" />
+            <ng-icon name="lucideList" size="18" />
+            {{ current() + 1 }} / {{ w.exercises.length }}
+            <ng-icon name="lucideChevronDown" size="16" />
           </button>
-          <app-workout-clock [elapsedMs]="elapsedMs()" (stop)="end()" />
-        </div>
-      </header>
+          <ng-container *ngTemplateOutlet="controls" />
+        </header>
 
-      <div
-        class="flex shrink-0 items-center gap-3 px-4 pt-2 pb-2"
-        role="progressbar"
-        aria-valuemin="0"
-        aria-valuemax="100"
-        [attr.aria-valuenow]="percent()"
-        [attr.aria-label]="'workout.progress' | transloco"
-      >
-        <app-segment-progress
-          class="min-w-0 flex-1"
-          [segments]="segments()"
-          [current]="current()"
-        />
-        <app-rolling-number
-          class="min-w-10 justify-end text-xs leading-none font-semibold text-muted-foreground"
-          [text]="'workout.percent' | transloco: { percent: percent() }"
-        />
-      </div>
-
-      <div class="relative flex min-h-0 flex-1 flex-col">
         <div
-          #pager
-          class="flex min-h-0 flex-1 snap-x snap-mandatory [scrollbar-width:none] overflow-x-auto overscroll-x-contain"
-          [attr.inert]="paused() ? '' : null"
+          class="flex shrink-0 items-center gap-3 px-4 pt-2 pb-2"
+          role="progressbar"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          [attr.aria-valuenow]="percent()"
+          [attr.aria-label]="'workout.progress' | transloco"
         >
-          @for (item of w.exercises; track item.entry.id; let i = $index) {
-            <section
-              class="w-full shrink-0 snap-start snap-always overflow-y-auto"
-              [attr.data-index]="i"
-              [attr.aria-label]="catalog.nameById(item.entry.exerciseId)"
-            >
-              <app-exercise-page
-                [item]="item"
-                [index]="i"
-                [menuSetId]="menuSet()?.id ?? null"
-                [isLast]="i === w.exercises.length - 1"
-                (setMenu)="menuSet.set($event)"
-                (moveBack)="moveBack(i, $event)"
-                (setCompleted)="timer.autoStart($event)"
-                (exerciseCompleted)="exerciseCompleted(i)"
-                (editNote)="editNote(item.entry.exerciseId)"
-                (editWeightStep)="editWeightStep(item.entry.exerciseId)"
-              />
-            </section>
-          }
-        </div>
-
-        <div class="shrink-0 px-4 pb-2" [attr.inert]="paused() ? '' : null">
-          <app-timer-bar
-            [running]="timer.running()"
-            [remainingMs]="timer.remainingMs()"
-            [totalMs]="timer.totalMs()"
-            [durationSec]="restSeconds()"
-            (start)="timer.start(restSeconds())"
-            (stop)="timer.stop()"
-            (adjust)="timer.adjust($event)"
-            (durationChange)="workout.setRestSeconds(current(), $event)"
+          <app-segment-progress
+            class="min-w-0 flex-1"
+            [segments]="segments()"
+            [current]="current()"
+          />
+          <app-rolling-number
+            class="min-w-10 justify-end text-xs leading-none font-semibold text-muted-foreground"
+            [text]="'workout.percent' | transloco: { percent: percent() }"
           />
         </div>
 
-        @if (paused()) {
+        <div class="relative flex min-h-0 flex-1 flex-col">
           <div
-            #pausedPanel
-            class="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-background/90 px-6 text-center backdrop-blur-sm"
+            #pager
+            class="flex min-h-0 flex-1 snap-x snap-mandatory [scrollbar-width:none] overflow-x-auto overscroll-x-contain"
+            [attr.inert]="paused() ? '' : null"
           >
-            <span
-              class="flex size-16 items-center justify-center rounded-full bg-secondary text-secondary-foreground"
-              aria-hidden="true"
-            >
-              <ng-icon name="lucidePause" size="28" />
-            </span>
-            <h2 class="text-xl font-semibold">{{ 'workout.paused.title' | transloco }}</h2>
-            <p class="text-4xl font-semibold tabular-nums">{{ elapsedText() }}</p>
-            <p class="max-w-72 text-sm text-muted-foreground">
-              {{ 'workout.paused.text' | transloco }}
-            </p>
-            <button hlmBtn variant="secondary" class="mt-3" (click)="leave()">
-              <ng-icon name="lucideClipboardList" />{{ 'workout.paused.leave' | transloco }}
-            </button>
+            @for (item of w.exercises; track item.entry.id; let i = $index) {
+              <section
+                class="w-full shrink-0 snap-start snap-always overflow-y-auto"
+                [attr.data-index]="i"
+                [attr.aria-label]="catalog.nameById(item.entry.exerciseId)"
+              >
+                <app-exercise-page
+                  [item]="item"
+                  [index]="i"
+                  [menuSetId]="menuSet()?.id ?? null"
+                  [isLast]="i === w.exercises.length - 1"
+                  (setMenu)="menuSet.set($event)"
+                  (moveBack)="moveBack(i, $event)"
+                  (setCompleted)="timer.autoStart($event)"
+                  (exerciseCompleted)="exerciseCompleted(i)"
+                  (editNote)="editNote(item.entry.exerciseId)"
+                  (editWeightStep)="editWeightStep(item.entry.exerciseId)"
+                />
+              </section>
+            }
           </div>
-        }
-      </div>
 
-      <app-sticky-action [divider]="true">
-        @if (paused()) {
-          <button hlmBtn size="lg" [disabled]="busy()" (click)="resume()">
-            <ng-icon name="lucidePlay" />{{ 'workout.paused.resume' | transloco }}
-          </button>
-        } @else if (next(); as nextItem) {
-          <button #nextButton hlmBtn size="lg" (click)="goTo(current() + 1)">
-            <ng-icon name="lucideArrowRight" />
-            <span class="truncate">
-              {{
-                'workout.next' | transloco: { name: catalog.nameById(nextItem.entry.exerciseId) }
-              }}
-            </span>
-          </button>
-        } @else {
-          <button
-            hlmBtn
-            size="lg"
-            [class.animate-attention]="allDone()"
-            [disabled]="busy()"
-            (click)="finish()"
-          >
-            <ng-icon name="lucideCheck" />{{ 'workout.finish' | transloco }}
-          </button>
-        }
-      </app-sticky-action>
+          <div class="shrink-0 px-4 pb-2" [attr.inert]="paused() ? '' : null">
+            <app-timer-bar
+              [running]="timer.running()"
+              [remainingMs]="timer.remainingMs()"
+              [totalMs]="timer.totalMs()"
+              [durationSec]="restSeconds()"
+              (start)="timer.start(restSeconds())"
+              (stop)="timer.stop()"
+              (adjust)="timer.adjust($event)"
+              (durationChange)="workout.setRestSeconds(current(), $event)"
+            />
+          </div>
 
-      <app-overview-sheet [(open)]="overviewOpen" />
+          @if (paused()) {
+            <div
+              #pausedPanel
+              class="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-background/90 px-6 text-center backdrop-blur-sm"
+            >
+              <span
+                class="flex size-16 items-center justify-center rounded-full bg-secondary text-secondary-foreground"
+                aria-hidden="true"
+              >
+                <ng-icon name="lucidePause" size="28" />
+              </span>
+              <h2 class="text-xl font-semibold">{{ 'workout.paused.title' | transloco }}</h2>
+              <p class="text-4xl font-semibold tabular-nums">{{ elapsedText() }}</p>
+              <p class="max-w-72 text-sm text-muted-foreground">
+                {{ 'workout.paused.text' | transloco }}
+              </p>
+              <button hlmBtn variant="secondary" class="mt-3" (click)="leave()">
+                <ng-icon name="lucideClipboardList" />{{ 'workout.paused.leave' | transloco }}
+              </button>
+            </div>
+          }
+        </div>
 
-      <app-exercise-note-sheet
-        [(open)]="noteOpen"
-        [title]="catalog.nameById(noteExerciseId())"
-        [note]="notes.noteFor(noteExerciseId())"
-        [images]="notes.imagesFor(noteExerciseId())"
-        [pending]="notes.pendingFor(noteExerciseId())"
-        (save)="saveNote($event)"
-        (addImages)="addNoteImages($event)"
-        (removeImage)="removeNoteImage($event)"
-      />
+        <app-sticky-action [divider]="true">
+          @if (paused()) {
+            <button hlmBtn size="lg" [disabled]="busy()" (click)="resume()">
+              <ng-icon name="lucidePlay" />{{ 'workout.paused.resume' | transloco }}
+            </button>
+          } @else if (next(); as nextItem) {
+            <button #nextButton hlmBtn size="lg" (click)="goTo(current() + 1)">
+              <ng-icon name="lucideArrowRight" />
+              <span class="truncate">
+                {{
+                  'workout.next' | transloco: { name: catalog.nameById(nextItem.entry.exerciseId) }
+                }}
+              </span>
+            </button>
+          } @else {
+            <button
+              hlmBtn
+              size="lg"
+              [class.animate-attention]="allDone()"
+              [disabled]="busy()"
+              (click)="finish()"
+            >
+              <ng-icon name="lucideCheck" />{{ 'workout.finish' | transloco }}
+            </button>
+          }
+        </app-sticky-action>
 
-      <app-weight-step-sheet
-        [(open)]="stepOpen"
-        [title]="catalog.nameById(stepExerciseId())"
-        [unit]="unit()"
-        [step]="exerciseSettings.weightStepFor(stepExerciseId(), unit())"
-        (pick)="exerciseSettings.setWeightStep(stepExerciseId(), unit(), $event)"
-      />
+        <app-overview-sheet [(open)]="overviewOpen" />
 
-      @if (moment(); as m) {
-        <app-exercise-celebration
-          [praise]="(m.done === m.total ? 'workout.allDone' : m.praise) | transloco"
-          [subline]="'workout.exerciseDone' | transloco: { done: m.done, total: m.total }"
-          [target]="m.target"
-          (landed)="landed(m.index)"
-          (done)="moment.set(null)"
+        <app-exercise-note-sheet
+          [(open)]="noteOpen"
+          [title]="catalog.nameById(noteExerciseId())"
+          [note]="notes.noteFor(noteExerciseId())"
+          [images]="notes.imagesFor(noteExerciseId())"
+          [pending]="notes.pendingFor(noteExerciseId())"
+          (save)="saveNote($event)"
+          (addImages)="addNoteImages($event)"
+          (removeImage)="removeNoteImage($event)"
         />
+
+        <app-weight-step-sheet
+          [(open)]="stepOpen"
+          [title]="catalog.nameById(stepExerciseId())"
+          [unit]="unit()"
+          [step]="exerciseSettings.weightStepFor(stepExerciseId(), unit())"
+          (pick)="exerciseSettings.setWeightStep(stepExerciseId(), unit(), $event)"
+        />
+
+        @if (moment(); as m) {
+          <app-exercise-celebration
+            [praise]="(m.done === m.total ? 'workout.allDone' : m.praise) | transloco"
+            [subline]="'workout.exerciseDone' | transloco: { done: m.done, total: m.total }"
+            [target]="m.target"
+            (landed)="landed(m.index)"
+            (done)="moment.set(null)"
+          />
+        }
       }
     }
   `,
@@ -336,6 +367,8 @@ export class WorkoutPage {
     afterNextRender(() => {
       const pager = this.pager()?.nativeElement;
       if (!pager) {
+        // Without a plan there is no pager: the one activity is tracked right away (decision 0025).
+        void this.workout.setCurrent(0);
         return;
       }
       this.scrollTo(this.current(), 'instant');

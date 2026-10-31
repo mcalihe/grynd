@@ -8,7 +8,7 @@
       @if (showPausedWorkout()) {
         <app-paused-workout-bar
           class="mb-2"
-          [planName]="workout.workout()?.planName ?? ''"
+          [name]="workoutName()"
           [elapsedMs]="pausedElapsedMs()"
           (open)="openWorkout()"
         />

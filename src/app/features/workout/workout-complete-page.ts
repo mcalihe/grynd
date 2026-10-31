@@ -17,6 +17,7 @@ import { Router } from '@angular/router';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { NgIcon } from '@ng-icons/core';
 import { HlmButton } from '@spartan-ng/helm/button';
+import { activityProfile } from '../../core/energy/activities';
 import { sessionDurationMs } from '../../core/history/history-stats';
 import { HistoryDetail, HistoryService } from '../../core/history/history.service';
 import { BackButtonService } from '../../core/services/back-button.service';
@@ -31,21 +32,71 @@ export interface CompleteStats {
   volumeKg: number;
   sets: number;
   records: number;
+  /** Calories (decision 0025); null when the body weight for the estimate is missing. */
+  kcal: number | null;
+  estimated: boolean;
+  distanceM: number;
 }
 
 export function completeStats(detail: HistoryDetail): CompleteStats {
+  const { summary } = detail;
   return {
-    durationMs: sessionDurationMs(detail.summary),
-    volumeKg: detail.summary.volumeKg,
-    sets: detail.summary.setCount,
+    durationMs: sessionDurationMs(summary),
+    volumeKg: summary.volumeKg,
+    sets: summary.setCount,
     records: detail.exercises.reduce((n, e) => n + e.sets.filter((s) => s.record).length, 0),
+    kcal: summary.energy?.kcal ?? null,
+    estimated: summary.energy?.estimated ?? false,
+    distanceM: summary.distanceM,
   };
+}
+
+export type CompleteCard =
+  'duration' | 'kcal' | 'volume' | 'sets' | 'distance' | 'tempo' | 'records';
+
+/**
+ * Which cards the celebration shows, in order (decision 0025): the duration, volume and sets for
+ * strength, distance and the average tempo of a single cardio activity, calories, records.
+ */
+export function completeCards(detail: HistoryDetail, stats: CompleteStats): CompleteCard[] {
+  const { summary } = detail;
+  const strength = summary.setCount > 0 || summary.cardioCount === 0;
+  const cards: CompleteCard[] = ['duration'];
+  if (strength) {
+    cards.push('volume', 'sets');
+  }
+  if (stats.distanceM > 0) {
+    cards.push('distance');
+    if (!strength && detail.exercises.length === 1) {
+      cards.push('tempo');
+    }
+  }
+  if (stats.kcal !== null) {
+    cards.push('kcal');
+  }
+  if (stats.records > 0) {
+    cards.push('records');
+  }
+  return cards;
+}
+
+/**
+ * Duration and records always take the whole row; the cards between them go in pairs, and the
+ * last one takes the row when it is left alone ("1 Std. 7 Min." needs the width).
+ */
+export function cardSpansRow(card: CompleteCard, cards: readonly CompleteCard[]): boolean {
+  if (card === 'duration' || card === 'records') {
+    return true;
+  }
+  const paired = cards.filter((c) => c !== 'duration' && c !== 'records');
+  return paired.length % 2 === 1 && paired.at(-1) === card;
 }
 
 /**
  * Celebration after «Training abschliessen» (decision 0015): confetti cannons and fireworks, a
  * trophy springs in, the title rises word by word and the key figures count up. «Weiter» (and
- * Android back) leads to the history detail of the workout.
+ * Android back) leads to the history detail of the workout. Calories, distance and tempo per
+ * decision 0025.
  */
 @Component({
   selector: 'app-workout-complete-page',
@@ -85,9 +136,9 @@ export function completeStats(detail: HistoryDetail): CompleteStats {
               <span #word class="inline-block" aria-hidden="true">{{ word }}</span>
             }
           </h1>
-          @if (d.summary.planName) {
+          @if (d.summary.planName || d.summary.activityId) {
             <p #subtitle class="text-sm font-medium text-muted-foreground">
-              {{ d.summary.planName }}
+              {{ format.sessionName(d.summary) }}
             </p>
           }
         </div>
@@ -97,7 +148,7 @@ export function completeStats(detail: HistoryDetail): CompleteStats {
             <div
               #card
               class="flex min-w-0 flex-col-reverse gap-1 rounded-xl border bg-card p-4"
-              [class.col-span-2]="stat.key === 'duration' || stat.key === 'records'"
+              [class.col-span-2]="stat.wide"
               [class.border-primary]="stat.key === 'records'"
               [attr.data-stat]="stat.key"
             >
@@ -106,6 +157,11 @@ export function completeStats(detail: HistoryDetail): CompleteStats {
             </div>
           }
         </dl>
+        @if (totals()?.kcal === null) {
+          <p class="relative text-center text-xs text-muted-foreground" data-hint="kcal">
+            {{ 'history.noBodyWeight' | transloco }}
+          </p>
+        }
       }
     </div>
 
@@ -123,7 +179,7 @@ export class WorkoutCompletePage implements OnInit {
   private readonly history = inject(HistoryService);
   private readonly router = inject(Router);
   private readonly celebration = inject(CelebrationService);
-  private readonly format = inject(HistoryFormat);
+  protected readonly format = inject(HistoryFormat);
   private readonly injector = inject(Injector);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -136,7 +192,7 @@ export class WorkoutCompletePage implements OnInit {
 
   protected readonly detail = signal<HistoryDetail | undefined>(undefined);
   private destroyed = false;
-  private readonly totals = computed(() => {
+  protected readonly totals = computed(() => {
     const detail = this.detail();
     return detail ? completeStats(detail) : undefined;
   });
@@ -146,31 +202,51 @@ export class WorkoutCompletePage implements OnInit {
     volumeKg: 0,
     sets: 0,
     records: 0,
+    kcal: 0,
+    estimated: false,
+    distanceM: 0,
   });
 
   protected readonly stats = computed(() => {
+    const detail = this.detail();
     const totals = this.totals();
-    if (!totals) {
+    if (!detail || !totals) {
       return [];
     }
     const shown = this.shown();
-    const stats = [
-      {
-        key: 'duration',
-        label: 'history.stats.duration',
-        text: this.format.duration(shown.durationMs),
-      },
-      { key: 'volume', label: 'history.stats.volume', text: this.format.volume(shown.volumeKg) },
-      { key: 'sets', label: 'history.stats.sets', text: String(Math.round(shown.sets)) },
-    ];
-    if (totals.records > 0) {
-      stats.push({
-        key: 'records',
-        label: 'workout.complete.records',
-        text: String(Math.round(shown.records)),
-      });
-    }
-    return stats;
+    const cards = completeCards(detail, totals);
+    const text = (card: CompleteCard): [string, string] => {
+      switch (card) {
+        case 'duration':
+          return ['history.stats.duration', this.format.duration(shown.durationMs)];
+        case 'kcal':
+          return [
+            'history.stats.kcal',
+            this.format.kcal({ kcal: shown.kcal ?? 0, estimated: totals.estimated }),
+          ];
+        case 'volume':
+          return ['history.stats.volume', this.format.volume(shown.volumeKg)];
+        case 'sets':
+          return ['history.stats.sets', String(Math.round(shown.sets))];
+        case 'distance':
+          return ['history.stats.distance', this.format.distance(shown.distanceM)];
+        case 'tempo': {
+          const exercise = detail.exercises[0];
+          const seconds = exercise.sets.reduce((sum, s) => sum + (s.durationSec ?? 0), 0);
+          const speed = activityProfile(exercise.exerciseKey).tempo === 'speed';
+          return [
+            speed ? 'workout.complete.speed' : 'workout.complete.tempo',
+            this.format.tempo(exercise.exerciseKey, seconds, totals.distanceM) || '–',
+          ];
+        }
+        case 'records':
+          return ['workout.complete.records', String(Math.round(shown.records))];
+      }
+    };
+    return cards.map((key) => {
+      const [label, value] = text(key);
+      return { key, label, text: value, wide: cardSpansRow(key, cards) };
+    });
   });
 
   constructor() {
@@ -235,6 +311,10 @@ export class WorkoutCompletePage implements OnInit {
     void countUp(totals.durationMs, (durationMs) => update({ durationMs }), count);
     void countUp(totals.volumeKg, (volumeKg) => update({ volumeKg }), { ...count, delay: 0.9 });
     void countUp(totals.sets, (sets) => update({ sets }), { ...count, delay: 1 });
+    if (totals.kcal !== null) {
+      void countUp(totals.kcal, (kcal) => update({ kcal }), { ...count, delay: 0.85 });
+    }
+    void countUp(totals.distanceM, (distanceM) => update({ distanceM }), { ...count, delay: 0.95 });
     if (totals.records > 0) {
       void countUp(totals.records, (records) => update({ records }), {
         duration: 0.8,

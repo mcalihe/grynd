@@ -9,8 +9,10 @@ import { SetLog } from '../../core/db/models';
 import { ExerciseCatalogService } from '../../core/exercises/exercise-catalog.service';
 import { ExerciseNotesService } from '../../core/exercises/exercise-notes.service';
 import { ExerciseSettingsService } from '../../core/exercises/exercise-settings.service';
+import { activityProfile } from '../../core/energy/activities';
 import { SettingsService } from '../../core/settings/settings.service';
 import { weightStepLabel } from '../../core/units/weight';
+import { cardioSummary } from '../plans/plan-exercise-row';
 import {
   exerciseJustDone,
   WorkoutExercise,
@@ -18,6 +20,7 @@ import {
 } from '../../core/workout/workout.service';
 import { ExerciseNote } from '../../shared/components/exercise-note/exercise-note';
 import { SetRow, SetRowState } from '../../shared/components/set-row/set-row';
+import { CardioRow, CardioRowState } from '../../shared/components/cardio-row/cardio-row';
 import { SetMenu } from './set-menu';
 
 /** "Ziel 8–10" or "Ziel 10" for a fixed rep count. */
@@ -32,11 +35,14 @@ export function repTarget(repMin: number | null, repMax: number | null): string 
  * One exercise page in the workout pager (Figma Training · Normal 56:48015): header with name,
  * set progress, muscle badge and menu, the target line, the exercise note (decisions 0019, 0021),
  * set rows and «+ Satz». The menu also picks the weight step of the exercise (decision 0022).
+ * Cardio exercises show cardio rows and their target duration instead, without weight step or
+ * timer autostart (decision 0025).
  */
 @Component({
   selector: 'app-exercise-page',
   imports: [
     SetRow,
+    CardioRow,
     SetMenu,
     ExerciseNote,
     HlmBadge,
@@ -52,10 +58,15 @@ export function repTarget(repMin: number | null, repMax: number | null): string 
       <div class="flex min-w-0 flex-1 flex-col gap-1">
         <h2 class="text-2xl font-semibold break-words">{{ name() }}</h2>
         <p class="text-xs text-muted-foreground">
-          {{ 'workout.setProgress' | transloco: { current: currentSet(), total: plannedCount() } }}
+          {{
+            (item().cardio ? 'workout.entryProgress' : 'workout.setProgress')
+              | transloco: { current: currentSet(), total: plannedCount() }
+          }}
         </p>
       </div>
-      @if (exercise().muscleGroup; as group) {
+      @if (item().cardio) {
+        <span hlmBadge variant="secondary" class="mt-1">{{ 'kinds.cardio' | transloco }}</span>
+      } @else if (exercise().muscleGroup; as group) {
         <span hlmBadge variant="secondary" class="mt-1">{{ 'muscles.' + group | transloco }}</span>
       }
       <button
@@ -74,9 +85,11 @@ export function repTarget(repMin: number | null, repMax: number | null): string 
           <button hlmDropdownMenuItem (click)="editNote.emit()">
             {{ (hasNote() ? 'exerciseNote.edit' : 'exerciseNote.add') | transloco }}
           </button>
-          <button hlmDropdownMenuItem (click)="editWeightStep.emit()">
-            {{ 'weightStep.menu' | transloco: { step: weightStepLabel() } }}
-          </button>
+          @if (!item().cardio) {
+            <button hlmDropdownMenuItem (click)="editWeightStep.emit()">
+              {{ 'weightStep.menu' | transloco: { step: weightStepLabel() } }}
+            </button>
+          }
           <hlm-dropdown-menu-separator />
           <button hlmDropdownMenuItem [disabled]="isLast()" (click)="moveBack.emit(1)">
             {{ 'workout.exerciseMenu.back' | transloco }}
@@ -89,7 +102,11 @@ export function repTarget(repMin: number | null, repMax: number | null): string 
     </header>
 
     <p class="text-sm font-medium text-muted-foreground">
-      {{ 'workout.targetLine' | transloco: { sets: plannedCount(), reps: target() } }}
+      @if (item().cardio) {
+        {{ cardioTargetLine() }}
+      } @else {
+        {{ 'workout.targetLine' | transloco: { sets: plannedCount(), reps: target() } }}
+      }
     </p>
 
     @if (hasNote()) {
@@ -100,19 +117,41 @@ export function repTarget(repMin: number | null, repMax: number | null): string 
       @for (set of item().sets; track set.id; let i = $index) {
         <!-- The menu sits in the row's wrapper so opening it does not add a gap. -->
         <div>
-          <app-set-row
-            [number]="i + 1"
-            [weight]="set.weightKg"
-            [reps]="set.reps"
-            [state]="stateOf(set)"
-            [extra]="set.isExtra && !item().sets[i - 1]?.isExtra"
-            [unit]="unit()"
-            [weightStep]="weightStep()"
-            (weightChange)="workout.updateSet(set.id, { weightKg: $event })"
-            (repsChange)="workout.updateSet(set.id, { reps: $event })"
-            (complete)="complete(set)"
-            (menu)="setMenu.emit(set)"
-          />
+          @if (item().cardio) {
+            <app-cardio-row
+              [number]="i + 1"
+              [duration]="set.durationSec"
+              [distance]="set.distanceM"
+              [level]="set.level"
+              [kcal]="set.kcal"
+              [heartRate]="set.heartRate"
+              [state]="cardioStateOf(set)"
+              [extra]="set.isExtra && !item().sets[i - 1]?.isExtra"
+              [distanceUnit]="distanceUnit()"
+              [fields]="profile()"
+              (durationChange)="workout.updateSet(set.id, { durationSec: $event })"
+              (distanceChange)="workout.updateSet(set.id, { distanceM: $event })"
+              (levelChange)="workout.updateSet(set.id, { level: $event })"
+              (kcalChange)="workout.updateSet(set.id, { kcal: $event })"
+              (heartRateChange)="workout.updateSet(set.id, { heartRate: $event })"
+              (complete)="complete(set)"
+              (menu)="setMenu.emit(set)"
+            />
+          } @else {
+            <app-set-row
+              [number]="i + 1"
+              [weight]="set.weightKg"
+              [reps]="set.reps"
+              [state]="stateOf(set)"
+              [extra]="set.isExtra && !item().sets[i - 1]?.isExtra"
+              [unit]="unit()"
+              [weightStep]="weightStep()"
+              (weightChange)="workout.updateSet(set.id, { weightKg: $event })"
+              (repsChange)="workout.updateSet(set.id, { reps: $event })"
+              (complete)="complete(set)"
+              (menu)="setMenu.emit(set)"
+            />
+          }
           @if (set.id === menuSetId()) {
             <app-set-menu
               (duplicate)="duplicate(set)"
@@ -125,7 +164,9 @@ export function repTarget(repMin: number | null, repMax: number | null): string 
     </div>
 
     <button hlmBtn variant="ghost" size="sm" class="self-start" (click)="workout.addSet(index())">
-      <ng-icon name="lucidePlus" />{{ 'workout.addSet' | transloco }}
+      <ng-icon name="lucidePlus" />{{
+        (item().cardio ? 'workout.addEntry' : 'workout.addSet') | transloco
+      }}
     </button>
   `,
 })
@@ -154,10 +195,10 @@ export class ExercisePage {
   private readonly settings = inject(SettingsService);
   private readonly notes = inject(ExerciseNotesService);
   private readonly exerciseSettings = inject(ExerciseSettingsService);
-  private readonly locale = toSignal(inject(TranslocoService).langChanges$, {
-    initialValue: 'de',
-  });
+  private readonly transloco = inject(TranslocoService);
+  private readonly locale = toSignal(this.transloco.langChanges$, { initialValue: 'de' });
   protected readonly unit = computed(() => this.settings.settings().unit);
+  protected readonly distanceUnit = computed(() => this.settings.settings().distanceUnit);
   protected readonly note = computed(() => this.notes.noteFor(this.item().entry.exerciseId));
   protected readonly images = computed(() => this.notes.imagesFor(this.item().entry.exerciseId));
   protected readonly hasNote = computed(() => this.notes.hasNote(this.item().entry.exerciseId));
@@ -169,8 +210,22 @@ export class ExercisePage {
   );
 
   protected readonly exercise = computed(
-    () => this.catalog.byId().get(this.item().entry.exerciseId) ?? { muscleGroup: null },
+    () => this.catalog.byId().get(this.item().entry.exerciseId) ?? { muscleGroup: null, key: '' },
   );
+  /** Fields of the cardio activity (decision 0025). */
+  protected readonly profile = computed(() => activityProfile(this.exercise().key));
+  /** «1 Eintrag · Ziel 10 Min.» */
+  protected readonly cardioTargetLine = computed(() => {
+    this.locale();
+    const t = (key: string, params?: Record<string, unknown>) =>
+      this.transloco.translate(key, params);
+    const count = this.plannedCount();
+    const entries = count === 1 ? t('workout.entryCountOne') : t('workout.entryCount', { count });
+    const target = this.item().entry.targetDurationSec;
+    return target
+      ? `${entries} · ${t('workout.cardioTargetLine', { duration: cardioSummary(t, 1, target) })}`
+      : entries;
+  });
   protected readonly name = computed(() => this.catalog.nameById(this.item().entry.exerciseId));
   protected readonly plannedCount = computed(
     () => this.item().sets.filter((s) => !s.isExtra).length,
@@ -195,6 +250,13 @@ export class ExercisePage {
     return this.workout.records().has(set.id) ? 'record' : 'completed';
   }
 
+  protected cardioStateOf(set: SetLog): CardioRowState {
+    if (set.id === this.menuSetId()) {
+      return 'menu-open';
+    }
+    return set.completedAt === null ? 'open' : 'completed';
+  }
+
   protected async duplicate(set: SetLog): Promise<void> {
     this.setMenu.emit(null);
     await this.workout.duplicateSet(set.id);
@@ -206,9 +268,12 @@ export class ExercisePage {
   }
 
   protected async complete(set: SetLog): Promise<void> {
-    const { entry, sets: before } = this.item();
+    const { entry, sets: before, cardio } = this.item();
     if (await this.workout.toggleComplete(set.id)) {
-      this.setCompleted.emit(entry.restSeconds ?? 90);
+      // No rest timer after a cardio entry (decision 0025).
+      if (!cardio) {
+        this.setCompleted.emit(entry.restSeconds ?? 90);
+      }
       const after = this.workout.workout()?.exercises.find((e) => e.entry.id === entry.id)?.sets;
       if (after && exerciseJustDone(before, after)) {
         this.exerciseCompleted.emit();

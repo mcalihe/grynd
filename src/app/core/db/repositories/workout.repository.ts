@@ -5,7 +5,9 @@ import { BaseRepository } from './base.repository';
 @Injectable({ providedIn: 'root' })
 export class WorkoutSessionRepository extends BaseRepository<WorkoutSession> {
   constructor() {
-    super('workout_session', { columns: ['planId', 'startedAt', 'finishedAt', 'status'] });
+    super('workout_session', {
+      columns: ['planId', 'startedAt', 'finishedAt', 'status', 'bodyWeightKg'],
+    });
   }
 
   async findActive(): Promise<WorkoutSession | undefined> {
@@ -34,7 +36,16 @@ export class WorkoutPauseRepository extends BaseRepository<WorkoutPause> {
 export class SessionExerciseRepository extends BaseRepository<SessionExercise> {
   constructor() {
     super('session_exercise', {
-      columns: ['sessionId', 'exerciseId', 'position', 'status', 'repMin', 'repMax', 'restSeconds'],
+      columns: [
+        'sessionId',
+        'exerciseId',
+        'position',
+        'status',
+        'repMin',
+        'repMax',
+        'restSeconds',
+        'targetDurationSec',
+      ],
     });
   }
 
@@ -42,12 +53,17 @@ export class SessionExerciseRepository extends BaseRepository<SessionExercise> {
     return this.findWhere('sessionId = ? AND deletedAt IS NULL', [sessionId], 'position');
   }
 
-  /** Exercise ids used most recently across all sessions (for "Recently used"). */
-  async findRecentExerciseIds(limit: number): Promise<string[]> {
+  /**
+   * Exercise ids used most recently across all sessions (for "Recently used"), optionally only
+   * of one catalog category (the cardio start sheet, decision 0025).
+   */
+  async findRecentExerciseIds(limit: number, category?: string): Promise<string[]> {
     const rows = await this.db.query<{ exerciseId: string }>(
-      `SELECT exerciseId FROM session_exercise WHERE deletedAt IS NULL
-       GROUP BY exerciseId ORDER BY max(createdAt) DESC LIMIT ?`,
-      [limit],
+      `SELECT se.exerciseId FROM session_exercise se
+         JOIN exercise e ON e.id = se.exerciseId
+        WHERE se.deletedAt IS NULL ${category ? 'AND e.category = ?' : ''}
+        GROUP BY se.exerciseId ORDER BY max(se.createdAt) DESC LIMIT ?`,
+      category ? [category, limit] : [limit],
     );
     return rows.map((row) => row.exerciseId);
   }
@@ -77,7 +93,19 @@ export class ExerciseIntervalRepository extends BaseRepository<ExerciseInterval>
 export class SetLogRepository extends BaseRepository<SetLog> {
   constructor() {
     super('set_log', {
-      columns: ['sessionExerciseId', 'position', 'weightKg', 'reps', 'completedAt', 'isExtra'],
+      columns: [
+        'sessionExerciseId',
+        'position',
+        'weightKg',
+        'reps',
+        'durationSec',
+        'distanceM',
+        'level',
+        'kcal',
+        'heartRate',
+        'completedAt',
+        'isExtra',
+      ],
       boolean: ['isExtra'],
     });
   }
@@ -113,7 +141,7 @@ export class SetLogRepository extends BaseRepository<SetLog> {
          JOIN workout_session ws ON ws.id = se.sessionId AND ws.deletedAt IS NULL
         WHERE se.exerciseId = ? AND ws.status = 'finished' AND ws.startedAt < ?
           AND sl.completedAt IS NOT NULL AND sl.deletedAt IS NULL
-          AND sl.weightKg > 0 AND sl.reps > 0`,
+          AND sl.weightKg > 0 AND sl.reps > 0 AND sl.durationSec IS NULL`,
       [exerciseId, before],
     );
     return row?.best ?? null;

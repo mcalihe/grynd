@@ -1,3 +1,4 @@
+import { Energy } from '../energy/energy';
 import { durationMs, UtcTimestamp } from '../utils/time';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -8,13 +9,25 @@ export interface HistorySummary {
   /** Null only for sessions without a plan; the plan itself may be deleted. */
   planId: string | null;
   planName: string;
+  /** The activity of a cardio workout without a plan (decision 0025); null with a plan. */
+  activityId: string | null;
   startedAt: UtcTimestamp;
   finishedAt: UtcTimestamp;
   /** Time the workout was paused, derived from the pause timestamps (decision 0023). */
   pausedMs: number;
   exerciseCount: number;
+  /** Completed strength sets; cardio entries are no sets (decision 0025). */
   setCount: number;
+  /** Σ kg × reps of the strength sets. */
   volumeKg: number;
+  /** Completed cardio entries. */
+  cardioCount: number;
+  /** Σ distance of the cardio entries in metres. */
+  distanceM: number;
+  /** Body weight of the estimate: the workout's own, else the current setting. */
+  bodyWeightKg: number | null;
+  /** Calories (decision 0025); null where an estimate needs the missing body weight. */
+  energy: Energy | null;
 }
 
 export interface HistoryWeek {
@@ -52,7 +65,9 @@ export function weekOffset(date: Date, now: Date): number {
 }
 
 /** Training time: start to finish without the pauses. */
-export function sessionDurationMs(session: HistorySummary): number {
+export function sessionDurationMs(
+  session: Pick<HistorySummary, 'startedAt' | 'finishedAt' | 'pausedMs'>,
+): number {
   return Math.max(0, durationMs(session.startedAt, session.finishedAt) - session.pausedMs);
 }
 

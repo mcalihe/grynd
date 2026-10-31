@@ -7,7 +7,7 @@ import {
   OnInit,
   signal,
 } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { NgIcon } from '@ng-icons/core';
 import { HlmBadge } from '@spartan-ng/helm/badge';
@@ -39,8 +39,11 @@ import { PeriodPager } from '../../shared/components/period-pager/period-pager';
 import { SegmentedControl } from '../../shared/components/segmented-control/segmented-control';
 import { HistoryFormat } from './history-format';
 
-/** Tiles of the overview, in order; tapping one shows it in the chart. */
-const METRICS: readonly StatsMetric[] = ['count', 'duration', 'volume', 'sets'];
+/**
+ * Tiles of the overview, in order; tapping one shows it in the chart. Calories always, distance
+ * once the history has any (decision 0025).
+ */
+const METRICS: readonly StatsMetric[] = ['count', 'duration', 'volume', 'sets', 'energy'];
 const PERIODS: readonly StatsPeriod[] = ['week', 'month', 'year'];
 /** Exercises in the strength card before «Alle anzeigen». */
 const STRENGTH_PREVIEW = 5;
@@ -60,6 +63,7 @@ const STRENGTH_PREVIEW = 5;
     HlmBadge,
     HlmButton,
     NgIcon,
+    RouterLink,
     TranslocoPipe,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -86,6 +90,14 @@ const STRENGTH_PREVIEW = 5;
         [selectable]="true"
         [(selected)]="metricIndex"
       />
+      @if (totals().withoutKcal) {
+        <p class="text-xs text-muted-foreground" data-hint="kcal">
+          {{ kcalHint() }}
+          <a routerLink="/settings" class="font-semibold text-foreground underline">
+            {{ 'history.noBodyWeightLink' | transloco }}
+          </a>
+        </p>
+      }
       <app-bar-chart
         [bars]="bars()"
         [label]="chartLabel()"
@@ -173,7 +185,7 @@ const STRENGTH_PREVIEW = 5;
     @if (plans().length) {
       <section class="flex flex-col gap-1 rounded-xl border bg-card p-4">
         <h2 class="text-sm font-semibold">{{ 'history.stats.plans.title' | transloco }}</h2>
-        @for (plan of plans(); track plan.planId) {
+        @for (plan of plans(); track plan.planId ?? plan.activityId) {
           <button
             type="button"
             class="flex min-h-14 w-full items-center gap-3 border-b py-2 text-left last:border-b-0"
@@ -184,12 +196,10 @@ const STRENGTH_PREVIEW = 5;
               class="flex size-10 shrink-0 items-center justify-center rounded-md bg-secondary text-secondary-foreground"
               aria-hidden="true"
             >
-              <ng-icon name="lucideClipboardList" size="24" />
+              <ng-icon [name]="plan.icon" size="24" />
             </span>
             <span class="flex min-w-0 flex-1 flex-col gap-1">
-              <span class="truncate text-sm font-semibold">
-                {{ plan.planName || ('history.untitled' | transloco) }}
-              </span>
+              <span class="truncate text-sm font-semibold">{{ plan.name }}</span>
               <span class="truncate text-xs text-muted-foreground">{{ plan.details }}</span>
             </span>
             @if (plan.planId) {
@@ -216,6 +226,10 @@ export class HistoryStatsView implements OnInit {
     computation: () => 0,
   });
   protected readonly metricIndex = signal(METRICS.indexOf('volume'));
+  /** The distance tile appears once any workout has a distance. */
+  private readonly metrics = computed<readonly StatsMetric[]>(() =>
+    this.history.summaries().some((s) => s.distanceM > 0) ? [...METRICS, 'distance'] : METRICS,
+  );
   protected readonly showAll = signal(false);
 
   protected readonly range = computed(() => periodRange(this.period(), this.offset(), this.now));
@@ -250,7 +264,9 @@ export class HistoryStatsView implements OnInit {
     const duration = now.durationMs - before.durationMs;
     const volume = now.volumeKg - before.volumeKg;
     const sets = now.setCount - before.setCount;
-    return [
+    const kcal = now.kcal - before.kcal;
+    const distance = now.distanceM - before.distanceM;
+    const tiles: KeyFigure[] = [
       {
         label: this.format.t('history.stats.trainings'),
         value: String(now.count),
@@ -275,10 +291,33 @@ export class HistoryStatsView implements OnInit {
         delta: this.format.delta(sets, String),
         tone: this.format.tone(sets),
       },
+      {
+        label: this.format.t('history.stats.kcal'),
+        value: this.format.kcal(now.kcal),
+        delta: this.format.delta(kcal, (v) => this.format.kcal(v)),
+        tone: this.format.tone(kcal),
+      },
     ];
+    if (this.metrics().includes('distance')) {
+      tiles.push({
+        label: this.format.t('history.stats.distance'),
+        value: this.format.distance(now.distanceM),
+        delta: this.format.delta(distance, (m) => this.format.distance(m)),
+        tone: this.format.tone(distance),
+      });
+    }
+    return tiles;
   });
+  /** Calories leave out workouts that lack the body weight (decision 0025). */
+  protected readonly kcalHint = computed(() =>
+    this.format.count(
+      this.totals().withoutKcal,
+      'history.stats.kcalIncompleteOne',
+      'history.stats.kcalIncomplete',
+    ),
+  );
 
-  private readonly metric = computed(() => METRICS[this.metricIndex()]);
+  private readonly metric = computed(() => this.metrics()[this.metricIndex()] ?? 'volume');
   private readonly buckets = computed(() => periodBuckets(this.period(), this.range()));
   private readonly series = computed(() =>
     bucketSeries(this.history.summaries(), this.buckets(), this.metric()),
@@ -380,6 +419,8 @@ export class HistoryStatsView implements OnInit {
   protected readonly plans = computed(() =>
     planBreakdown(this.history.summaries(), this.range()).map((plan) => ({
       ...plan,
+      name: this.format.sessionName(plan),
+      icon: plan.planId ? 'lucideClipboardList' : this.format.sessionIcon(plan),
       details: this.format.t('history.stats.plans.details', {
         workouts: this.format.workouts(plan.count),
         duration: this.format.duration(plan.durationMs / plan.count),
@@ -437,6 +478,10 @@ export class HistoryStatsView implements OnInit {
         return this.format.volume(value);
       case 'sets':
         return this.setsText(value);
+      case 'energy':
+        return this.format.kcal(value);
+      case 'distance':
+        return this.format.distance(value);
     }
   }
 

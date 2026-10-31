@@ -1,4 +1,5 @@
 import { Exercise, MuscleGroup } from '../db/models';
+import { isCardio } from '../energy/activities';
 
 export const MUSCLE_GROUPS: readonly MuscleGroup[] = [
   'chest',
@@ -28,11 +29,22 @@ export const EQUIPMENT: readonly EquipmentFilter[] = Object.keys(
 export interface ExerciseFilter {
   query: string;
   muscles: readonly MuscleGroup[];
+  /**
+   * «Ausdauer» chip at the end of the muscle row (decision 0025): part of the same group, so it
+   * adds cardio exercises to the chosen muscles; muscles match strength exercises only.
+   */
+  cardio: boolean;
   forces: readonly ForceFilter[];
   equipment: readonly EquipmentFilter[];
 }
 
-export const EMPTY_FILTER: ExerciseFilter = { query: '', muscles: [], forces: [], equipment: [] };
+export const EMPTY_FILTER: ExerciseFilter = {
+  query: '',
+  muscles: [],
+  cardio: false,
+  forces: [],
+  equipment: [],
+};
 
 /**
  * Lower case, ß → ss, accents removed and ä/ö/ü written as ae/oe/ue folded to a/o/u, so that
@@ -51,6 +63,7 @@ export function isFilterActive(filter: ExerciseFilter): boolean {
   return (
     filter.query.trim() !== '' ||
     filter.muscles.length > 0 ||
+    filter.cardio ||
     filter.forces.length > 0 ||
     filter.equipment.length > 0
   );
@@ -77,6 +90,8 @@ const MUSCLE_TERMS: Record<MuscleGroup, string> = {
   arms: 'arme arm arms bizeps biceps trizeps triceps unterarm forearm',
   core: 'core bauch abs rumpf',
 };
+/** Cardio exercises are found as such, not by the muscle group the catalog gives them (0025). */
+const CARDIO_TERMS = 'ausdauer cardio';
 const EQUIPMENT_TERMS: Record<EquipmentFilter, string> = {
   barbell: 'langhantel barbell lh sz-stange',
   dumbbell: 'kurzhantel kurzhanteln dumbbell dumbbells kh',
@@ -96,7 +111,11 @@ function haystack(exercise: Exercise): string {
       [
         exercise.nameDe,
         exercise.nameEn,
-        exercise.muscleGroup ? MUSCLE_TERMS[exercise.muscleGroup] : '',
+        isCardio(exercise)
+          ? CARDIO_TERMS
+          : exercise.muscleGroup
+            ? MUSCLE_TERMS[exercise.muscleGroup]
+            : '',
         equipment ? EQUIPMENT_TERMS[equipment] : '',
       ].join(' '),
     );
@@ -111,16 +130,22 @@ export function matchesQuery(exercise: Exercise, query: string): boolean {
   return words.every((word) => haystack(exercise).includes(word));
 }
 
-/** OR within a chip group, AND between groups (plan.md §8). */
+/**
+ * OR within a chip group, AND between groups (plan.md §8). The muscle row with «Ausdauer» is one
+ * group: muscles pick strength exercises, «Ausdauer» picks cardio (decision 0025).
+ */
 export function filterExercises(
   exercises: readonly Exercise[],
   filter: ExerciseFilter,
 ): Exercise[] {
   const equipment = new Set<string>(filter.equipment.flatMap((e) => EQUIPMENT_FILTERS[e]));
+  const rowActive = filter.muscles.length > 0 || filter.cardio;
   return exercises.filter(
     (exercise) =>
-      (filter.muscles.length === 0 ||
-        (exercise.muscleGroup !== null && filter.muscles.includes(exercise.muscleGroup))) &&
+      (!rowActive ||
+        (isCardio(exercise)
+          ? filter.cardio
+          : exercise.muscleGroup !== null && filter.muscles.includes(exercise.muscleGroup))) &&
       (filter.forces.length === 0 ||
         (exercise.force !== null &&
           (filter.forces as readonly string[]).includes(exercise.force))) &&

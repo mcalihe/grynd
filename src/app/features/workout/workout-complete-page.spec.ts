@@ -7,7 +7,14 @@ import { HistoryDetail, HistoryService } from '../../core/history/history.servic
 import { BackButtonService } from '../../core/services/back-button.service';
 import { CelebrationService } from '../../shared/motion/celebration.service';
 import { provideMemorySettings } from '../../../testing/settings';
-import { completeStats, WorkoutCompletePage } from './workout-complete-page';
+import {
+  cardSpansRow,
+  completeCards,
+  completeStats,
+  WorkoutCompletePage,
+} from './workout-complete-page';
+
+const noCardio = { durationSec: null, distanceM: null, level: null, kcal: null, heartRate: null };
 
 describe('WorkoutCompletePage', () => {
   const detail = (records: boolean): HistoryDetail => ({
@@ -21,14 +28,21 @@ describe('WorkoutCompletePage', () => {
       exerciseCount: 1,
       setCount: 2,
       volumeKg: 1300,
+      activityId: null,
+      cardioCount: 0,
+      distanceM: 0,
+      bodyWeightKg: null,
+      energy: null,
     },
     exercises: [
       {
         exerciseId: 'e1',
+        exerciseKey: 'e1',
+        cardio: false,
         timeMs: 12 * 60_000,
         sets: [
-          { id: 'a', weightKg: 80, reps: 8, isExtra: false, record: false },
-          { id: 'b', weightKg: 82.5, reps: 8, isExtra: false, record: records },
+          { id: 'a', weightKg: 80, reps: 8, ...noCardio, isExtra: false, record: false },
+          { id: 'b', weightKg: 82.5, reps: 8, ...noCardio, isExtra: false, record: records },
         ],
       },
     ],
@@ -79,12 +93,66 @@ describe('WorkoutCompletePage', () => {
 
   afterEach(() => vi.clearAllMocks());
 
+  it('picks the cards for strength, cardio and mixed workouts (decision 0025)', () => {
+    const strength = detail(true);
+    const withKcal: HistoryDetail = {
+      ...strength,
+      summary: { ...strength.summary, energy: { kcal: 300, estimated: true } },
+    };
+    expect(completeCards(strength, completeStats(strength))).toEqual([
+      'duration',
+      'volume',
+      'sets',
+      'records',
+    ]);
+    const cards = completeCards(withKcal, completeStats(withKcal));
+    expect(cards).toEqual(['duration', 'volume', 'sets', 'kcal', 'records']);
+    expect(cards.map((c) => cardSpansRow(c, cards))).toEqual([true, false, false, true, true]);
+
+    const run: HistoryDetail = {
+      summary: {
+        ...strength.summary,
+        setCount: 0,
+        volumeKg: 0,
+        cardioCount: 1,
+        distanceM: 5000,
+        energy: { kcal: 310, estimated: false },
+      },
+      exercises: [
+        {
+          exerciseId: 'run',
+          exerciseKey: 'Grynd_Running',
+          cardio: true,
+          timeMs: 0,
+          sets: [
+            {
+              id: 'r',
+              ...noCardio,
+              weightKg: null,
+              reps: null,
+              durationSec: 1500,
+              distanceM: 5000,
+              isExtra: false,
+              record: false,
+            },
+          ],
+        },
+      ],
+    };
+    const runCards = completeCards(run, completeStats(run));
+    expect(runCards).toEqual(['duration', 'distance', 'tempo', 'kcal']);
+    expect(runCards.map((c) => cardSpansRow(c, runCards))).toEqual([true, false, false, true]);
+  });
+
   it('counts records from the sets', () => {
     expect(completeStats(detail(true))).toEqual({
       durationMs: 54 * 60_000,
       volumeKg: 1300,
       sets: 2,
       records: 1,
+      kcal: null,
+      estimated: false,
+      distanceM: 0,
     });
   });
 

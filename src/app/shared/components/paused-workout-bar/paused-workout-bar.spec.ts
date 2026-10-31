@@ -21,9 +21,9 @@ describe('PausedWorkoutBar', () => {
     });
   });
 
-  const render = (planName: string) => {
+  const render = (name: string) => {
     const fixture = TestBed.createComponent(PausedWorkoutBar);
-    fixture.componentRef.setInput('planName', planName);
+    fixture.componentRef.setInput('name', name);
     fixture.componentRef.setInput('elapsedMs', 1_453_900);
     fixture.detectChanges();
     return fixture;

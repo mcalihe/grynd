@@ -7,6 +7,8 @@ export interface DraftExercise {
   repMin: number;
   repMax: number;
   restSeconds: number;
+  /** Cardio target (decision 0025); null for strength or a cardio exercise without target. */
+  targetDurationSec: number | null;
 }
 
 export interface PlanDraft {
@@ -18,7 +20,23 @@ export interface PlanDraft {
 }
 
 /** New exercises start with 3 × 8–12 and 90 s rest (plan.md §6). */
-export const DEFAULT_TARGETS = { targetSets: 3, repMin: 8, repMax: 12, restSeconds: 90 } as const;
+export const DEFAULT_TARGETS = {
+  targetSets: 3,
+  repMin: 8,
+  repMax: 12,
+  restSeconds: 90,
+  targetDurationSec: null,
+} as const;
+
+/**
+ * New cardio exercises (decision 0025): one entry of 10 minutes. The rep and rest columns keep
+ * their defaults because they are NOT NULL, but cardio does not use them.
+ */
+export const DEFAULT_CARDIO_TARGETS = {
+  ...DEFAULT_TARGETS,
+  targetSets: 1,
+  targetDurationSec: 600,
+} as const;
 
 export function emptyDraft(): PlanDraft {
   return { name: '', weekdays: [], exercises: [] };
@@ -41,6 +59,7 @@ export function copyDraft(source: PlanDraft, name: string): PlanDraft {
       repMin: e.repMin,
       repMax: e.repMax,
       restSeconds: e.restSeconds,
+      targetDurationSec: e.targetDurationSec,
     })),
   };
 }
@@ -60,6 +79,7 @@ function normalize(draft: PlanDraft) {
       e.repMin,
       e.repMax,
       e.restSeconds,
+      e.targetDurationSec,
     ]),
   };
 }
@@ -76,12 +96,22 @@ export function moveItem<T>(items: readonly T[], from: number, to: number): T[] 
   return result;
 }
 
-/** Appends exercises with default targets; ones already in the plan are skipped. */
-export function addExercises(draft: PlanDraft, exerciseIds: readonly string[]): PlanDraft {
+/**
+ * Appends exercises with default targets (cardio ones with a target duration); ones already in
+ * the plan are skipped.
+ */
+export function addExercises(
+  draft: PlanDraft,
+  exerciseIds: readonly string[],
+  isCardio: (exerciseId: string) => boolean = () => false,
+): PlanDraft {
   const present = new Set(draft.exercises.map((e) => e.exerciseId));
   const added = exerciseIds
     .filter((id, index) => !present.has(id) && exerciseIds.indexOf(id) === index)
-    .map((exerciseId) => ({ exerciseId, ...DEFAULT_TARGETS }));
+    .map((exerciseId) => ({
+      exerciseId,
+      ...(isCardio(exerciseId) ? DEFAULT_CARDIO_TARGETS : DEFAULT_TARGETS),
+    }));
   return { ...draft, exercises: [...draft.exercises, ...added] };
 }
 

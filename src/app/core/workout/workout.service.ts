@@ -1,6 +1,7 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { DatabaseService } from '../db/database.service';
-import { SessionExercise, SetLog, WorkoutPause, WorkoutSession } from '../db/models';
+import { Exercise, SessionExercise, SetLog, WorkoutPause, WorkoutSession } from '../db/models';
+import { ExerciseRepository } from '../db/repositories/exercise.repository';
 import {
   ExerciseIntervalRepository,
   SessionExerciseRepository,
@@ -8,21 +9,43 @@ import {
   WorkoutPauseRepository,
   WorkoutSessionRepository,
 } from '../db/repositories/workout.repository';
+import { isCardio } from '../energy/activities';
 import { PlansService } from '../plans/plans.service';
+import { SettingsService } from '../settings/settings.service';
 import { Clock, UtcTimestamp } from '../utils/time';
 import { closeStaleInterval, keepInterval } from './intervals';
 import { activeDurationMs } from './pauses';
-import { prefillSets, SetValues } from './prefill';
+import { CardioValues, prefillCardio, prefillSets, SetValues } from './prefill';
 import { recordSetIds } from './records';
+
+/** Cardio columns of a strength set (decision 0025). */
+const NO_CARDIO = {
+  durationSec: null,
+  distanceM: null,
+  level: null,
+  kcal: null,
+  heartRate: null,
+} as const;
+
+/** Every value a set or cardio entry carries (decision 0025). */
+export type EntryValues = SetValues &
+  CardioValues & {
+    kcal: number | null;
+    heartRate: number | null;
+  };
 
 export interface WorkoutExercise {
   entry: SessionExercise;
   sets: SetLog[];
+  /** Logged by duration instead of kg × reps (decision 0025). */
+  cardio: boolean;
 }
 
 export interface ActiveWorkout {
   session: WorkoutSession;
   planName: string;
+  /** The activity of a cardio workout without a plan (decision 0025); null otherwise. */
+  activity: Exercise | null;
   exercises: WorkoutExercise[];
   /** Oldest first; the last one is open while the workout is paused. */
   pauses: WorkoutPause[];
@@ -57,6 +80,8 @@ export function exerciseJustDone(before: readonly SetLog[], after: readonly SetL
 export class WorkoutService {
   private readonly database = inject(DatabaseService);
   private readonly plans = inject(PlansService);
+  private readonly settings = inject(SettingsService);
+  private readonly exercises = inject(ExerciseRepository);
   private readonly sessions = inject(WorkoutSessionRepository);
   private readonly sessionExercises = inject(SessionExerciseRepository);
   private readonly sets = inject(SetLogRepository);
@@ -71,6 +96,8 @@ export class WorkoutService {
   readonly workout = this.state.asReadonly();
   readonly current = signal(0);
   readonly isActive = computed(() => this.state() !== null);
+  /** A cardio workout started without a plan: one activity, timed by the clock (decision 0025). */
+  readonly standalone = computed(() => this.state()?.activity != null);
   /** The clock stands still and no exercise time is tracked (decision 0023). */
   readonly paused = computed(
     () => this.state()?.pauses.some((pause) => pause.resumedAt === null) ?? false,
@@ -79,7 +106,10 @@ export class WorkoutService {
   /** Completed sets that set a new estimated 1RM for their exercise. */
   readonly records = computed(() => {
     const result = new Set<string>();
-    for (const { entry, sets } of this.state()?.exercises ?? []) {
+    for (const { entry, sets, cardio } of this.state()?.exercises ?? []) {
+      if (cardio) {
+        continue; // no cardio records yet (decision 0025)
+      }
       const completed = sets
         .filter((s) => s.completedAt !== null)
         .sort((a, b) => (a.completedAt ?? '').localeCompare(b.completedAt ?? ''));
@@ -106,7 +136,10 @@ export class WorkoutService {
     return true;
   }
 
-  /** Copies the plan into a new active session with prefilled sets. */
+  /**
+   * Copies the plan into a new active session with prefilled sets; cardio exercises get entries
+   * with their target duration instead (decision 0025). The session keeps today's body weight.
+   */
   async start(planId: string): Promise<string> {
     if (await this.sessions.findActive()) {
       throw new Error('A workout is already active.');
@@ -122,29 +155,92 @@ export class WorkoutService {
         startedAt: now,
         finishedAt: null,
         status: 'active',
+        bodyWeightKg: this.settings.settings().bodyWeightKg,
       });
       for (const [position, pe] of plan.exercises.entries()) {
+        const cardio = isCardio(
+          await this.exercises.findById(pe.exerciseId, { includeDeleted: true }),
+        );
         const entry = await this.sessionExercises.insert({
           sessionId: created.id,
           exerciseId: pe.exerciseId,
           position,
           status: 'open',
-          repMin: pe.repMin,
-          repMax: pe.repMax,
+          repMin: cardio ? null : pe.repMin,
+          repMax: cardio ? null : pe.repMax,
           restSeconds: pe.restSeconds,
+          targetDurationSec: cardio ? pe.targetDurationSec : null,
         });
         const previous = await this.previousSets(pe.exerciseId);
-        for (const [index, values] of prefillSets(pe.targetSets, pe.repMin, previous).entries()) {
+        const values: EntryValues[] = cardio
+          ? prefillCardio(pe.targetSets, pe.targetDurationSec, previous).map((v) => ({
+              weightKg: null,
+              reps: null,
+              ...v,
+              kcal: null,
+              heartRate: null,
+            }))
+          : prefillSets(pe.targetSets, pe.repMin, previous).map((v) => ({ ...NO_CARDIO, ...v }));
+        for (const [index, value] of values.entries()) {
           await this.sets.insert({
             sessionExerciseId: entry.id,
             position: index,
-            weightKg: values.weightKg,
-            reps: values.reps,
+            ...value,
             completedAt: null,
             isExtra: false,
           });
         }
       }
+      return created;
+    });
+    await this.load(session);
+    this.current.set(0);
+    return session.id;
+  }
+
+  /**
+   * Starts a cardio workout without a plan (decision 0025): one activity with one open entry
+   * (distance and level from last time). Finishing logs the active time as its duration.
+   */
+  async startCardio(exerciseId: string): Promise<string> {
+    if (await this.sessions.findActive()) {
+      throw new Error('A workout is already active.');
+    }
+    const exercise = await this.exercises.findById(exerciseId);
+    if (!exercise || !isCardio(exercise)) {
+      throw new Error(`${exerciseId} is no cardio activity`);
+    }
+    const [values] = prefillCardio(1, null, await this.previousSets(exerciseId));
+    const session = await this.database.driver.transaction(async () => {
+      const created = await this.sessions.insert({
+        planId: null,
+        startedAt: this.clock.nowUtc(),
+        finishedAt: null,
+        status: 'active',
+        bodyWeightKg: this.settings.settings().bodyWeightKg,
+      });
+      const entry = await this.sessionExercises.insert({
+        sessionId: created.id,
+        exerciseId,
+        position: 0,
+        status: 'open',
+        repMin: null,
+        repMax: null,
+        restSeconds: null,
+        targetDurationSec: null,
+      });
+      await this.sets.insert({
+        sessionExerciseId: entry.id,
+        position: 0,
+        weightKg: null,
+        reps: null,
+        ...values,
+        durationSec: null,
+        kcal: null,
+        heartRate: null,
+        completedAt: null,
+        isExtra: false,
+      });
       return created;
     });
     await this.load(session);
@@ -243,7 +339,7 @@ export class WorkoutService {
 
   // ---------------------------------------------------------------- sets
 
-  async updateSet(setId: string, patch: Partial<SetValues>): Promise<void> {
+  async updateSet(setId: string, patch: Partial<EntryValues>): Promise<void> {
     const found = this.findSet(setId);
     if (!found) {
       return;
@@ -264,18 +360,32 @@ export class WorkoutService {
     return completing;
   }
 
-  /** «+ Satz»: copies the last set's values (extra unless it replaces a deleted planned set). */
+  /**
+   * «+ Satz» / «+ Eintrag»: copies the last set's values (extra unless it replaces a deleted
+   * planned set). Cardio entries copy duration, distance and level, not calories or heart rate.
+   */
   async addSet(exerciseIndex: number): Promise<void> {
     const exercise = this.state()?.exercises[exerciseIndex];
     if (!exercise) {
       return;
     }
     const last = exercise.sets.at(-1);
+    const values: EntryValues = exercise.cardio
+      ? {
+          ...NO_CARDIO,
+          weightKg: null,
+          reps: null,
+          durationSec: last?.durationSec ?? exercise.entry.targetDurationSec,
+          distanceM: last?.distanceM ?? null,
+          level: last?.level ?? null,
+        }
+      : {
+          ...NO_CARDIO,
+          weightKg: last?.weightKg ?? null,
+          reps: last?.reps ?? exercise.entry.repMin,
+        };
     await this.database.driver.transaction(() =>
-      this.insertSet(exercise.entry.id, exercise.sets.length, {
-        weightKg: last?.weightKg ?? null,
-        reps: last?.reps ?? exercise.entry.repMin,
-      }),
+      this.insertSet(exercise.entry.id, exercise.sets.length, values),
     );
     await this.reloadSets(exerciseIndex);
   }
@@ -295,6 +405,12 @@ export class WorkoutService {
       await this.insertSet(set.sessionExerciseId, set.position + 1, {
         weightKg: set.weightKg,
         reps: set.reps,
+        durationSec: set.durationSec,
+        distanceM: set.distanceM,
+        level: set.level,
+        // Calories and heart rate are measured per entry, never copied.
+        kcal: null,
+        heartRate: null,
       });
     });
     await this.reloadSets(index);
@@ -333,25 +449,35 @@ export class WorkoutService {
 
   private async load(session: WorkoutSession): Promise<void> {
     const entries = await this.sessionExercises.findBySession(session.id);
+    const catalog = new Map<string, Exercise | undefined>();
+    for (const { exerciseId } of entries) {
+      catalog.set(exerciseId, await this.exercises.findById(exerciseId, { includeDeleted: true }));
+    }
     const exercises = await Promise.all(
       entries.map(async (entry) => ({
         entry,
         sets: await this.sets.findBySessionExercise(entry.id),
+        cardio: isCardio(catalog.get(entry.exerciseId)),
       })),
     );
     const planName = session.planId
       ? ((await this.plans.getDraft(session.planId))?.name ?? '')
       : '';
+    // A cardio workout without a plan is named after its activity (decision 0025).
+    const first = catalog.get(entries[0]?.exerciseId ?? '');
+    const activity = !session.planId && isCardio(first) ? (first ?? null) : null;
     const pauses = await this.pauses.findBySession(session.id);
     const best = new Map<string, number | null>();
-    for (const { entry } of exercises) {
-      best.set(
-        entry.exerciseId,
-        await this.sets.bestOneRepMaxBefore(entry.exerciseId, session.startedAt),
-      );
+    for (const { entry, cardio } of exercises) {
+      if (!cardio) {
+        best.set(
+          entry.exerciseId,
+          await this.sets.bestOneRepMaxBefore(entry.exerciseId, session.startedAt),
+        );
+      }
     }
     this.historyBest.set(best);
-    this.state.set({ session, planName, exercises, pauses });
+    this.state.set({ session, planName, activity, exercises, pauses });
   }
 
   private async end(status: 'finished' | 'aborted'): Promise<string> {
@@ -363,9 +489,16 @@ export class WorkoutService {
     // Ending while paused: the pause ends with the workout, so it never counts.
     const now = this.clock.nowUtc();
     const open = workout.pauses.find((pause) => pause.resumedAt === null);
+    // Without a plan the clock is the stopwatch: its active time becomes the entry (decision 0025).
+    const timed = this.standalone() ? workout.exercises[0]?.sets[0] : undefined;
+    const activeSec = Math.round(this.elapsedMs(now) / 1000);
     await this.database.driver.transaction(async () => {
       if (open) {
         await this.pauses.update(open.id, { resumedAt: now });
+      }
+      if (timed && status === 'finished') {
+        await this.sets.update(timed.id, { durationSec: activeSec, completedAt: now });
+        await this.sessionExercises.update(timed.sessionExerciseId, { status: 'done' });
       }
       await this.sessions.update(workout.session.id, { status, finishedAt: now });
     });
@@ -426,7 +559,7 @@ export class WorkoutService {
   private async insertSet(
     sessionExerciseId: string,
     position: number,
-    values: SetValues,
+    values: EntryValues,
   ): Promise<void> {
     const deleted = await this.sets.findDeletedPlanned(sessionExerciseId);
     if (deleted) {
@@ -437,6 +570,7 @@ export class WorkoutService {
     await this.sets.insert({
       sessionExerciseId,
       position,
+      ...NO_CARDIO,
       ...values,
       completedAt: null,
       isExtra: true,
@@ -485,9 +619,9 @@ export class WorkoutService {
   }
 
   /** Completed sets of the exercise in the most recent finished session that contains it. */
-  private previousSets(exerciseId: string): Promise<SetValues[]> {
-    return this.database.driver.query<SetValues>(
-      `SELECT sl.weightKg, sl.reps
+  private previousSets(exerciseId: string): Promise<(SetValues & CardioValues)[]> {
+    return this.database.driver.query<SetValues & CardioValues>(
+      `SELECT sl.weightKg, sl.reps, sl.durationSec, sl.distanceM, sl.level
          FROM set_log sl
          JOIN session_exercise se ON se.id = sl.sessionExerciseId AND se.deletedAt IS NULL
         WHERE se.exerciseId = ?

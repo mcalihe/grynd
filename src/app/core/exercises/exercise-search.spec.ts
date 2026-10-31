@@ -100,6 +100,45 @@ describe('exercise search', () => {
     ).toEqual(['pullup']);
   });
 
+  describe('cardio (decision 0025)', () => {
+    const run = ex('run', {
+      nameDe: 'Laufen',
+      nameEn: 'Running',
+      category: 'cardio',
+      muscleGroup: 'legs',
+      equipment: 'body only',
+    });
+    const treadmill = ex('tread', {
+      nameDe: 'Laufen auf dem Laufband',
+      nameEn: 'Running, Treadmill',
+      category: 'cardio',
+      muscleGroup: 'legs',
+      equipment: 'machine',
+    });
+    const squat = ex('squat', { nameDe: 'Kniebeugen', nameEn: 'Squat', muscleGroup: 'legs' });
+    const withCardio = [...all, squat, run, treadmill];
+    const ids = (filter: Partial<typeof EMPTY_FILTER>) =>
+      filterExercises(withCardio, { ...EMPTY_FILTER, ...filter }).map((e) => e.id);
+
+    it('shows cardio with the «Ausdauer» chip and not under a muscle', () => {
+      expect(ids({ cardio: true })).toEqual(['run', 'tread']);
+      expect(ids({ muscles: ['legs'] })).toEqual(['squat']);
+      expect(ids({ muscles: ['legs'], cardio: true })).toEqual(['squat', 'run', 'tread']);
+      expect(isFilterActive({ ...EMPTY_FILTER, cardio: true })).toBe(true);
+    });
+
+    it('still combines the chip with equipment', () => {
+      expect(ids({ cardio: true, equipment: ['machine'] })).toEqual(['tread']);
+    });
+
+    it('finds cardio by «ausdauer» or «cardio», not by its muscle words', () => {
+      expect(ids({ query: 'ausdauer' })).toEqual(['run', 'tread']);
+      expect(ids({ query: 'cardio maschine' })).toEqual(['tread']);
+      expect(matchesQuery(run, 'beine')).toBe(false);
+      expect(matchesQuery(squat, 'beine')).toBe(true);
+    });
+  });
+
   it('combines filters with the query', () => {
     expect(
       filterExercises(all, { ...EMPTY_FILTER, forces: ['pull'], query: 'curl' }).map((e) => e.id),

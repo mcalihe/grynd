@@ -16,10 +16,18 @@ function sample(): Record<BackupTable, BackupRow[]> {
         repMin: 8,
         repMax: 10,
         restSeconds: 90,
+        targetDurationSec: null,
       },
     ],
     workout_session: [
-      { ...base('s1'), planId: 'p1', startedAt: ts, finishedAt: ts, status: 'finished' },
+      {
+        ...base('s1'),
+        planId: 'p1',
+        startedAt: ts,
+        finishedAt: ts,
+        status: 'finished',
+        bodyWeightKg: 75,
+      },
     ],
     workout_pause: [{ ...base('wp1'), sessionId: 's1', pausedAt: ts, resumedAt: ts }],
     session_exercise: [
@@ -32,6 +40,7 @@ function sample(): Record<BackupTable, BackupRow[]> {
         repMin: 8,
         repMax: 10,
         restSeconds: 90,
+        targetDurationSec: null,
       },
     ],
     exercise_interval: [{ ...base('i1'), sessionExerciseId: 'se1', enteredAt: ts, leftAt: ts }],
@@ -42,8 +51,27 @@ function sample(): Record<BackupTable, BackupRow[]> {
         position: 0,
         weightKg: 80,
         reps: 8,
+        durationSec: null,
+        distanceM: null,
+        level: null,
+        kcal: null,
+        heartRate: null,
         completedAt: ts,
         isExtra: 0,
+      },
+      {
+        ...base('l2'),
+        sessionExerciseId: 'se1',
+        position: 1,
+        weightKg: null,
+        reps: null,
+        durationSec: 1500,
+        distanceM: 5200,
+        level: 8,
+        kcal: 310,
+        heartRate: 142,
+        completedAt: ts,
+        isExtra: 1,
       },
     ],
     exercise_note: [{ ...base('n1'), exerciseId: 'e1', text: 'Bank flach, Griff eng' }],
@@ -57,8 +85,8 @@ function sample(): Record<BackupTable, BackupRow[]> {
 
 const photos = () => ({ img1: btoa('jpeg') });
 const catalog = new Set(['e1']);
-/** Schema of the current app (migration 5 added workout pauses). */
-const SCHEMA = 5;
+/** Schema of the current app (migration 6 added cardio entries, decision 0025). */
+const SCHEMA = 6;
 const validate = (raw: unknown) => validateBackup(raw, SCHEMA, catalog);
 
 describe('validateBackup', () => {
@@ -178,6 +206,34 @@ describe('validateBackup', () => {
       ok: false,
       error: 'missingReference',
     });
+  });
+
+  it('keeps cardio values and reads backups from before cardio (schema 5) as empty', () => {
+    const current = validate(buildBackup(sample(), SCHEMA, ts, photos()));
+    expect(current.ok && current.backup.data.set_log[1]).toMatchObject({
+      durationSec: 1500,
+      distanceM: 5200,
+      level: 8,
+      kcal: 310,
+      heartRate: 142,
+    });
+    expect(current.ok && current.backup.data.workout_session[0]['bodyWeightKg']).toBe(75);
+
+    const data = sample();
+    for (const row of data.set_log) {
+      for (const column of ['durationSec', 'distanceM', 'level', 'kcal', 'heartRate']) {
+        delete row[column];
+      }
+    }
+    delete data.workout_session[0]['bodyWeightKg'];
+    delete data.plan_exercise[0]['targetDurationSec'];
+
+    const result = validate(buildBackup(data, 5, ts, photos()));
+
+    expect(result.ok).toBe(true);
+    expect(result.ok && result.backup.data.set_log[0]['durationSec']).toBeNull();
+    expect(result.ok && result.backup.data.workout_session[0]['bodyWeightKg']).toBeNull();
+    expect(result.ok && result.backup.data.plan_exercise[0]['targetDurationSec']).toBeNull();
   });
 
   it('reads backups from before workout pauses (schema 4) without pauses', () => {

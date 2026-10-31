@@ -1,0 +1,50 @@
+[
+  {
+    "key": "Grynd_Running",
+    "nameDe": "Laufen",
+    "nameEn": "Running",
+    "primaryMuscles": ["quadriceps"],
+    "secondaryMuscles": ["calves", "glutes", "hamstrings"],
+    "equipment": "body only"
+  },
+  {
+    "key": "Grynd_Walking",
+    "nameDe": "Gehen",
+    "nameEn": "Walking",
+    "primaryMuscles": ["quadriceps"],
+    "secondaryMuscles": ["calves", "glutes", "hamstrings"],
+    "equipment": "body only"
+  },
+  {
+    "key": "Grynd_Hiking",
+    "nameDe": "Wandern",
+    "nameEn": "Hiking",
+    "primaryMuscles": ["quadriceps"],
+    "secondaryMuscles": ["calves", "glutes", "hamstrings"],
+    "equipment": "body only"
+  },
+  {
+    "key": "Grynd_Nordic_Walking",
+    "nameDe": "Nordic Walking",
+    "nameEn": "Nordic Walking",
+    "primaryMuscles": ["quadriceps"],
+    "secondaryMuscles": ["calves", "glutes", "lats", "triceps"],
+    "equipment": "other"
+  },
+  {
+    "key": "Grynd_Swimming",
+    "nameDe": "Schwimmen",
+    "nameEn": "Swimming",
+    "primaryMuscles": ["lats"],
+    "secondaryMuscles": ["shoulders", "triceps", "quadriceps"],
+    "equipment": "body only"
+  },
+  {
+    "key": "Grynd_Inline_Skating",
+    "nameDe": "Inline-Skaten",
+    "nameEn": "Inline Skating",
+    "primaryMuscles": ["quadriceps"],
+    "secondaryMuscles": ["glutes", "adductors", "abductors"],
+    "equipment": "other"
+  }
+]

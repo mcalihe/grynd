@@ -2,10 +2,13 @@ import { TestBed } from '@angular/core/testing';
 import { TranslocoTestingModule } from '@jsverse/transloco';
 import {
   clamp,
+  DURATION_FORMAT,
   edgeScroll,
   edgeSpeed,
+  formatDuration,
   formatNumber,
   majorEvery,
+  parseDuration,
   parseNumber,
   RulerFrame,
   rulerOffset,
@@ -44,6 +47,29 @@ describe('number stepper logic', () => {
   it('clamps and rounds typed values', () => {
     expect(clamp(-5, kg)).toBe(0);
     expect(clamp(12.3456, kg)).toBe(12.35);
+  });
+
+  it('jumps an empty value to the origin when one is set', () => {
+    const bpm = { min: 30, max: 240, decimals: 0, origin: 120 };
+    expect(stepValue(null, 1, bpm)).toBe(120);
+    expect(stepValue(null, -1, bpm)).toBe(120);
+    expect(stepValue(130, 1, bpm)).toBe(131);
+    expect(scrubValue(null, 3, 1, bpm)).toBe(123);
+  });
+
+  it('formats and parses durations (decision 0025)', () => {
+    expect(formatDuration(1530)).toBe('25:30');
+    expect(formatDuration(3900)).toBe('1:05:00');
+    expect(formatDuration(null)).toBe('–');
+    expect(parseDuration('25:30')).toBe(1530);
+    expect(parseDuration('1:05:00')).toBe(3900);
+    expect(parseDuration('25')).toBe(1500);
+    expect(parseDuration('25,5')).toBe(1530);
+    expect(parseDuration('')).toBeNull();
+    expect(parseDuration('2:x')).toBeNull();
+    expect(parseDuration('-5')).toBeNull();
+    expect(DURATION_FORMAT.majorEvery(60)).toBe(5); // every 5 minutes
+    expect(DURATION_FORMAT.majorEvery(30)).toBe(10);
   });
 
   it('formats per locale', () => {
@@ -187,6 +213,44 @@ describe('NumberStepper', () => {
     expect(key('End')).toBe(9999);
     key('Enter');
     expect(fixture.nativeElement.querySelector('input')).not.toBeNull();
+  });
+
+  it('shows, edits and reads durations as m:ss', () => {
+    const { fixture, host, spin, plus } = setup(1500, { format: DURATION_FORMAT, stepSize: 60 });
+    expect(spin().textContent).toContain('25:00');
+    expect(spin().getAttribute('aria-valuetext')).toBe('25:00');
+    plus.click();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.value()).toBe(1560);
+
+    spin().click();
+    fixture.detectChanges();
+    const field = host.querySelector('input') as HTMLInputElement;
+    expect(field.value).toBe('26:00');
+    field.value = '30';
+    field.dispatchEvent(new Event('blur'));
+    expect(fixture.componentInstance.value()).toBe(1800);
+  });
+
+  it('closes the text field on Enter instead of opening it again', () => {
+    const { fixture, host, spin } = setup(80);
+    spin().click();
+    fixture.detectChanges();
+    const field = host.querySelector('input') as HTMLInputElement;
+    document.body.append(host);
+    field.focus();
+    field.value = '82,5';
+    field.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    fixture.detectChanges();
+    expect(fixture.componentInstance.value()).toBe(82.5);
+    expect(host.querySelector('input')).toBeNull();
+    host.remove();
+  });
+
+  it('starts an empty value at the origin', () => {
+    const { fixture, plus } = setup(null, { origin: 75, stepSize: 0.5 });
+    plus.click();
+    expect(fixture.componentInstance.value()).toBe(75);
   });
 
   describe('scrubbing', () => {

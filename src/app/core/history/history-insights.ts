@@ -23,7 +23,7 @@ export interface HistorySetFact {
 }
 
 export type StatsPeriod = 'week' | 'month' | 'year';
-export type StatsMetric = 'count' | 'duration' | 'volume' | 'sets';
+export type StatsMetric = 'count' | 'duration' | 'volume' | 'sets' | 'energy' | 'distance';
 
 /** Local time span from `start` (inclusive) to `end` (exclusive). */
 export interface DateRange {
@@ -93,6 +93,11 @@ export interface PeriodTotals {
   volumeKg: number;
   setCount: number;
   records: number;
+  /** Calories of the workouts that have them (decision 0025). */
+  kcal: number;
+  /** Workouts without calories (body weight missing): the sum is incomplete. */
+  withoutKcal: number;
+  distanceM: number;
 }
 
 export function periodTotals(
@@ -100,7 +105,16 @@ export function periodTotals(
   range: DateRange,
   records: ReadonlyMap<string, number>,
 ): PeriodTotals {
-  const totals: PeriodTotals = { count: 0, durationMs: 0, volumeKg: 0, setCount: 0, records: 0 };
+  const totals: PeriodTotals = {
+    count: 0,
+    durationMs: 0,
+    volumeKg: 0,
+    setCount: 0,
+    records: 0,
+    kcal: 0,
+    withoutKcal: 0,
+    distanceM: 0,
+  };
   for (const session of sessions) {
     if (inRange(session.startedAt, range)) {
       totals.count++;
@@ -108,6 +122,12 @@ export function periodTotals(
       totals.volumeKg += session.volumeKg;
       totals.setCount += session.setCount;
       totals.records += records.get(session.id) ?? 0;
+      totals.distanceM += session.distanceM;
+      if (session.energy) {
+        totals.kcal += session.energy.kcal;
+      } else {
+        totals.withoutKcal++;
+      }
     }
   }
   return totals;
@@ -123,6 +143,10 @@ export function metricValue(session: HistorySummary, metric: StatsMetric): numbe
       return session.volumeKg;
     case 'sets':
       return session.setCount;
+    case 'energy':
+      return session.energy?.kcal ?? 0;
+    case 'distance':
+      return session.distanceM;
   }
 }
 
@@ -306,11 +330,24 @@ export function exerciseProgress(
 export interface PlanBreakdown {
   planId: string | null;
   planName: string;
+  /** Cardio workouts without a plan are grouped by activity (decision 0025). */
+  activityId: string | null;
   count: number;
   durationMs: number;
 }
 
-/** Workouts per plan in `range`, most frequent first. */
+/**
+ * What makes two workouts comparable: the same plan, or for cardio without a plan the same
+ * activity (decision 0025). Null when neither is known.
+ */
+function sessionGroup(session: HistorySummary): string | null {
+  if (session.planId) {
+    return `plan:${session.planId}`;
+  }
+  return session.activityId ? `activity:${session.activityId}` : null;
+}
+
+/** Workouts per plan (or activity) in `range`, most frequent first. */
 export function planBreakdown(
   sessions: readonly HistorySummary[],
   range: DateRange,
@@ -320,29 +357,35 @@ export function planBreakdown(
     if (!inRange(session.startedAt, range)) {
       continue;
     }
-    const plan = plans.get(session.planId) ?? {
+    const key = sessionGroup(session);
+    const plan = plans.get(key) ?? {
       planId: session.planId,
       planName: session.planName,
+      activityId: session.planId ? null : session.activityId,
       count: 0,
       durationMs: 0,
     };
     plan.count++;
     plan.durationMs += sessionDurationMs(session);
-    plans.set(session.planId, plan);
+    plans.set(key, plan);
   }
   return [...plans.values()].sort((a, b) => b.count - a.count);
 }
 
-/** The last workout of the same plan that started before `session`. */
-export function previousSessionOfPlan(
+/**
+ * The last workout of the same plan, or of the same activity for cardio without a plan, that
+ * started before `session`.
+ */
+export function previousSessionOf(
   sessions: readonly HistorySummary[],
   session: HistorySummary,
 ): HistorySummary | undefined {
-  if (!session.planId) {
+  const group = sessionGroup(session);
+  if (!group) {
     return undefined;
   }
   return sessions
-    .filter((s) => s.planId === session.planId && s.startedAt < session.startedAt)
+    .filter((s) => sessionGroup(s) === group && s.startedAt < session.startedAt)
     .reduce<HistorySummary | undefined>(
       (latest, s) => (!latest || s.startedAt > latest.startedAt ? s : latest),
       undefined,

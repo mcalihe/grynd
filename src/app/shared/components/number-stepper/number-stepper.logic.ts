@@ -1,7 +1,19 @@
+import { formatElapsed } from '../workout-clock/format-elapsed';
+
 export interface StepperBounds {
   min: number;
   max: number;
   decimals: number;
+  /**
+   * Where an empty value starts: ± jumps there and a scrub starts from it. Without it, ± starts
+   * from `min` (82.5 kg needs no origin, an empty heart rate should not start at 1 bpm).
+   */
+  origin?: number | null;
+}
+
+/** Base of an empty value: the origin, else the minimum. */
+export function emptyBase({ min, origin }: StepperBounds): number {
+  return origin ?? min;
 }
 
 function round(value: number, decimals: number): number {
@@ -13,8 +25,11 @@ export function clamp(value: number, { min, max, decimals }: StepperBounds): num
   return round(Math.min(max, Math.max(min, value)), decimals);
 }
 
-/** Adds `delta` (±step); an empty value starts at `min`. */
+/** Adds `delta` (±step); an empty value starts at `min`, or jumps to the origin when one is set. */
 export function stepValue(value: number | null, delta: number, bounds: StepperBounds): number {
+  if (value === null && bounds.origin != null) {
+    return clamp(bounds.origin, bounds);
+  }
   return clamp((value ?? bounds.min) + delta, bounds);
 }
 
@@ -33,6 +48,28 @@ export function formatNumber(value: number | null, locale: string, decimals: num
     return '–';
   }
   return new Intl.NumberFormat(locale, { maximumFractionDigits: decimals }).format(value);
+}
+
+/** Seconds as m:ss (from one hour h:mm:ss), `–` when empty. */
+export function formatDuration(seconds: number | null): string {
+  return seconds === null ? '–' : formatElapsed(seconds * 1000);
+}
+
+/**
+ * Parses a typed duration in seconds: `25:30` (m:ss) or `1:05:00` (h:mm:ss); text without a colon
+ * is minutes (`25`, `25,5`), because the decimal keypad on phones has no colon.
+ */
+export function parseDuration(text: string): number | null {
+  const trimmed = text.trim();
+  if (!trimmed.includes(':')) {
+    const minutes = parseNumber(trimmed);
+    return minutes === null || minutes < 0 ? null : Math.round(minutes * 60);
+  }
+  const parts = trimmed.split(':');
+  if (parts.length > 3 || parts.some((part) => !/^\d+$/.test(part))) {
+    return null;
+  }
+  return parts.reduce((total, part) => total * 60 + Number(part), 0);
 }
 
 /** Horizontal movement before a press on the stepper counts as a scrub instead of a tap. */
@@ -57,6 +94,33 @@ export function majorEvery(step: number): number {
   return [4, 5, 10].find((k) => isMultiple(k * step, 5)) ?? 5;
 }
 
+/** How a stepper shows, edits and reads its value: plain numbers or durations (decision 0025). */
+export interface ValueFormat {
+  /** Shown value; `–` when empty. */
+  format(value: number | null, locale: string, decimals: number): string;
+  /** Text in the edit field. */
+  edit(value: number | null, locale: string, decimals: number): string;
+  /** Typed text; null when empty or invalid. */
+  parse(text: string): number | null;
+  /** Steps between labelled ruler ticks. */
+  majorEvery(step: number): number;
+}
+
+export const NUMBER_FORMAT: ValueFormat = {
+  format: formatNumber,
+  edit: (value) => (value === null ? '' : String(value)),
+  parse: parseNumber,
+  majorEvery,
+};
+
+/** Seconds shown as m:ss; ruler labels every 5 minutes with 1-minute steps. */
+export const DURATION_FORMAT: ValueFormat = {
+  format: (value) => formatDuration(value),
+  edit: (value) => (value === null ? '' : formatDuration(value)),
+  parse: parseDuration,
+  majorEvery: (step) => [5, 10, 4].find((k) => isMultiple(k * step, 60)) ?? 5,
+};
+
 /**
  * Value under the finger, `offsetSteps` (fractional) away from where the scrub started. Values
  * snap to multiples of `step`; within half a step of the start the start value is kept, so an
@@ -71,7 +135,7 @@ export function scrubValue(
   if (Math.abs(offsetSteps) < 0.5) {
     return start;
   }
-  const raw = (start ?? bounds.min) + offsetSteps * step;
+  const raw = (start ?? emptyBase(bounds)) + offsetSteps * step;
   return clamp(Math.round(raw / step) * step, bounds);
 }
 
@@ -105,11 +169,12 @@ export function rulerTicks(
   from: number,
   to: number,
   { min, max, decimals }: StepperBounds,
+  every = majorEvery(frame.step),
 ): RulerTick[] {
   const { base, step } = frame;
   const first = Math.ceil(Math.max(min, base + rulerOffset(from, frame) * step) / step - 1e-9);
   const last = Math.floor(Math.min(max, base + rulerOffset(to, frame) * step) / step + 1e-9);
-  const major = majorEvery(step) * step;
+  const major = every * step;
   const ticks: RulerTick[] = [];
   for (let i = first; i <= last; i++) {
     const value = round(i * step, decimals) + 0; // + 0 turns -0 into 0

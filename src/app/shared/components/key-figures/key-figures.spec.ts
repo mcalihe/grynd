@@ -33,4 +33,23 @@ describe('KeyFigures', () => {
     expect(fixture.componentInstance.selected()).toBe(1);
     expect(el.querySelectorAll('[aria-pressed="true"]')).toHaveLength(1);
   });
+
+  it('lets an odd last figure span both columns (decision 0025)', () => {
+    const fixture = TestBed.createComponent(KeyFigures);
+    fixture.componentRef.setInput('figures', figures);
+    fixture.componentRef.setInput('columns', 2);
+    fixture.detectChanges();
+    const cells = (fixture.nativeElement as HTMLElement).querySelectorAll('dl > div');
+    expect([...cells].map((cell) => cell.classList.contains('col-span-2'))).toEqual([
+      false,
+      false,
+      true,
+    ]);
+
+    fixture.componentRef.setInput('columns', 3);
+    fixture.detectChanges();
+    expect(
+      (fixture.nativeElement as HTMLElement).querySelectorAll('dl > div.col-span-2'),
+    ).toHaveLength(0);
+  });
 });

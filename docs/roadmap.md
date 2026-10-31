@@ -197,6 +197,10 @@ Umgesetzt in `ccr-cd9d91b1-bugiex`, Entscheide in [0022](decisions/0022-weight-s
 
 Umgesetzt in `ccr-9fc67d84-p4ss53`, Entscheide in [0023](decisions/0023-pause-workout.md). Pause-Button im Trainingskopf: Uhr und Timer stehen still, die Sätze warten unter einem Overlay mit «Weiter trainieren» und «Zu den Plänen». Ein pausiertes Training wartet auf den Tab-Screens als Leiste über der Navigation und öffnet sich beim Start nicht von selbst. Pausen zählen nicht zur Dauer; Tabelle `workout_pause` (Migration 5), im Backup ab Schema 5. Ohne Figma-Entwurf, Vorschau der Leiste unter `/dev/components`.
 
+## Ausdauer und Kalorien ✅
+
+Umgesetzt in `ccr-87e98b54-k1dn0d`, Entscheide in [0025](decisions/0025-cardio-and-calories.md). Cardio-Übungen im Plan mit Zieldauer und Einträgen (Dauer, Distanz, Stufe, kcal vom Gerät, Puls) und «Ausdauer starten» ohne Plan mit Live-Uhr; eigene Aktivitäten im Katalog (Laufen, Gehen, Wandern, Schwimmen, Inline-Skaten, Nordic Walking). Kalorien für alle Trainings, geschätzt aus MET, aktiver Dauer und Körpergewicht (neu in den Einstellungen, dazu km/mi), überschreibbar mit den kcal des Geräts; auf dem Feier-Screen, im Verlauf-Detail und in der Statistik. Spalten in `set_log`, `plan_exercise`, `session_exercise`, `workout_session` (Migration 6), im Backup ab Schema 6. Ohne Figma-Entwurf, Vorschau unter `/dev/components` und `/dev/celebration/cardio`. Offen: MET-Werte mit dem 2024 Adult Compendium abgleichen; Android-Smoke-Test des Updates (Migration 6, Katalog-Sync).
+
 ---
 
 ## Entscheide aus M0

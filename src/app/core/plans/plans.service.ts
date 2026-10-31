@@ -59,6 +59,7 @@ export class PlansService {
         repMin: pe.repMin,
         repMax: pe.repMax,
         restSeconds: pe.restSeconds,
+        targetDurationSec: pe.targetDurationSec,
       })),
     };
   }
@@ -85,6 +86,7 @@ export class PlansService {
           repMin: e.repMin,
           repMax: e.repMax,
           restSeconds: e.restSeconds,
+          targetDurationSec: e.targetDurationSec,
         };
         if (e.planExerciseId) {
           await this.planExercises.update(e.planExerciseId, values);

@@ -11,12 +11,38 @@ import {
 describe('parseSettings', () => {
   it('keeps valid values and falls back for everything else', () => {
     expect(parseSettings(null)).toEqual(DEFAULT_SETTINGS);
-    expect(parseSettings({ theme: 'dark', unit: 'lb', lang: 'en', timerAutostart: false })).toEqual(
-      { theme: 'dark', unit: 'lb', lang: 'en', timerAutostart: false },
-    );
+    const valid = {
+      theme: 'dark',
+      unit: 'lb',
+      distanceUnit: 'mi',
+      lang: 'en',
+      timerAutostart: false,
+      bodyWeightKg: 72.5,
+    };
+    expect(parseSettings(valid)).toEqual(valid);
     expect(
-      parseSettings({ theme: 'purple', unit: 'stone', lang: 'fr', timerAutostart: 'no' }),
+      parseSettings({
+        theme: 'purple',
+        unit: 'stone',
+        distanceUnit: 'furlong',
+        lang: 'fr',
+        timerAutostart: 'no',
+        bodyWeightKg: '72',
+      }),
     ).toEqual(DEFAULT_SETTINGS);
+  });
+
+  it('reads settings saved before body weight and distance unit existed', () => {
+    expect(parseSettings({ theme: 'dark', unit: 'kg', lang: 'de', timerAutostart: true })).toEqual({
+      ...DEFAULT_SETTINGS,
+      theme: 'dark',
+      lang: 'de',
+    });
+  });
+
+  it('drops implausible body weights', () => {
+    expect(parseSettings({ bodyWeightKg: 5 }).bodyWeightKg).toBeNull();
+    expect(parseSettings({ bodyWeightKg: 1000 }).bodyWeightKg).toBeNull();
   });
 });
 
