@@ -122,6 +122,8 @@
   "workout.allDone": "All exercises done!",
   "workout.complete.title": "Workout done!",
   "workout.complete.records": "Records",
+  "workout.complete.tempo": "Avg. pace",
+  "workout.complete.speed": "Avg. speed",
   "workout.complete.continue": "Continue",
   "cardioStart.action": "Start cardio",
   "cardioStart.title": "Start cardio",

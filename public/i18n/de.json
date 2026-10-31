@@ -122,6 +122,8 @@
   "workout.allDone": "Alle Übungen geschafft!",
   "workout.complete.title": "Training geschafft!",
   "workout.complete.records": "Rekorde",
+  "workout.complete.tempo": "Ø Tempo",
+  "workout.complete.speed": "Ø Geschwindigkeit",
   "workout.complete.continue": "Weiter",
   "cardioStart.action": "Ausdauer starten",
   "cardioStart.title": "Ausdauer starten",

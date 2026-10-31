@@ -51,7 +51,8 @@ Grynd kannte nur Krafttraining: Jeder Satz war kg × Wdh. Der Katalog hatte zwar
   ACSM: Gehen VO₂ = 0,1 · v + 3,5, Laufen VO₂ = 0,2 · v + 3,5 (v in m/min, ml/kg/min); MET = VO₂ / 3,5. Ausserhalb der genannten Tempi gilt der feste Wert, das fängt auch Tippfehler ab.
 - **Tempo:** Laufen, Gehen und Wandern zeigen min/km (bzw. min/mi), Rudern /500 m, Schwimmen /100 m, alles andere km/h (bzw. mph).
 - **Anzeige:**
-  - **Feier-Screen:** Dauer, Kalorien, dann je nach Training Volumen, Sätze, Distanz, Ø Tempo und Rekorde. Eine Karte allein in ihrer Zeile nimmt die volle Breite ein.
+  - **Feier-Screen:** Dauer (volle Breite), dann je nach Training Volumen und Sätze, Distanz und Ø Tempo (eine Aktivität ohne Kraft), Kalorien, Rekorde (volle Breite). Die Karten dazwischen stehen paarweise; bleibt eine allein, nimmt sie die volle Breite ein. Ohne Körpergewicht fehlt die Kalorien-Karte, ein Hinweis steht darunter.
+  - **Kennzahlen** (`KeyFigures`) mit zwei Spalten: Eine ungerade letzte Kennzahl nimmt die volle Breite ein.
   - **Verlauf-Detail:** Kennzahl «Kalorien» mit Differenz, pro Cardio-Eintrag eine Zeile wie «25:00 · 5,2 km · 4:48 /km · Stufe 8 · 142 bpm · ≈ 310 kcal».
   - **Statistik:** Kachel «Kalorien» immer, Kachel «Distanz», sobald es Distanzen gibt; beide lassen sich als Diagramm wählen.
 - **Picker:** neue Filtergruppe «Art» mit Kraft und Ausdauer. Cardio-Übungen zeigen «Ausdauer» statt der Muskelgruppe.
