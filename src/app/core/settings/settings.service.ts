@@ -2,6 +2,7 @@ import { inject, Injectable, InjectionToken, signal } from '@angular/core';
 import { Preferences } from '@capacitor/preferences';
 import { TranslocoService } from '@jsverse/transloco';
 import { APP_LANGS, AppLang, detectLanguage } from '../i18n/language';
+import { DistanceUnit } from '../units/distance';
 
 export type ThemeMode = 'system' | 'light' | 'dark';
 export type WeightUnit = 'kg' | 'lb';
@@ -9,17 +10,26 @@ export type WeightUnit = 'kg' | 'lb';
 export interface Settings {
   theme: ThemeMode;
   unit: WeightUnit;
+  /** Kept apart from the weight unit: kg + mi and lb + km both occur (decision 0024). */
+  distanceUnit: DistanceUnit;
   /** null = follow the device language until the user picks one. */
   lang: AppLang | null;
   timerAutostart: boolean;
+  /** Optional, for the calorie estimate; each workout keeps the value it started with. */
+  bodyWeightKg: number | null;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
   theme: 'system',
   unit: 'kg',
+  distanceUnit: 'km',
   lang: null,
   timerAutostart: true,
+  bodyWeightKg: null,
 };
+
+/** Accepted body weights in kg; anything else reads as «not set». */
+export const BODY_WEIGHT_RANGE = { min: 20, max: 400 } as const;
 
 const STORAGE_KEY = 'grynd.settings';
 /** Theme key used before M7 (plain localStorage). */
@@ -49,11 +59,18 @@ export function parseSettings(raw: unknown): Settings {
   return {
     theme: pick(value.theme, ['system', 'light', 'dark'] as const, DEFAULT_SETTINGS.theme),
     unit: pick(value.unit, ['kg', 'lb'] as const, DEFAULT_SETTINGS.unit),
+    distanceUnit: pick(value.distanceUnit, ['km', 'mi'] as const, DEFAULT_SETTINGS.distanceUnit),
     lang: pick<AppLang | null>(value.lang, [...APP_LANGS, null], null),
     timerAutostart:
       typeof value.timerAutostart === 'boolean'
         ? value.timerAutostart
         : DEFAULT_SETTINGS.timerAutostart,
+    bodyWeightKg:
+      typeof value.bodyWeightKg === 'number' &&
+      value.bodyWeightKg >= BODY_WEIGHT_RANGE.min &&
+      value.bodyWeightKg <= BODY_WEIGHT_RANGE.max
+        ? value.bodyWeightKg
+        : null,
   };
 }
 
