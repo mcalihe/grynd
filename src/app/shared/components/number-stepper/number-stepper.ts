@@ -215,7 +215,8 @@ export class NumberStepper {
 
   /** Spinbutton keys: arrows ±1 step, Page Up/Down ±1 labelled ruler interval, Home/End, Enter. */
   protected onKey(event: KeyboardEvent): void {
-    if (this.disabled() || this.editing()) {
+    // Keys typed in the edit field are its own: Enter there commits and must not reopen it.
+    if (this.disabled() || this.editing() || event.target !== event.currentTarget) {
       return;
     }
     const step = this.stepSize();

@@ -232,6 +232,21 @@ describe('NumberStepper', () => {
     expect(fixture.componentInstance.value()).toBe(1800);
   });
 
+  it('closes the text field on Enter instead of opening it again', () => {
+    const { fixture, host, spin } = setup(80);
+    spin().click();
+    fixture.detectChanges();
+    const field = host.querySelector('input') as HTMLInputElement;
+    document.body.append(host);
+    field.focus();
+    field.value = '82,5';
+    field.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    fixture.detectChanges();
+    expect(fixture.componentInstance.value()).toBe(82.5);
+    expect(host.querySelector('input')).toBeNull();
+    host.remove();
+  });
+
   it('starts an empty value at the origin', () => {
     const { fixture, plus } = setup(null, { origin: 75, stepSize: 0.5 });
     plus.click();
