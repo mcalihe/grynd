@@ -55,7 +55,7 @@ Grynd kannte nur Krafttraining: Jeder Satz war kg × Wdh. Der Katalog hatte zwar
   - **Kennzahlen** (`KeyFigures`) mit zwei Spalten: Eine ungerade letzte Kennzahl nimmt die volle Breite ein.
   - **Verlauf-Detail:** Kennzahl «Kalorien» mit Differenz, pro Cardio-Eintrag eine Zeile wie «25:00 · 5,2 km · 4:48 /km · Stufe 8 · 142 bpm · ≈ 310 kcal».
   - **Statistik:** Kachel «Kalorien» immer, Kachel «Distanz», sobald es Distanzen gibt; beide lassen sich als Diagramm wählen.
-- **Picker:** neue Filtergruppe «Art» mit Kraft und Ausdauer. Cardio-Übungen zeigen «Ausdauer» statt der Muskelgruppe.
+- **Picker** (mit dem Nutzer entschieden, passend zu [0024](0024-exercise-picker-filters.md)): keine eigene Filterzeile, sondern ein Chip «Ausdauer» am Ende der Muskel-Zeile. Er gehört zur selben Gruppe: Muskeln wählen Kraftübungen, «Ausdauer» die Cardio-Übungen (die im Katalog sonst als «Beine» gelten), beides zusammen zeigt beides; Geräte filtern wie gewohnt dazu. Die Suche findet Cardio über «ausdauer» und «cardio» statt über Muskelwörter. In der Liste steht «Ausdauer · Maschine», ohne Bild das Icon der Aktivität.
 - **Backup:** Die neuen Spalten gehören ab Schema 6 dazu. Ältere Backups haben sie nicht und werden mit leeren Werten importiert.
 
 ## Umsetzungshinweise

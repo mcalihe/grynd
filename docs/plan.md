@@ -134,8 +134,8 @@ Alle Tabellen haben `id` (UUIDv7), `createdAt`, `updatedAt`, `deletedAt`. Dazu k
 
 ### Übungen hinzufügen (`/plans/new/add-exercises`, `/plans/:id/edit/add-exercises`)
 - Vollbild mit X, Suchfeld (tolerant bei Umlauten und Gross-/Kleinschreibung, mit Löschen-X; findet auch Muskel- und Gerätewörter wie «Brust Kurzhantel», «bizeps», «kh»), Filter: Muskelgruppe (Brust, Rücken, Schultern, Beine, Po, Arme, Core) und Equipment (Langhantel, Kurzhantel, Kabel, Maschine, Körpergewicht). Innerhalb einer Gruppe ODER, zwischen Gruppen UND. Push/Pull steckt in den Daten, der Picker bietet es nicht an.
-- **Kopf bleibt stehen, nur die Liste scrollt** ([0024](decisions/0024-exercise-picker-filters.md)): eine Zeile Muskel-Chips (ein Tap filtert), darunter der Chip «Alle Geräte ▾» mit Dropdown direkt darunter und rechts, sobald ein Filter aktiv ist, «✕ Filter löschen». Die Trefferzahl steht als Überschrift über den Ergebnissen; im Leerzustand «Filter zurücksetzen».
-- «Zuletzt verwendet» (3 Übungen aus `session_exercise`), dann alphabetische Liste mit Vorschaubild, Muskelgruppe und Equipment.
+- **Kopf bleibt stehen, nur die Liste scrollt** ([0024](decisions/0024-exercise-picker-filters.md)): eine Zeile Muskel-Chips (ein Tap filtert) mit «Ausdauer» am Ende für Cardio-Übungen ([0025](decisions/0025-cardio-and-calories.md); Muskeln zeigen nur Kraftübungen), darunter der Chip «Alle Geräte ▾» mit Dropdown direkt darunter und rechts, sobald ein Filter aktiv ist, «✕ Filter löschen». Die Trefferzahl steht als Überschrift über den Ergebnissen; im Leerzustand «Filter zurücksetzen».
+- «Zuletzt verwendet» (3 Übungen aus `session_exercise`), dann alphabetische Liste mit Vorschaubild, Muskelgruppe (bei Cardio «Ausdauer») und Equipment; ohne Bild das Icon der Aktivität bzw. eine Hantel.
 - Mehrfachauswahl, Primary-Button «3 Übungen hinzufügen». Übungen, die schon im Plan sind: gedimmt, «Im Plan», nicht auswählbar.
 - Neue Übungen am Ende des Plans mit Standard 3 × 8–12, Ausdauer mit 1 × 10 Min. Schliessen mit Auswahl → Guard-Dialog.
 
