@@ -42,6 +42,20 @@
       [max]="600"
       [stretch]="true"
     />
+    <p class="text-xs text-muted-foreground">
+      Decision 0024: a duration in seconds shown as m:ss (type «25» or «25:30»), and an empty value
+      that starts at an origin (heart rate 120).
+    </p>
+    <div class="flex gap-2">
+      <app-number-stepper
+        label="DAUER"
+        [value]="1500"
+        [stepSize]="60"
+        [max]="86399"
+        [format]="durationFormat"
+      />
+      <app-number-stepper label="BPM" [value]="null" [min]="30" [max]="240" [origin]="120" />
+    </div>
     <!-- The transform makes the fixed overlay fill this frame instead of the screen. -->
     <div class="relative h-90 [transform:translateZ(0)] overflow-hidden rounded-lg border">
       <app-value-scrubber

@@ -33,6 +33,7 @@ import { ExerciseNoteSheet } from '../../shared/components/exercise-note/exercis
 import { WeightStepSheet } from '../../shared/components/weight-step/weight-step-sheet';
 import { KeyFigure, KeyFigures } from '../../shared/components/key-figures/key-figures';
 import { NumberStepper } from '../../shared/components/number-stepper/number-stepper';
+import { DURATION_FORMAT } from '../../shared/components/number-stepper/number-stepper.logic';
 import { MonthCalendar } from '../../shared/components/month-calendar/month-calendar';
 import { PeriodPager } from '../../shared/components/period-pager/period-pager';
 import { Sparkline } from '../../shared/components/sparkline/sparkline';
@@ -217,6 +218,7 @@ export class ComponentsShowcase {
     { done: 0, total: 3 },
   ];
   protected readonly restSeconds = signal(90);
+  protected readonly durationFormat = DURATION_FORMAT;
   /** Live demo of the rolling clock: counts down from 0:15 and restarts. */
   protected readonly demoRemainingMs = signal(15_000);
   private readonly demoTick = setInterval(

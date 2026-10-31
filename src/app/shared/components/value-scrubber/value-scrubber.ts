@@ -12,11 +12,12 @@ import { EASE_OUT, play, SPRING } from '../../motion/motion';
 import {
   EDGE_ZONE_PX,
   edgeSpeed,
-  formatNumber,
+  NUMBER_FORMAT,
   RulerFrame,
   rulerTicks,
   rulerX,
   SCRUB_STEP_PX,
+  ValueFormat,
 } from '../number-stepper/number-stepper.logic';
 
 /** Height of the ruler band, as tall as a set row so the band lies right on it. */
@@ -144,6 +145,9 @@ export class ValueScrubber {
   readonly min = input(0);
   readonly max = input(9999);
   readonly decimals = input(0);
+  /** Base of an empty value (see `NumberStepper.origin`). */
+  readonly origin = input<number | null>(null);
+  readonly format = input<ValueFormat>(NUMBER_FORMAT);
   readonly locale = input('de');
   /** Screen x where the start value sits, and how far the ruler has scrolled since. */
   readonly originX = input(0);
@@ -163,18 +167,20 @@ export class ValueScrubber {
   private readonly needleRef = viewChild<ElementRef<HTMLElement>>('needle');
 
   private readonly frame = computed<RulerFrame>(() => ({
-    base: this.start() ?? this.min(),
+    base: this.start() ?? this.origin() ?? this.min(),
     step: this.step(),
     originX: this.originX(),
     scrollPx: this.scrollPx(),
   }));
 
   protected readonly ticks = computed(() =>
-    rulerTicks(this.frame(), -2 * SCRUB_STEP_PX, this.width() + 2 * SCRUB_STEP_PX, {
-      min: this.min(),
-      max: this.max(),
-      decimals: this.decimals(),
-    }),
+    rulerTicks(
+      this.frame(),
+      -2 * SCRUB_STEP_PX,
+      this.width() + 2 * SCRUB_STEP_PX,
+      { min: this.min(), max: this.max(), decimals: this.decimals() },
+      this.format().majorEvery(this.step()),
+    ),
   );
 
   protected readonly needleX = computed(() => {
@@ -191,7 +197,7 @@ export class ValueScrubber {
   protected readonly edge = computed(() => Math.sign(edgeSpeed(this.pointerX(), this.width())));
 
   protected readonly display = computed(() =>
-    formatNumber(this.value() ?? this.start(), this.locale(), this.decimals()),
+    this.format().format(this.value() ?? this.start(), this.locale(), this.decimals()),
   );
 
   /** Change since the scrub started, e.g. «+7,5»; empty while unchanged. */
@@ -203,7 +209,7 @@ export class ValueScrubber {
     }
     const diff = value - start;
     const sign = diff > 0 ? '+' : '−';
-    return sign + formatNumber(Math.abs(diff), this.locale(), this.decimals());
+    return sign + this.format().format(Math.abs(diff), this.locale(), this.decimals());
   });
 
   protected readonly bandTop = computed(() => this.anchorY() - BAND_PX / 2);
@@ -225,7 +231,7 @@ export class ValueScrubber {
   }
 
   protected tickLabel(value: number): string {
-    return formatNumber(value, this.locale(), this.decimals());
+    return this.format().format(value, this.locale(), this.decimals());
   }
 
   private enter(): Promise<unknown> {
