@@ -2,6 +2,9 @@
 //
 //   pnpm catalog:import
 //
+// Own cardio activities that free-exercise-db lacks (decision 0024) come from
+// scripts/data/cardio-activities.json: category cardio, no images.
+//
 // Output (committed):
 //   public/data/exercises.json   catalog loaded into SQLite on first start
 //   public/exercises/<key>.webp  160 px thumbnail of the first image
@@ -25,6 +28,9 @@ const outFile = join(root, 'public/data/exercises.json');
 const imageDir = join(root, 'public/exercises');
 const namesDe = JSON.parse(
   await readFile(join(root, 'scripts/data/exercise-names.de.json'), 'utf8'),
+);
+const ownActivities = JSON.parse(
+  await readFile(join(root, 'scripts/data/cardio-activities.json'), 'utf8'),
 );
 
 /** First primary muscle → filter group used in the app (plan.md §8). */
@@ -101,6 +107,31 @@ const exercises = source.map((e) => ({
   category: e.category ?? null,
   images: e.images.length ? [`exercises/${e.id}.webp`] : [],
 }));
+
+const sourceKeys = new Set(exercises.map((e) => e.key));
+for (const activity of ownActivities) {
+  if (sourceKeys.has(activity.key) || !activity.key.startsWith('Grynd_')) {
+    throw new Error(`Own activity key must start with Grynd_ and be new: ${activity.key}`);
+  }
+  if (!MUSCLE_GROUPS[activity.primaryMuscles[0]]) {
+    throw new Error(`Unmapped muscle for ${activity.key}: ${activity.primaryMuscles[0]}`);
+  }
+  sourceKeys.add(activity.key);
+  exercises.push({
+    id: previousIds.get(activity.key) ?? uuid7(),
+    key: activity.key,
+    nameDe: activity.nameDe,
+    nameEn: activity.nameEn,
+    primaryMuscles: activity.primaryMuscles,
+    secondaryMuscles: activity.secondaryMuscles,
+    muscleGroup: MUSCLE_GROUPS[activity.primaryMuscles[0]],
+    force: null,
+    equipment: activity.equipment ?? null,
+    level: 'beginner',
+    category: 'cardio',
+    images: [],
+  });
+}
 
 let done = 0;
 await mapLimit(
