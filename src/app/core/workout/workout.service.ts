@@ -15,6 +15,15 @@ import { activeDurationMs } from './pauses';
 import { prefillSets, SetValues } from './prefill';
 import { recordSetIds } from './records';
 
+/** Cardio columns of a strength set (decision 0024). */
+const NO_CARDIO = {
+  durationSec: null,
+  distanceM: null,
+  level: null,
+  kcal: null,
+  heartRate: null,
+} as const;
+
 export interface WorkoutExercise {
   entry: SessionExercise;
   sets: SetLog[];
@@ -122,6 +131,7 @@ export class WorkoutService {
         startedAt: now,
         finishedAt: null,
         status: 'active',
+        bodyWeightKg: null,
       });
       for (const [position, pe] of plan.exercises.entries()) {
         const entry = await this.sessionExercises.insert({
@@ -132,6 +142,7 @@ export class WorkoutService {
           repMin: pe.repMin,
           repMax: pe.repMax,
           restSeconds: pe.restSeconds,
+          targetDurationSec: pe.targetDurationSec,
         });
         const previous = await this.previousSets(pe.exerciseId);
         for (const [index, values] of prefillSets(pe.targetSets, pe.repMin, previous).entries()) {
@@ -140,6 +151,7 @@ export class WorkoutService {
             position: index,
             weightKg: values.weightKg,
             reps: values.reps,
+            ...NO_CARDIO,
             completedAt: null,
             isExtra: false,
           });
@@ -437,6 +449,7 @@ export class WorkoutService {
     await this.sets.insert({
       sessionExerciseId,
       position,
+      ...NO_CARDIO,
       ...values,
       completedAt: null,
       isExtra: true,

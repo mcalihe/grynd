@@ -5,7 +5,9 @@ import { BaseRepository } from './base.repository';
 @Injectable({ providedIn: 'root' })
 export class WorkoutSessionRepository extends BaseRepository<WorkoutSession> {
   constructor() {
-    super('workout_session', { columns: ['planId', 'startedAt', 'finishedAt', 'status'] });
+    super('workout_session', {
+      columns: ['planId', 'startedAt', 'finishedAt', 'status', 'bodyWeightKg'],
+    });
   }
 
   async findActive(): Promise<WorkoutSession | undefined> {
@@ -34,7 +36,16 @@ export class WorkoutPauseRepository extends BaseRepository<WorkoutPause> {
 export class SessionExerciseRepository extends BaseRepository<SessionExercise> {
   constructor() {
     super('session_exercise', {
-      columns: ['sessionId', 'exerciseId', 'position', 'status', 'repMin', 'repMax', 'restSeconds'],
+      columns: [
+        'sessionId',
+        'exerciseId',
+        'position',
+        'status',
+        'repMin',
+        'repMax',
+        'restSeconds',
+        'targetDurationSec',
+      ],
     });
   }
 
@@ -77,7 +88,19 @@ export class ExerciseIntervalRepository extends BaseRepository<ExerciseInterval>
 export class SetLogRepository extends BaseRepository<SetLog> {
   constructor() {
     super('set_log', {
-      columns: ['sessionExerciseId', 'position', 'weightKg', 'reps', 'completedAt', 'isExtra'],
+      columns: [
+        'sessionExerciseId',
+        'position',
+        'weightKg',
+        'reps',
+        'durationSec',
+        'distanceM',
+        'level',
+        'kcal',
+        'heartRate',
+        'completedAt',
+        'isExtra',
+      ],
       boolean: ['isExtra'],
     });
   }

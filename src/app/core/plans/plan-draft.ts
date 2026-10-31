@@ -7,6 +7,8 @@ export interface DraftExercise {
   repMin: number;
   repMax: number;
   restSeconds: number;
+  /** Cardio target (decision 0024); null for strength or a cardio exercise without target. */
+  targetDurationSec: number | null;
 }
 
 export interface PlanDraft {
@@ -18,7 +20,13 @@ export interface PlanDraft {
 }
 
 /** New exercises start with 3 × 8–12 and 90 s rest (plan.md §6). */
-export const DEFAULT_TARGETS = { targetSets: 3, repMin: 8, repMax: 12, restSeconds: 90 } as const;
+export const DEFAULT_TARGETS = {
+  targetSets: 3,
+  repMin: 8,
+  repMax: 12,
+  restSeconds: 90,
+  targetDurationSec: null,
+} as const;
 
 export function emptyDraft(): PlanDraft {
   return { name: '', weekdays: [], exercises: [] };
@@ -41,6 +49,7 @@ export function copyDraft(source: PlanDraft, name: string): PlanDraft {
       repMin: e.repMin,
       repMax: e.repMax,
       restSeconds: e.restSeconds,
+      targetDurationSec: e.targetDurationSec,
     })),
   };
 }
@@ -60,6 +69,7 @@ function normalize(draft: PlanDraft) {
       e.repMin,
       e.repMax,
       e.restSeconds,
+      e.targetDurationSec,
     ]),
   };
 }

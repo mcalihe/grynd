@@ -124,6 +124,14 @@ describe('repositories', () => {
   });
 
   describe('plan exercises and sessions', () => {
+    const noCardio = {
+      durationSec: null,
+      distanceM: null,
+      level: null,
+      kcal: null,
+      heartRate: null,
+    };
+
     async function seed() {
       await TestBed.inject(ExerciseRepository).upsertCatalog([
         catalogEntry('e1', 'bench'),
@@ -136,7 +144,14 @@ describe('repositories', () => {
     it('lists plan exercises by position with defaults applied by the caller', async () => {
       const plan = await seed();
       const repo = TestBed.inject(PlanExerciseRepository);
-      const base = { planId: plan.id, targetSets: 3, repMin: 8, repMax: 12, restSeconds: 90 };
+      const base = {
+        planId: plan.id,
+        targetSets: 3,
+        repMin: 8,
+        repMax: 12,
+        restSeconds: 90,
+        targetDurationSec: null,
+      };
       await repo.insert({ ...base, exerciseId: 'e2', position: 1 });
       await repo.insert({ ...base, exerciseId: 'e1', position: 0 });
 
@@ -154,6 +169,7 @@ describe('repositories', () => {
           repMin: 8,
           repMax: 12,
           restSeconds: 90,
+          targetDurationSec: null,
         }),
       ).rejects.toThrow();
     });
@@ -166,6 +182,7 @@ describe('repositories', () => {
         startedAt: clock.nowUtc(),
         finishedAt: null,
         status: 'active',
+        bodyWeightKg: null,
       });
       const sessionExercise = await TestBed.inject(SessionExerciseRepository).insert({
         sessionId: session.id,
@@ -175,6 +192,7 @@ describe('repositories', () => {
         repMin: 8,
         repMax: 12,
         restSeconds: 90,
+        targetDurationSec: null,
       });
       const sets = TestBed.inject(SetLogRepository);
       await sets.insert({
@@ -182,6 +200,7 @@ describe('repositories', () => {
         position: 1,
         weightKg: 82.5,
         reps: 8,
+        ...noCardio,
         completedAt: null,
         isExtra: true,
       });
@@ -190,6 +209,7 @@ describe('repositories', () => {
         position: 0,
         weightKg: 80,
         reps: 8,
+        ...noCardio,
         completedAt: clock.nowUtc(),
         isExtra: false,
       });
@@ -202,6 +222,57 @@ describe('repositories', () => {
       ]);
     });
 
+    it('stores cardio entries and the body weight of a session (decision 0024)', async () => {
+      const plan = await seed();
+      const session = await TestBed.inject(WorkoutSessionRepository).insert({
+        planId: plan.id,
+        startedAt: clock.nowUtc(),
+        finishedAt: null,
+        status: 'active',
+        bodyWeightKg: 72.5,
+      });
+      const se = await TestBed.inject(SessionExerciseRepository).insert({
+        sessionId: session.id,
+        exerciseId: 'e1',
+        position: 0,
+        status: 'open',
+        repMin: null,
+        repMax: null,
+        restSeconds: 90,
+        targetDurationSec: 600,
+      });
+      const sets = TestBed.inject(SetLogRepository);
+      const entry = await sets.insert({
+        sessionExerciseId: se.id,
+        position: 0,
+        weightKg: null,
+        reps: null,
+        durationSec: 1500,
+        distanceM: 5200,
+        level: 2.5,
+        kcal: null,
+        heartRate: null,
+        completedAt: null,
+        isExtra: false,
+      });
+      await sets.update(entry.id, { kcal: 310, heartRate: 142 });
+
+      const [stored] = await sets.findBySessionExercise(se.id);
+      expect(stored).toMatchObject({
+        durationSec: 1500,
+        distanceM: 5200,
+        level: 2.5,
+        kcal: 310,
+        heartRate: 142,
+      });
+      expect(
+        (await TestBed.inject(SessionExerciseRepository).findById(se.id))?.targetDurationSec,
+      ).toBe(600);
+      expect(
+        (await TestBed.inject(WorkoutSessionRepository).findById(session.id))?.bodyWeightKg,
+      ).toBe(72.5);
+    });
+
     it('returns recently used exercises, newest first', async () => {
       const plan = await seed();
       const session = await TestBed.inject(WorkoutSessionRepository).insert({
@@ -209,6 +280,7 @@ describe('repositories', () => {
         startedAt: clock.nowUtc(),
         finishedAt: null,
         status: 'finished',
+        bodyWeightKg: null,
       });
       const repo = TestBed.inject(SessionExerciseRepository);
       const base = {
@@ -217,6 +289,7 @@ describe('repositories', () => {
         repMin: 8,
         repMax: 12,
         restSeconds: 90,
+        targetDurationSec: null,
       };
       await repo.insert({ ...base, exerciseId: 'e1', position: 0 });
       clock.advance(1000);
@@ -232,6 +305,7 @@ describe('repositories', () => {
         startedAt: clock.nowUtc(),
         finishedAt: null,
         status: 'active',
+        bodyWeightKg: null,
       });
       const se = await TestBed.inject(SessionExerciseRepository).insert({
         sessionId: session.id,
@@ -241,6 +315,7 @@ describe('repositories', () => {
         repMin: null,
         repMax: null,
         restSeconds: null,
+        targetDurationSec: null,
       });
       const intervals = TestBed.inject(ExerciseIntervalRepository);
       await intervals.insert({

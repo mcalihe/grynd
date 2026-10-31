@@ -97,6 +97,44 @@ describe('migrate', () => {
     ).rejects.toThrow();
   });
 
+  it('upgrades a database of version 5 with cardio columns, empty for old rows', async () => {
+    await migrate(driver, MIGRATIONS.slice(0, 5));
+    await driver.run(`INSERT INTO exercise (id, key, nameDe, nameEn, createdAt, updatedAt)
+      VALUES ('e', 'bench', 'Bank', 'Bench', 'x', 'x')`);
+    await driver.run(`INSERT INTO workout_session (id, startedAt, status, createdAt, updatedAt)
+      VALUES ('s', '2026-01-01T00:00:00.000Z', 'finished', 'x', 'x')`);
+    await driver.run(`INSERT INTO session_exercise (id, sessionId, exerciseId, position, status,
+      createdAt, updatedAt) VALUES ('se', 's', 'e', 0, 'done', 'x', 'x')`);
+    await driver.run(`INSERT INTO set_log (id, sessionExerciseId, position, weightKg, reps,
+      createdAt, updatedAt) VALUES ('l', 'se', 0, 80, 8, 'x', 'x')`);
+
+    expect(await migrate(driver)).toBe(6);
+
+    expect(
+      await driver.query(
+        'SELECT weightKg, reps, durationSec, distanceM, level, kcal, heartRate FROM set_log',
+      ),
+    ).toEqual([
+      {
+        weightKg: 80,
+        reps: 8,
+        durationSec: null,
+        distanceM: null,
+        level: null,
+        kcal: null,
+        heartRate: null,
+      },
+    ]);
+    expect(await driver.query('SELECT bodyWeightKg FROM workout_session')).toEqual([
+      { bodyWeightKg: null },
+    ]);
+    expect(await driver.query('SELECT targetDurationSec FROM session_exercise')).toEqual([
+      { targetDurationSec: null },
+    ]);
+    const planColumns = await driver.query<{ name: string }>('PRAGMA table_info(plan_exercise)');
+    expect(planColumns.map((c) => c.name)).toContain('targetDurationSec');
+  });
+
   it('allows only one note per exercise, apart from deleted ones', async () => {
     await migrate(driver);
     await driver.run(`INSERT INTO exercise (id, key, nameDe, nameEn, createdAt, updatedAt)

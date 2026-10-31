@@ -65,6 +65,8 @@ export interface PlanExercise extends BaseEntity {
   repMin: number;
   repMax: number;
   restSeconds: number;
+  /** Target duration of a cardio exercise (decision 0024); null = no target or strength. */
+  targetDurationSec: number | null;
 }
 
 export type WorkoutSessionStatus = 'active' | 'finished' | 'aborted';
@@ -74,6 +76,8 @@ export interface WorkoutSession extends BaseEntity {
   startedAt: UtcTimestamp;
   finishedAt: UtcTimestamp | null;
   status: WorkoutSessionStatus;
+  /** Body weight from the settings at the start, for the calorie estimate (decision 0024). */
+  bodyWeightKg: number | null;
 }
 
 /** A pause of a workout (decision 0023); the workout duration leaves it out. */
@@ -93,6 +97,8 @@ export interface SessionExercise extends BaseEntity {
   repMin: number | null;
   repMax: number | null;
   restSeconds: number | null;
+  /** Copied from the plan at session start; cardio only (decision 0024). */
+  targetDurationSec: number | null;
 }
 
 export interface ExerciseInterval extends BaseEntity {
@@ -107,6 +113,16 @@ export interface SetLog extends BaseEntity {
   /** Always kilograms; pounds are display-only. */
   weightKg: number | null;
   reps: number | null;
+  /** Cardio entry (decision 0024): duration instead of kg × reps. */
+  durationSec: number | null;
+  /** Always metres; km and mi are display-only. */
+  distanceM: number | null;
+  /** Level or resistance of the machine. */
+  level: number | null;
+  /** Calories shown by the device; they replace the estimate of this entry. */
+  kcal: number | null;
+  /** Average heart rate in bpm. */
+  heartRate: number | null;
   completedAt: UtcTimestamp | null;
   isExtra: boolean;
 }

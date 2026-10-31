@@ -13,7 +13,10 @@ interface TableSpec {
   columns: readonly string[];
   /** Columns that must not be null (besides id, createdAt, updatedAt). */
   required: readonly string[];
-  /** Schema version that added the table; older backups may lack it (read as empty). */
+  /**
+   * Schema version that added the table; older backups may lack it (read as empty). Columns added
+   * later (e.g. the cardio columns of schema 6) are nullable and read as null when missing.
+   */
   since?: number;
 }
 
@@ -21,11 +24,20 @@ interface TableSpec {
 export const BACKUP_TABLES = {
   plan: { columns: ['name', 'weekdays'], required: ['name', 'weekdays'] },
   plan_exercise: {
-    columns: ['planId', 'exerciseId', 'position', 'targetSets', 'repMin', 'repMax', 'restSeconds'],
+    columns: [
+      'planId',
+      'exerciseId',
+      'position',
+      'targetSets',
+      'repMin',
+      'repMax',
+      'restSeconds',
+      'targetDurationSec',
+    ],
     required: ['planId', 'exerciseId', 'position', 'targetSets', 'repMin', 'repMax', 'restSeconds'],
   },
   workout_session: {
-    columns: ['planId', 'startedAt', 'finishedAt', 'status'],
+    columns: ['planId', 'startedAt', 'finishedAt', 'status', 'bodyWeightKg'],
     required: ['startedAt', 'status'],
   },
   workout_pause: {
@@ -34,7 +46,16 @@ export const BACKUP_TABLES = {
     since: 5,
   },
   session_exercise: {
-    columns: ['sessionId', 'exerciseId', 'position', 'status', 'repMin', 'repMax', 'restSeconds'],
+    columns: [
+      'sessionId',
+      'exerciseId',
+      'position',
+      'status',
+      'repMin',
+      'repMax',
+      'restSeconds',
+      'targetDurationSec',
+    ],
     required: ['sessionId', 'exerciseId', 'position', 'status'],
   },
   exercise_interval: {
@@ -42,7 +63,19 @@ export const BACKUP_TABLES = {
     required: ['sessionExerciseId', 'enteredAt'],
   },
   set_log: {
-    columns: ['sessionExerciseId', 'position', 'weightKg', 'reps', 'completedAt', 'isExtra'],
+    columns: [
+      'sessionExerciseId',
+      'position',
+      'weightKg',
+      'reps',
+      'durationSec',
+      'distanceM',
+      'level',
+      'kcal',
+      'heartRate',
+      'completedAt',
+      'isExtra',
+    ],
     required: ['sessionExerciseId', 'position', 'isExtra'],
   },
   exercise_note: { columns: ['exerciseId', 'text'], required: ['exerciseId', 'text'], since: 2 },

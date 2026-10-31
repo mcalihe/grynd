@@ -66,8 +66,16 @@ describe('plan draft', () => {
           repMin: 6,
           repMax: 8,
           restSeconds: 120,
+          targetDurationSec: null,
         },
         { planExerciseId: 'pe2', exerciseId: 'e2', ...DEFAULT_TARGETS },
+        {
+          planExerciseId: 'pe3',
+          exerciseId: 'run',
+          ...DEFAULT_TARGETS,
+          targetSets: 1,
+          targetDurationSec: 900,
+        },
       ],
     };
 
@@ -77,8 +85,17 @@ describe('plan draft', () => {
       name: 'Push (Kopie)',
       weekdays: [1, 4],
       exercises: [
-        { exerciseId: 'e1', targetSets: 4, repMin: 6, repMax: 8, restSeconds: 120 },
+        {
+          exerciseId: 'e1',
+          targetSets: 4,
+          repMin: 6,
+          repMax: 8,
+          restSeconds: 120,
+          targetDurationSec: null,
+        },
         { exerciseId: 'e2', ...DEFAULT_TARGETS },
+        // A cardio target is copied too (decision 0024)
+        { exerciseId: 'run', ...DEFAULT_TARGETS, targetSets: 1, targetDurationSec: 900 },
       ],
     });
     expect(copy.weekdays).not.toBe(source.weekdays);
