@@ -21,6 +21,7 @@ import {
 import { ExerciseNote } from '../../shared/components/exercise-note/exercise-note';
 import { SetRow, SetRowState } from '../../shared/components/set-row/set-row';
 import { CardioRow, CardioRowState } from '../../shared/components/cardio-row/cardio-row';
+import { formatClock } from '../../shared/components/timer-bar/timer-bar';
 import { SetMenu } from './set-menu';
 
 /** "Ziel 8–10" or "Ziel 10" for a fixed rep count. */
@@ -34,9 +35,10 @@ export function repTarget(repMin: number | null, repMax: number | null): string 
 /**
  * One exercise page in the workout pager (Figma Training · Normal 56:48015): header with name,
  * set progress, muscle badge and menu, the target line, the exercise note (decisions 0019, 0021),
- * set rows and «+ Satz». The menu also picks the weight step of the exercise (decision 0022).
- * Cardio exercises show cardio rows and their target duration instead, without weight step or
- * timer autostart (decision 0025).
+ * set rows and «+ Satz». The menu also picks the weight step of the exercise (decision 0022) and
+ * its rest in this workout (decision 0026).
+ * Cardio exercises show cardio rows and their target duration instead, without weight step, rest
+ * or timer autostart (decision 0025).
  */
 @Component({
   selector: 'app-exercise-page',
@@ -88,6 +90,9 @@ export function repTarget(repMin: number | null, repMax: number | null): string 
           @if (!item().cardio) {
             <button hlmDropdownMenuItem (click)="editWeightStep.emit()">
               {{ 'weightStep.menu' | transloco: { step: weightStepLabel() } }}
+            </button>
+            <button hlmDropdownMenuItem (click)="editRest.emit()">
+              {{ 'restDuration.menu' | transloco: { duration: restLabel() } }}
             </button>
           }
           <hlm-dropdown-menu-separator />
@@ -189,6 +194,8 @@ export class ExercisePage {
   readonly editNote = output<void>();
   /** Opens the weight step picker for this exercise. */
   readonly editWeightStep = output<void>();
+  /** Opens the rest picker for this exercise. */
+  readonly editRest = output<void>();
 
   protected readonly workout = inject(WorkoutService);
   private readonly catalog = inject(ExerciseCatalogService);
@@ -208,6 +215,9 @@ export class ExercisePage {
   protected readonly weightStepLabel = computed(() =>
     weightStepLabel(this.weightStep(), this.unit(), this.locale()),
   );
+
+  protected readonly restSeconds = computed(() => this.item().entry.restSeconds ?? 90);
+  protected readonly restLabel = computed(() => formatClock(this.restSeconds() * 1000));
 
   protected readonly exercise = computed(
     () => this.catalog.byId().get(this.item().entry.exerciseId) ?? { muscleGroup: null, key: '' },
@@ -272,7 +282,7 @@ export class ExercisePage {
     if (await this.workout.toggleComplete(set.id)) {
       // No rest timer after a cardio entry (decision 0025).
       if (!cardio) {
-        this.setCompleted.emit(entry.restSeconds ?? 90);
+        this.setCompleted.emit(this.restSeconds());
       }
       const after = this.workout.workout()?.exercises.find((e) => e.entry.id === entry.id)?.sets;
       if (after && exerciseJustDone(before, after)) {

@@ -75,6 +75,7 @@ Klassen folgen dem Angular-Styleguide 2025 (ohne `Component`-Suffix), Selektor-P
 | Cardio-Eintrag (Dauer, Distanz, Stufe, kcal, Puls) | – (nur Code, [0025](../decisions/0025-cardio-and-calories.md)) | `CardioRow` (`app-cardio-row`, State=open/completed/menu-open; Long-Press und Haken wie `SetRow` über `LongPress` und `celebrateCheck`) |
 | «Ausdauer starten» (Sheet mit Aktivitäten) | – (nur Code, [0025](../decisions/0025-cardio-and-calories.md)) | `CardioStartSheet` (`app-cardio-start-sheet`, helm Sheet) auf dem Pläne-Screen |
 | Training ohne Plan (grosse Uhr, Tempo, Felder) | – (nur Code, [0025](../decisions/0025-cardio-and-calories.md)) | `CardioSession` (`app-cardio-session`, features/workout) in `WorkoutPage` |
+| Pausendauer im Training wählen (Sheet) | – (nur Code, [0026](../decisions/0026-rest-per-exercise.md)) | `RestDurationSheet` (`app-rest-duration-sheet`, helm Sheet, Chips als Radio-Gruppe plus `NumberStepper`) |
 | Übungszeile im Plan (Detail/Editor, ≡-Handle, Chevron) | `37:27708`, `37:28096` | `PlanExerciseRow` (`app-plan-exercise-row`, features/plans) |
 | Übungs-Listeneintrag + Filter-Chips im Picker | `63:13440` (Muskel-Chips + Geräte-Dropdown nach [0024](../decisions/0024-exercise-picker-filters.md)) | im `ExercisePickerPage` (features/plans), Geräte über helm Dropdown-Menü |
 | «Änderungen verwerfen» / Bestätigungen | `66:1123` | `ConfirmService` + `ConfirmDialogHost` (App-Shell, `@defer`) |

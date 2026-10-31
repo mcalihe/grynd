@@ -28,6 +28,7 @@ export const RELEASE_NOTES: readonly ReleaseNotes[] = [
       { id: 'exerciseSearch', icon: 'lucideSearch' },
       { id: 'cardio', icon: 'lucideActivity' },
       { id: 'calories', icon: 'lucideFlame' },
+      { id: 'restDuration', icon: 'lucideTimer' },
     ],
   },
   {

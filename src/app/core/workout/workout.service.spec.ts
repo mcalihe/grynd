@@ -79,18 +79,34 @@ describe('WorkoutService', () => {
     expect(fresh.workout()?.session.id).toBe(id);
   });
 
-  it('never changes the plan', async () => {
+  it('never changes the plan, except for the rest (decision 0026)', async () => {
     await service.start(planId);
     await service.addSet(0);
     await service.deleteSet(setsOf(1)[0].id);
     await service.moveExercise(0, 1);
-    await service.setRestSeconds(0, 120);
+    await service.setRestSeconds(0, 120); // e1, moved to the front
 
+    expect(workout().exercises.map((e) => [e.entry.exerciseId, e.entry.restSeconds])).toEqual([
+      ['e1', 120],
+      ['e0', 90],
+    ]);
     const plan = await TestBed.inject(PlansService).getDraft(planId);
     expect(plan?.exercises.map((e) => [e.exerciseId, e.targetSets, e.restSeconds])).toEqual([
       ['e0', 3, 90],
-      ['e1', 2, 60],
+      ['e1', 2, 120],
     ]);
+  });
+
+  it('changes only the session rest when the exercise left the plan', async () => {
+    await service.start(planId);
+    const plans = TestBed.inject(PlansService);
+    const draft = (await plans.getDraft(planId))!;
+    await plans.save({ ...draft, exercises: [draft.exercises[0]] });
+
+    await service.setRestSeconds(1, 45);
+
+    expect(workout().exercises[1].entry.restSeconds).toBe(45);
+    expect((await plans.getDraft(planId))?.exercises.map((e) => e.restSeconds)).toEqual([90]);
   });
 
   it('completes sets, marks the exercise done and ignores extra sets for that', async () => {

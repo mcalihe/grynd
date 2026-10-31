@@ -201,6 +201,10 @@ Umgesetzt in `ccr-9fc67d84-p4ss53`, Entscheide in [0023](decisions/0023-pause-wo
 
 Umgesetzt in `ccr-87e98b54-k1dn0d`, Entscheide in [0025](decisions/0025-cardio-and-calories.md). Cardio-Übungen im Plan mit Zieldauer und Einträgen (Dauer, Distanz, Stufe, kcal vom Gerät, Puls) und «Ausdauer starten» ohne Plan mit Live-Uhr; eigene Aktivitäten im Katalog (Laufen, Gehen, Wandern, Schwimmen, Inline-Skaten, Nordic Walking). Kalorien für alle Trainings, geschätzt aus MET, aktiver Dauer und Körpergewicht (neu in den Einstellungen, dazu km/mi), überschreibbar mit den kcal des Geräts; auf dem Feier-Screen, im Verlauf-Detail und in der Statistik. Spalten in `set_log`, `plan_exercise`, `session_exercise`, `workout_session` (Migration 6), im Backup ab Schema 6. Ohne Figma-Entwurf, Vorschau unter `/dev/components` und `/dev/celebration/cardio`. Offen: MET-Werte mit dem 2024 Adult Compendium abgleichen; Android-Smoke-Test des Updates (Migration 6, Katalog-Sync).
 
+## Pausendauer pro Übung im Training ✅
+
+Umgesetzt in `ccr-08af1e7e-a5p2v3`, Entscheide in [0026](decisions/0026-rest-per-exercise.md). Das Übungsmenü im Training hat «Pausendauer: 1:30»; ein Sheet bietet die Timer-Dauern als Chips und einen Stepper in 15-s-Schritten (0–600 s). Die Pause gilt sofort und wird auch in der Plan-Übung gespeichert (einzige Ausnahme von «Training = Kopie des Plans»), ebenso beim Timer-Popover. Ohne Figma-Entwurf, Vorschau unter `/dev/components`.
+
 ---
 
 ## Entscheide aus M0
