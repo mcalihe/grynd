@@ -120,7 +120,7 @@ Alle Tabellen haben `id` (UUIDv7), `createdAt`, `updatedAt`, `deletedAt`. Dazu k
 
 ### Plan-Detail, Plan bearbeiten, Plan erstellen (`/plans/:id`, `/plans/:id/edit`, `/plans/new`)
 - **Plan-Detail ist eine Ansicht** ([0010](decisions/0010-plan-detail-and-editor.md)): Wochentage und Reihenfolge nur angezeigt, Chevron klappt die Ziele auf; «Bearbeiten» oben rechts, «Training starten» als Primary.
-- **Bearbeiten/Erstellen:** Ziele pro Übung (Sätze, Wdh. min/max, Pause) im aufgeklappten Eintrag; «Plan löschen» im Drei-Punkte-Menü mit Bestätigung (Soft Delete).
+- **Bearbeiten/Erstellen:** Ziele pro Übung (Sätze, Wdh. min/max, Pause) im aufgeklappten Eintrag; «Plan löschen» im Drei-Punkte-Menü mit Bestätigung (Soft Delete). «Plan duplizieren» im selben Menü öffnet «Neuer Plan» mit «Name (Kopie)», Wochentagen, Übungen und Zielen des gespeicherten Plans; gespeichert wird erst mit «Plan speichern».
 - **Notizen:** Ein Notiz-Symbol neben den Zielen markiert Übungen mit Notiz (Text oder Bilder; Detail und Editor). Im Detail zeigt der aufgeklappte Eintrag die Notiz mit ihren Bildern oder «Notiz hinzufügen»; bearbeitet wird im selben Sheet wie im Training ([0019](decisions/0019-exercise-notes.md), [0021](decisions/0021-note-images.md)).
 - **Gewichtsschritt:** Im Detail zeigt der aufgeklappte Eintrag «Gewichtsschritt 2,5 kg»; ein Tap öffnet dasselbe Sheet wie im Training. Der Editor zeigt ihn nicht ([0022](decisions/0022-weight-step.md)).
 - Planname, «Wochentage (optional)» als 7 Chips, Übungsliste mit Drag-Handle, Name, «3 × 8–10», Menü.

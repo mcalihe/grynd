@@ -23,7 +23,10 @@ export interface ReleaseNotes {
 export const RELEASE_NOTES: readonly ReleaseNotes[] = [
   {
     version: '0.10.0',
-    items: [{ id: 'exerciseSearch', icon: 'lucideSearch' }],
+    items: [
+      { id: 'duplicatePlan', icon: 'lucideCopy' },
+      { id: 'exerciseSearch', icon: 'lucideSearch' },
+    ],
   },
   {
     version: '0.9.0',

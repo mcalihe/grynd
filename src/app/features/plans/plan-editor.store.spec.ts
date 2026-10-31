@@ -63,6 +63,72 @@ describe('PlanEditorStore', () => {
 
   it('reports unknown plans', async () => {
     expect(await store.init('missing')).toBe(false);
+    expect(await store.init(null, { planId: 'missing', name: (n) => n })).toBe(false);
+  });
+
+  describe('duplicating', () => {
+    const copyName = (name: string) => `${name} (Kopie)`;
+    let sourceId: string;
+
+    beforeEach(async () => {
+      await store.init(null);
+      store.setName('Push');
+      store.setWeekdays([1, 4]);
+      store.add(['e0', 'e1']);
+      store.update(0, { targetSets: 5, restSeconds: 120 });
+      sourceId = await store.save();
+    });
+
+    function copyEditor(): PlanEditorStore {
+      return TestBed.runInInjectionContext(() => new PlanEditorStore());
+    }
+
+    it('starts a new, unsaved plan with the source name, weekdays and targets', async () => {
+      const editor = copyEditor();
+      expect(await editor.init(null, { planId: sourceId, name: copyName })).toBe(true);
+
+      expect(editor.isNew()).toBe(true);
+      expect(editor.dirty()).toBe(true);
+      expect(editor.valid()).toBe(true);
+      expect(editor.draft().name).toBe('Push (Kopie)');
+      expect(editor.draft().weekdays).toEqual([1, 4]);
+      expect(
+        editor.draft().exercises.map((e) => [e.exerciseId, e.targetSets, e.restSeconds]),
+      ).toEqual([
+        ['e0', 5, 120],
+        ['e1', 3, 90],
+      ]);
+      expect(editor.draft().exercises.every((e) => !e.planExerciseId)).toBe(true);
+    });
+
+    it('keeps the copy when the picker initializes the new plan', async () => {
+      const editor = copyEditor();
+      await editor.init(null, { planId: sourceId, name: copyName });
+      editor.setName('Push B');
+
+      await editor.init(null);
+
+      expect(editor.draft().name).toBe('Push B');
+      expect(editor.draft().exercises).toHaveLength(2);
+    });
+
+    it('saves a second plan and leaves the source untouched', async () => {
+      const plans = TestBed.inject(PlansService);
+      const before = await plans.getDraft(sourceId);
+      const editor = copyEditor();
+      await editor.init(null, { planId: sourceId, name: copyName });
+      editor.remove(1);
+
+      const copyId = await editor.save();
+
+      expect(copyId).not.toBe(sourceId);
+      expect(plans.plans()?.map((p) => [p.plan.name, p.exerciseCount])).toEqual([
+        ['Push', 2],
+        ['Push (Kopie)', 1],
+      ]);
+      expect(await plans.getDraft(sourceId)).toEqual(before);
+      expect(editor.dirty()).toBe(false);
+    });
   });
 
   it('deletes the plan and leaves the store clean', async () => {

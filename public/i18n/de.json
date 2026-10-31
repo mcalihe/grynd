@@ -43,6 +43,10 @@
       "repMin": "WDH. MIN",
       "repMax": "WDH. MAX"
     },
+    "duplicate": {
+      "action": "Plan duplizieren",
+      "name": "{{name}} (Kopie)"
+    },
     "delete": {
       "action": "Plan löschen",
       "title": "Plan löschen?",
@@ -333,6 +337,10 @@
     }
   },
   "releaseNotes": {
+    "duplicatePlan": {
+      "title": "Pläne duplizieren",
+      "text": "Brauchst du einen ähnlichen Plan? Öffne einen Plan zum Bearbeiten und wähle im Menü oben rechts «Plan duplizieren». Name, Wochentage und Übungen kannst du vor dem Speichern anpassen."
+    },
     "exerciseSearch": {
       "title": "Übungen schneller finden",
       "text": "Suche und Filter bleiben beim Scrollen oben. Tippe auf eine Muskelgruppe, wähle Geräte im Menü darunter oder schreib einfach «Brust Kurzhantel» in die Suche."
