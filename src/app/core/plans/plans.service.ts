@@ -100,6 +100,11 @@ export class PlansService {
     return id;
   }
 
+  /** The rest of one plan exercise, changed during a workout (decision 0026). */
+  async setRestSeconds(planExerciseId: string, restSeconds: number): Promise<void> {
+    await this.planExercises.update(planExerciseId, { restSeconds });
+  }
+
   /** Soft-deletes the plan and its exercises; past sessions keep their data. */
   async delete(id: string): Promise<void> {
     await this.database.driver.transaction(async () => {

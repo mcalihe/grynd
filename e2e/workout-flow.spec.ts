@@ -81,7 +81,7 @@ test('plan → workout → history', async ({ page }) => {
     '61',
   );
 
-  // Rest (decision 0026): 2:00 instead of 1:30, plus 15 s, for this workout only
+  // Rest (decision 0026): 2:00 instead of 1:30, plus 15 s; also saved to the plan
   await page.getByRole('button', { name: 'Übungsmenü' }).click();
   await page.getByRole('menuitem', { name: 'Pausendauer: 1:30' }).click();
   await page.getByRole('radio', { name: '2:00' }).click();
@@ -147,7 +147,7 @@ test('plan → workout → history', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'E2E Brust' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Alle Trainings' })).toBeVisible();
 
-  // The plan shows the note and the weight step in the exercise details
+  // The plan shows the note, the weight step and the rest from the workout in the exercise details
   await page.goto('/plans');
   await page
     .getByRole('button', { name: /E2E Brust/ })
@@ -157,4 +157,5 @@ test('plan → workout → history', async ({ page }) => {
   await expect(page.getByRole('button', { name: /Bank flach, Griff eng/ })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Bild 1 von 1' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Gewichtsschritt 1 kg' })).toBeVisible();
+  await expect(page.getByText('Pause 135 s')).toBeVisible();
 });

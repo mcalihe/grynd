@@ -21,7 +21,7 @@ App id: `com.michaelisler.grynd`. The developer has no Mac: iOS builds run in CI
 - Max one primary button per screen, fixed at the bottom, full width (exception: Plans screen has none).
 - Every table: UUIDv7 `id` generated in the app, `createdAt`, `updatedAt`, `deletedAt` (soft delete).
 - Weights are stored in kg only; lb is display-only.
-- A workout session is a copy of the plan: changes during a workout never modify the plan.
+- A workout session is a copy of the plan: changes during a workout never modify the plan. Only exception: the rest of an exercise, which is also saved to its plan exercise (decision 0026).
 - Store timestamps in UTC; derive durations from timestamps, never from counters (timers store their end time).
 - Animations: build on the presets and helpers in `src/app/shared/motion` (particles via `CelebrationService`), keep them non-blocking and always respect `prefers-reduced-motion` (decision 0015).
 

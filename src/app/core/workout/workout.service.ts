@@ -15,6 +15,7 @@ import { SettingsService } from '../settings/settings.service';
 import { Clock, UtcTimestamp } from '../utils/time';
 import { closeStaleInterval, keepInterval } from './intervals';
 import { activeDurationMs } from './pauses';
+import { planExerciseFor } from './plan-link';
 import { CardioValues, prefillCardio, prefillSets, SetValues } from './prefill';
 import { recordSetIds } from './records';
 
@@ -435,13 +436,32 @@ export class WorkoutService {
     await this.reloadSets(found.index);
   }
 
-  /** Rest duration for this exercise in this session only (the plan keeps its value). */
+  /**
+   * Rest duration for this exercise, in this session and in the plan it came from: the one
+   * exception to «a session never changes its plan» (decision 0026). Without a plan, or when the
+   * exercise is no longer in it, only the session changes.
+   */
   async setRestSeconds(exerciseIndex: number, restSeconds: number): Promise<void> {
-    const exercise = this.state()?.exercises[exerciseIndex];
-    if (!exercise) {
+    const state = this.state();
+    const exercise = state?.exercises[exerciseIndex];
+    if (!state || !exercise) {
       return;
     }
-    const entry = await this.sessionExercises.update(exercise.entry.id, { restSeconds });
+    const planId = state.session.planId;
+    const plan = planId ? await this.plans.getDraft(planId) : undefined;
+    const planExercise = plan
+      ? planExerciseFor(
+          state.exercises.map((e) => e.entry),
+          exercise.entry.id,
+          plan.exercises,
+        )
+      : null;
+    const entry = await this.database.driver.transaction(async () => {
+      if (planExercise?.planExerciseId) {
+        await this.plans.setRestSeconds(planExercise.planExerciseId, restSeconds);
+      }
+      return this.sessionExercises.update(exercise.entry.id, { restSeconds });
+    });
     this.patchExercise(exerciseIndex, { entry });
   }
 

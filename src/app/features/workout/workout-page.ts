@@ -476,7 +476,7 @@ export class WorkoutPage {
     this.restOpen.set(true);
   }
 
-  /** Only for this workout: the plan keeps its rest (a session is a copy of the plan). */
+  /** In this workout and in the plan (decision 0026). */
   protected setRest(seconds: number): void {
     const index = this.workout
       .workout()

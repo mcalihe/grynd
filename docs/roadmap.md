@@ -203,7 +203,7 @@ Umgesetzt in `ccr-87e98b54-k1dn0d`, Entscheide in [0025](decisions/0025-cardio-a
 
 ## Pausendauer pro Übung im Training ✅
 
-Umgesetzt in `ccr-08af1e7e-a5p2v3`, Entscheide in [0026](decisions/0026-rest-per-exercise.md). Das Übungsmenü im Training hat «Pausendauer: 1:30»; ein Sheet bietet die Timer-Dauern als Chips und einen Stepper in 15-s-Schritten (0–600 s). Gilt nur für die Übung in diesem Training, der Plan bleibt unverändert. Ohne Figma-Entwurf, Vorschau unter `/dev/components`.
+Umgesetzt in `ccr-08af1e7e-a5p2v3`, Entscheide in [0026](decisions/0026-rest-per-exercise.md). Das Übungsmenü im Training hat «Pausendauer: 1:30»; ein Sheet bietet die Timer-Dauern als Chips und einen Stepper in 15-s-Schritten (0–600 s). Die Pause gilt sofort und wird auch in der Plan-Übung gespeichert (einzige Ausnahme von «Training = Kopie des Plans»), ebenso beim Timer-Popover. Ohne Figma-Entwurf, Vorschau unter `/dev/components`.
 
 ---
 
