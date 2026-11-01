@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.10.0](https://github.com/mcalihe/grynd/compare/v0.9.0...v0.10.0) (2026-10-31)
+
+
+### Features
+
+* **plans:** duplicate a plan to build a similar one faster ([#46](https://github.com/mcalihe/grynd/issues/46)) ([c26a902](https://github.com/mcalihe/grynd/commit/c26a9028a581bbf9fc0bd6dca855b27efbfa1c82))
+* **plans:** find exercises faster with pinned search and filters ([#17](https://github.com/mcalihe/grynd/issues/17)) ([5c90db3](https://github.com/mcalihe/grynd/commit/5c90db3ccc93dadaab17d0ca55e30b663b7ae720))
+* **settings:** choose what to export and merge backups on import ([#44](https://github.com/mcalihe/grynd/issues/44)) ([6cf87d3](https://github.com/mcalihe/grynd/commit/6cf87d3c6d9f9a44a8d7271fd2e23f7bc747223b))
+* **workout:** log cardio workouts and see estimated calories ([#48](https://github.com/mcalihe/grynd/issues/48)) ([fce785f](https://github.com/mcalihe/grynd/commit/fce785fcc85cb001372f2c560338a0fc5181380f))
+* **workout:** set the rest of each exercise during a workout ([#45](https://github.com/mcalihe/grynd/issues/45)) ([6551478](https://github.com/mcalihe/grynd/commit/6551478a092ef0c3adb6823f3e870bd4100f9179))
+
+
+### Bug Fixes
+
+* **i18n:** show new texts right after an update instead of their keys ([#42](https://github.com/mcalihe/grynd/issues/42)) ([2726240](https://github.com/mcalihe/grynd/commit/2726240251a53c01349fc8a6efd8c1e4a903832b))
+
 ## [0.9.0](https://github.com/mcalihe/grynd/compare/v0.8.0...v0.9.0) (2026-10-17)
 
 
