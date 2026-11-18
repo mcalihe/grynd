@@ -55,9 +55,11 @@ const fact = (
   weightKg: number | null,
   reps: number | null,
   order = 0,
+  planId: string | null = 'p1',
 ): HistorySetFact => ({
   id: `f${++factId}`,
   sessionId,
+  planId,
   exerciseId,
   startedAt: start.toISOString(),
   completedAt: new Date(start.getTime() + (order + 1) * 60_000).toISOString(),
@@ -345,18 +347,21 @@ describe('one workout and one plan', () => {
     expect(previousSessionOf(runs, runs[1])).toBeUndefined();
   });
 
-  it('compares each exercise with the last time it was trained', () => {
+  it('compares each exercise with last time in the same plan, else in any (decision 0028)', () => {
     const facts = [
       fact('s1', d1, 'bench', 80, 8),
-      fact('other', d2, 'bench', 70, 10),
+      fact('other', d2, 'bench', 70, 10, 0, 'p2'),
+      fact('other', d2, 'row', 50, 10, 1, 'p2'),
       fact('s3', d3, 'bench', 80, 10),
       fact('s3', d3, 'bench', 80, 8, 1),
       fact('s3', d3, 'row', 60, 10, 2),
+      fact('s3', d3, 'curl', 20, 10, 3),
     ];
     expect(exerciseComparison(facts, 's3')).toEqual(
       new Map([
-        ['bench', { volumeKg: 1440, previousVolumeKg: 700 }],
-        ['row', { volumeKg: 600, previousVolumeKg: null }],
+        ['bench', { volumeKg: 1440, previousVolumeKg: 640 }],
+        ['row', { volumeKg: 600, previousVolumeKg: 500 }],
+        ['curl', { volumeKg: 200, previousVolumeKg: null }],
       ]),
     );
   });

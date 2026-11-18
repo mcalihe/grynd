@@ -30,6 +30,7 @@ describe('PlanHistoryPage', () => {
   const fact = (sessionId: string, day: number, weightKg: number): HistorySetFact => ({
     id: `${sessionId}-${weightKg}`,
     sessionId,
+    planId: 'p1',
     exerciseId: 'squat',
     startedAt: new Date(2026, 8, day, 18).toISOString(),
     completedAt: new Date(2026, 8, day, 18, 5).toISOString(),

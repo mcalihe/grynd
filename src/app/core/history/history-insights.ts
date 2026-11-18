@@ -14,6 +14,8 @@ import {
 export interface HistorySetFact {
   id: string;
   sessionId: string;
+  /** Plan of the session; null for a workout without a plan. */
+  planId: string | null;
   exerciseId: string;
   /** Start of the session the set belongs to. */
   startedAt: UtcTimestamp;
@@ -398,17 +400,22 @@ export interface ExerciseComparison {
   previousVolumeKg: number | null;
 }
 
-/** Volume per exercise of one session against the last earlier session with that exercise. */
+/**
+ * Volume per exercise of one session against last time, like the prefill (decision 0028): the
+ * last earlier session of the same plan with that exercise, else of any plan.
+ */
 export function exerciseComparison(
   facts: readonly HistorySetFact[],
   sessionId: string,
 ): Map<string, ExerciseComparison> {
   const own = facts.filter((f) => f.sessionId === sessionId);
   const startedAt = own[0]?.startedAt;
+  const planId = own[0]?.planId ?? null;
   const result = new Map<string, ExerciseComparison>();
   for (const [exerciseId, sets] of groupBy(own, (f) => f.exerciseId)) {
     const earlier = facts.filter((f) => f.exerciseId === exerciseId && f.startedAt < startedAt);
-    const last = earlier.reduce<HistorySetFact | undefined>(
+    const samePlan = earlier.filter((f) => f.planId === planId);
+    const last = (samePlan.length ? samePlan : earlier).reduce<HistorySetFact | undefined>(
       (latest, f) => (!latest || f.startedAt > latest.startedAt ? f : latest),
       undefined,
     );

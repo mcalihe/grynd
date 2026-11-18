@@ -94,7 +94,7 @@ export class HistoryService {
   async loadFacts(): Promise<void> {
     this.factState.set(
       await this.database.driver.query<HistorySetFact>(
-        `SELECT sl.id, se.sessionId, se.exerciseId, ws.startedAt, sl.completedAt,
+        `SELECT sl.id, se.sessionId, ws.planId, se.exerciseId, ws.startedAt, sl.completedAt,
                 sl.weightKg, sl.reps
            FROM set_log sl
            JOIN session_exercise se ON se.id = sl.sessionExerciseId AND se.deletedAt IS NULL

@@ -330,6 +330,8 @@
   "releaseNotes.backupMerge.text": "Beim Import siehst du zuerst, was in der Sicherung steckt. Du kannst sie mit deinen Daten zusammenführen statt alles zu ersetzen, und ein Import lässt sich gleich danach rückgängig machen.",
   "releaseNotes.sharePlans.title": "Exportieren nach Wahl",
   "releaseNotes.sharePlans.text": "Wähle beim Exportieren, welche Pläne und ob Trainings, Notizen, Fotos und Gewichtsschritte mitkommen. Kopiere einen Code oder speichere eine Datei. Ein Plan ohne Verlauf kommt beim Import als Kopie dazu, ohne etwas zu überschreiben.",
+  "releaseNotes.prefillPerPlan.title": "Jeder Plan hat seine eigenen Gewichte",
+  "releaseNotes.prefillPerPlan.text": "Steht eine Übung in mehreren Plänen, trägt Grynd die Werte vom letzten Training mit demselben Plan ein. Was du in einem Plan anpasst, ändert die anderen nicht. Ist die Übung neu im Plan, startest du mit deinen Werten vom letzten Mal.",
   "common.back": "Zurück",
   "common.decrease": "{{label}} verringern",
   "common.increase": "{{label}} erhöhen",

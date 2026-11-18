@@ -62,6 +62,7 @@ describe('HistoryDetailPage', () => {
     ({
       id,
       sessionId,
+      planId: 'p1',
       exerciseId: 'e1',
       startedAt,
       completedAt: startedAt,

@@ -191,6 +191,93 @@ describe('WorkoutService', () => {
     expect([...service.records()]).toEqual([b.id]);
   });
 
+  describe('prefill per plan (decision 0028)', () => {
+    const weights = (i: number) => setsOf(i).map((s) => s.weightKg);
+
+    function otherPlan(exercises = ['e0']): Promise<string> {
+      return TestBed.inject(PlansService).save(
+        addExercises({ name: 'Ganzkörper', weekdays: [], exercises: [] }, exercises),
+      );
+    }
+
+    async function train(id: string, index: number, weightKg: number, reps = 8) {
+      await service.start(id);
+      await completeAll(index, weightKg, reps);
+      await service.finish();
+      clock.advance(60_000);
+    }
+
+    it('prefills each plan from its own last workout', async () => {
+      const other = await otherPlan();
+      await train(planId, 0, 80);
+      await train(other, 0, 60);
+
+      await service.start(planId);
+      expect(weights(0)).toEqual([80, 80, 80]);
+      await service.abort();
+      await service.start(other);
+      expect(weights(0)).toEqual([60, 60, 60]);
+    });
+
+    it('takes the values from another plan the first time', async () => {
+      await train(planId, 0, 80);
+
+      await service.start(await otherPlan());
+      expect(weights(0)).toEqual([80, 80, 80]);
+    });
+
+    it('skips workouts in which the exercise has no completed set', async () => {
+      await train(planId, 0, 80);
+      await train(planId, 1, 40); // e0 skipped this time
+
+      await service.start(planId);
+      expect(weights(0)).toEqual([80, 80, 80]);
+      expect(weights(1)).toEqual([40, 40]);
+    });
+
+    it('keeps the values of an exercise that appears twice in a plan apart', async () => {
+      const plans = TestBed.inject(PlansService);
+      const draft = addExercises({ name: 'Brust', weekdays: [], exercises: [] }, ['e0', 'e1']);
+      const twice = await plans.save({
+        ...draft,
+        exercises: [...draft.exercises, { ...draft.exercises[0] }],
+      });
+      await service.start(twice);
+      await completeAll(0, 100, 5);
+      await completeAll(2, 60, 12);
+      await service.finish();
+
+      await service.start(twice);
+      expect(weights(0)).toEqual([100, 100, 100]);
+      expect(weights(2)).toEqual([60, 60, 60]);
+    });
+
+    it('prefills a cardio workout without a plan from one without a plan first', async () => {
+      const run = async (distanceM: number, planned?: string) => {
+        if (planned) {
+          await service.start(planned);
+        } else {
+          await service.startCardio('run');
+        }
+        const index = planned ? 1 : 0;
+        await service.updateSet(setsOf(index)[0].id, { distanceM });
+        await service.toggleComplete(setsOf(index)[0].id);
+        await service.finish();
+        clock.advance(60_000);
+      };
+      const withRun = await TestBed.inject(PlansService).save(
+        addExercises({ name: 'Intervall', weekdays: [], exercises: [] }, ['e0', 'run'], (id) =>
+          id.startsWith('r'),
+        ),
+      );
+      await run(5000);
+      await run(2000, withRun);
+
+      await service.startCardio('run');
+      expect(setsOf(0)[0].distanceM).toBe(5000);
+    });
+  });
+
   it('keeps the current exercise when reordering', async () => {
     await service.start(planId);
     await service.setCurrent(1);
