@@ -95,22 +95,29 @@ const RECENT = 12;
             </div>
             <ul class="flex flex-col">
               @for (exercise of exercises(); track exercise.exerciseId) {
-                <li class="flex items-center gap-3 border-b py-2 last:border-b-0">
-                  <div class="flex min-w-0 flex-1 flex-col gap-1">
-                    <span class="truncate text-sm font-semibold">{{ exercise.name }}</span>
-                    <span class="flex gap-2 text-xs">
-                      <span class="text-muted-foreground">{{ exercise.value }}</span>
-                      @if (exercise.delta) {
-                        <span
-                          class="font-semibold"
-                          [class]="exercise.up ? 'text-success' : 'text-muted-foreground'"
-                        >
-                          {{ exercise.delta }}
-                        </span>
-                      }
+                <li class="border-b last:border-b-0">
+                  <!-- Opens the exercise history in this plan (decision 0028). -->
+                  <button
+                    type="button"
+                    class="flex w-full items-center gap-3 py-2 text-left"
+                    (click)="openExercise(exercise.exerciseId)"
+                  >
+                    <span class="flex min-w-0 flex-1 flex-col gap-1">
+                      <span class="truncate text-sm font-semibold">{{ exercise.name }}</span>
+                      <span class="flex gap-2 text-xs">
+                        <span class="text-muted-foreground">{{ exercise.value }}</span>
+                        @if (exercise.delta) {
+                          <span
+                            class="font-semibold"
+                            [class]="exercise.up ? 'text-success' : 'text-muted-foreground'"
+                          >
+                            {{ exercise.delta }}
+                          </span>
+                        }
+                      </span>
                     </span>
-                  </div>
-                  <app-sparkline [values]="exercise.series" [label]="exercise.name" />
+                    <app-sparkline [values]="exercise.series" [label]="exercise.name" />
+                  </button>
                 </li>
               }
             </ul>
@@ -270,6 +277,12 @@ export class PlanHistoryPage implements OnInit {
 
   protected open(id: string): void {
     void this.router.navigate(['/history', id]);
+  }
+
+  protected openExercise(exerciseId: string): void {
+    void this.router.navigate(['/history/exercises', exerciseId], {
+      queryParams: { plan: this.planId() },
+    });
   }
 
   protected started(session: HistorySummary): Date {

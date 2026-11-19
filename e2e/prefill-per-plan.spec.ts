@@ -1,7 +1,8 @@
 import { expect, Page, test } from '@playwright/test';
 
 /**
- * Prefill per plan (decision 0028): the same exercise in two plans keeps its own values in each.
+ * Prefill per plan and the exercise history (decision 0028): the same exercise in two plans keeps
+ * its own values in each, and its history shows both plans or one.
  * A plan that never did the exercise starts with the values from the other plan.
  */
 test('each plan prefills from its own last workout', async ({ page }) => {
@@ -17,6 +18,23 @@ test('each plan prefills from its own last workout', async ({ page }) => {
   await expect(firstWeight(page)).toHaveAttribute('aria-valuenow', '80');
   await train(page, 60);
 
+  // The exercise history from the workout detail: this plan first, then all plans
+  await page.getByRole('button', { name: 'Weiter' }).click();
+  await expect(page).toHaveURL(/\/history\/.+/);
+  await page.getByRole('button', { name: 'Verlauf von Bankdrücken (mittlerer Griff)' }).click();
+  await expect(page).toHaveURL(/\/history\/exercises\/.+\?plan=/);
+  const plans = page.locator('[data-filter="plans"]');
+  await expect(plans.getByRole('radio', { name: 'E2E Ganz' })).toHaveAttribute(
+    'aria-checked',
+    'true',
+  );
+  const workouts = page.locator('app-history-row');
+  await expect(workouts).toHaveCount(1);
+  await expect(workouts.first()).toContainText('60 kg × 8');
+  await plans.getByRole('radio', { name: 'Alle Pläne' }).click();
+  await expect(workouts).toHaveCount(2);
+  await expect(page.getByRole('heading', { name: 'Nach Plan' })).toBeVisible();
+
   // The first plan still remembers its own 80 kg
   await page.goto('/plans');
   await page
@@ -24,6 +42,18 @@ test('each plan prefills from its own last workout', async ({ page }) => {
     .first()
     .click();
   await page.getByRole('button', { name: 'Training starten' }).click();
+  await expect(page).toHaveURL(/\/workout$/);
+  await expect(firstWeight(page)).toHaveAttribute('aria-valuenow', '80');
+
+  // The exercise menu opens the history mid-workout; «Zurück» returns to the workout
+  await page.getByRole('button', { name: 'Übungsmenü' }).click();
+  await page.getByRole('menuitem', { name: 'Verlauf ansehen' }).click();
+  await expect(page).toHaveURL(/\/history\/exercises\/.+\?plan=/);
+  await expect(plans.getByRole('radio', { name: 'E2E Oben' })).toHaveAttribute(
+    'aria-checked',
+    'true',
+  );
+  await page.getByRole('button', { name: 'Zurück' }).click();
   await expect(page).toHaveURL(/\/workout$/);
   await expect(firstWeight(page)).toHaveAttribute('aria-valuenow', '80');
 });

@@ -128,9 +128,12 @@ Klassen folgen dem Angular-Styleguide 2025 (ohne `Component`-Suffix), Selektor-P
 | Verlauf-Detail · Vergleich | `/history/:sessionId` | `121:1935` | `122:3846` |
 | Plan-Verlauf (`PlanHistoryPage`) | `/history/plans/:planId` | `122:1825` | `122:3939` |
 | Plan-Detail · Verlauf | `/plans/:id` | `122:3315` | `122:4037` |
+| Übungsverlauf · Alle Pläne (`ExerciseHistoryPage`, [0028](../decisions/0028-prefill-per-plan-and-exercise-history.md)) | `/history/exercises/:exerciseId` | `138:2082` | `138:2216` |
+| Übungsverlauf · Ein Plan | `/history/exercises/:exerciseId?plan=:planId` | `138:2302` | `138:2432` |
+| Übungsverlauf · Einstiege (Übungsmenü im Training, Plan-Detail) | `/workout`, `/plans/:id` | `138:2498` | `138:2538` |
 | Einstellungen | `/settings` (`SettingsPage`, features/settings) | `84:2796` | `84:3950` |
 
-Hinweis: «Training · Timer-Dauer» lag über «Verlauf» und liegt jetzt bei y=19992. «Verlauf · Leer» liegt bei y=20944. Die Statistik-Frames ([0016](../decisions/0016-history-statistics.md)) beginnen bei y=21896; «Verlauf · Statistik» und «Plan-Verlauf» sind höher als 852 px (scrollende Inhalte).
+Hinweis: «Training · Timer-Dauer» lag über «Verlauf» und liegt jetzt bei y=19992. «Verlauf · Leer» liegt bei y=20944. Die Statistik-Frames ([0016](../decisions/0016-history-statistics.md)) beginnen bei y=21896; «Verlauf · Statistik» und «Plan-Verlauf» sind höher als 852 px (scrollende Inhalte). Die Übungsverlauf-Frames beginnen bei y=28944.
 
 ## App-Icon und Splash
 

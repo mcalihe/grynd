@@ -484,6 +484,105 @@ export function planHistory(
   };
 }
 
+/** One workout with the exercise in the exercise history (decision 0028). */
+export interface ExerciseSession {
+  sessionId: string;
+  planId: string | null;
+  planName: string;
+  startedAt: UtcTimestamp;
+  /** Completed sets in the order they were done. */
+  sets: HistorySetFact[];
+  /** Best estimated 1RM, or most reps for an exercise without weight. */
+  best: number;
+  /** The heaviest set (more reps on a tie); without weight the one with the most reps. */
+  topSet: HistorySetFact;
+  volumeKg: number;
+  /** Sets that set a record, measured against every plan. */
+  records: number;
+}
+
+/** The exercise in one plan: its latest workout and the trend of its best values. */
+export interface ExercisePlan {
+  planId: string | null;
+  planName: string;
+  count: number;
+  latest: ExerciseSession;
+  /** Best value of the latest `limit` workouts of the plan, oldest first. */
+  series: number[];
+}
+
+export interface ExerciseHistory {
+  kind: StrengthKind;
+  /** Workouts with the exercise, newest first; only of the chosen plan when there is one. */
+  sessions: ExerciseSession[];
+  /** Every plan the exercise was trained in, latest first, also deleted ones. */
+  plans: ExercisePlan[];
+}
+
+/**
+ * Everything the exercise history shows (decision 0028), over all plans or for `planId` only.
+ * The unit (1RM or reps) and the records always look at the whole history of the exercise.
+ */
+export function exerciseHistory(
+  summaries: readonly HistorySummary[],
+  facts: readonly HistorySetFact[],
+  exerciseId: string,
+  planId: string | null = null,
+  limit = 12,
+): ExerciseHistory {
+  const own = facts.filter((f) => f.exerciseId === exerciseId);
+  const kind = strengthKind(own);
+  const records = recordsBySession(own);
+  const byId = new Map(summaries.map((s) => [s.id, s]));
+  const all: ExerciseSession[] = [];
+  for (const [sessionId, sets] of groupBy(own, (f) => f.sessionId)) {
+    const inOrder = [...sets].sort((a, b) => a.completedAt.localeCompare(b.completedAt));
+    const best = bestStrength(inOrder, kind);
+    if (best === null) {
+      continue;
+    }
+    all.push({
+      sessionId,
+      planId: inOrder[0].planId,
+      planName: byId.get(sessionId)?.planName ?? '',
+      startedAt: inOrder[0].startedAt,
+      sets: inOrder,
+      best,
+      topSet: topSet(inOrder),
+      volumeKg: volume(inOrder),
+      records: records.get(sessionId) ?? 0,
+    });
+  }
+  all.sort((a, b) => b.startedAt.localeCompare(a.startedAt));
+
+  const plans: ExercisePlan[] = [];
+  for (const [, sessions] of groupBy(all, (s) => s.planId ?? '')) {
+    plans.push({
+      planId: sessions[0].planId,
+      planName: sessions[0].planName,
+      count: sessions.length,
+      latest: sessions[0],
+      series: sessions
+        .slice(0, limit)
+        .map((s) => s.best)
+        .reverse(),
+    });
+  }
+  return {
+    kind,
+    sessions: planId === null ? all : all.filter((s) => s.planId === planId),
+    plans,
+  };
+}
+
+/** The heaviest set, more reps on a tie; the one with the most reps without weight. */
+function topSet(sets: readonly HistorySetFact[]): HistorySetFact {
+  return sets.reduce((top, f) => {
+    const [w, tw] = [f.weightKg ?? 0, top.weightKg ?? 0];
+    return w > tw || (w === tw && (f.reps ?? 0) > (top.reps ?? 0)) ? f : top;
+  });
+}
+
 function strengthKind(sets: readonly HistorySetFact[]): StrengthKind {
   return sets.some((f) => estimatedOneRepMax(f.weightKg, f.reps) !== null) ? 'e1rm' : 'reps';
 }

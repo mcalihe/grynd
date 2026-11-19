@@ -142,6 +142,18 @@ import { cardioSummary, PlanExerciseRow, targetSummary } from './plan-exercise-r
                         | transloco: { step: weightStepLabel(exercise.exerciseId) }
                     }}
                   </button>
+                  <!-- Strength exercises with a history open it in this plan (decision 0028). -->
+                  @if (history.trainedExercises().has(exercise.exerciseId)) {
+                    <button
+                      hlmBtn
+                      variant="ghost"
+                      size="sm"
+                      class="-ml-2 self-start"
+                      (click)="openExerciseHistory(exercise.exerciseId)"
+                    >
+                      <ng-icon name="lucideChartLine" />{{ 'history.exercise.open' | transloco }}
+                    </button>
+                  }
                 }
                 @if (notes.hasNote(exercise.exerciseId)) {
                   <app-exercise-note
@@ -212,7 +224,7 @@ export class PlanDetailPage implements OnInit {
     initialValue: 'de',
   });
 
-  private readonly history = inject(HistoryService);
+  protected readonly history = inject(HistoryService);
   private readonly format = inject(HistoryFormat);
   private readonly clock = inject(Clock);
 
@@ -260,6 +272,7 @@ export class PlanDetailPage implements OnInit {
 
   async ngOnInit(): Promise<void> {
     void this.history.load();
+    void this.history.loadTrainedExercises();
     const [plan] = await Promise.all([
       this.plans.getDraft(this.id()),
       this.catalog.load(),
@@ -279,6 +292,12 @@ export class PlanDetailPage implements OnInit {
 
   protected openHistory(): void {
     void this.router.navigate(['/history/plans', this.id()]);
+  }
+
+  protected openExerciseHistory(exerciseId: string): void {
+    void this.router.navigate(['/history/exercises', exerciseId], {
+      queryParams: { plan: this.id() },
+    });
   }
 
   protected editNote(exerciseId: string): void {

@@ -94,6 +94,11 @@ export function repTarget(repMin: number | null, repMax: number | null): string 
             <button hlmDropdownMenuItem (click)="editRest.emit()">
               {{ 'restDuration.menu' | transloco: { duration: restLabel() } }}
             </button>
+            @if (hasHistory()) {
+              <button hlmDropdownMenuItem (click)="openHistory.emit()">
+                {{ 'history.exercise.open' | transloco }}
+              </button>
+            }
           }
           <hlm-dropdown-menu-separator />
           <button hlmDropdownMenuItem [disabled]="isLast()" (click)="moveBack.emit(1)">
@@ -196,6 +201,10 @@ export class ExercisePage {
   readonly editWeightStep = output<void>();
   /** Opens the rest picker for this exercise. */
   readonly editRest = output<void>();
+  /** The exercise was trained before: the menu offers its history (decision 0028). */
+  readonly hasHistory = input(false);
+  /** Opens the exercise history. */
+  readonly openHistory = output<void>();
 
   protected readonly workout = inject(WorkoutService);
   private readonly catalog = inject(ExerciseCatalogService);

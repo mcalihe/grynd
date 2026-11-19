@@ -7,6 +7,10 @@ export const HISTORY_ROUTES: Routes = [
     loadComponent: () => import('./plan-history-page').then((m) => m.PlanHistoryPage),
   },
   {
+    path: 'exercises/:exerciseId',
+    loadComponent: () => import('./exercise-history-page').then((m) => m.ExerciseHistoryPage),
+  },
+  {
     path: ':sessionId',
     loadComponent: () => import('./history-detail-page').then((m) => m.HistoryDetailPage),
   },

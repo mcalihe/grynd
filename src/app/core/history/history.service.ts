@@ -83,6 +83,10 @@ export class HistoryService {
   readonly facts = this.factState.asReadonly();
   readonly factsLoaded = signal(false);
 
+  private readonly trainedState = signal<ReadonlySet<string>>(new Set());
+  /** Strength exercises with a history; see `loadTrainedExercises()`. */
+  readonly trainedExercises = this.trainedState.asReadonly();
+
   async load(): Promise<void> {
     const [summaries, cardio] = await Promise.all([this.querySummaries(), this.queryCardio()]);
     this.cardioState.set(cardio);
@@ -108,6 +112,25 @@ export class HistoryService {
       ),
     );
     this.factsLoaded.set(true);
+  }
+
+  /**
+   * Strength exercises with at least one completed set in a finished workout: they get a link to
+   * their exercise history (decision 0028). Lighter than `loadFacts()` for the plan and workout.
+   */
+  async loadTrainedExercises(): Promise<void> {
+    const rows = await this.database.driver.query<{ exerciseId: string }>(
+      `SELECT DISTINCT se.exerciseId
+         FROM set_log sl
+         JOIN session_exercise se ON se.id = sl.sessionExerciseId AND se.deletedAt IS NULL
+         JOIN workout_session ws ON ws.id = se.sessionId AND ws.deletedAt IS NULL
+         JOIN exercise e ON e.id = se.exerciseId
+        WHERE ws.status = 'finished' AND ws.finishedAt IS NOT NULL
+          AND sl.completedAt IS NOT NULL AND sl.deletedAt IS NULL
+          AND coalesce(e.category, '') <> ?`,
+      [CARDIO_CATEGORY],
+    );
+    this.trainedState.set(new Set(rows.map((row) => row.exerciseId)));
   }
 
   async detail(id: string): Promise<HistoryDetail | undefined> {

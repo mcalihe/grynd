@@ -4,6 +4,7 @@ import {
   calendarMonth,
   comparableRange,
   exerciseComparison,
+  exerciseHistory,
   exerciseProgress,
   HistorySetFact,
   muscleGroupSets,
@@ -398,5 +399,81 @@ describe('one workout and one plan', () => {
     expect(plan.sessions).toHaveLength(15);
     expect(plan.exercises[0].series).toHaveLength(12);
     expect(plan.exercises[0].first).toBeCloseTo(63 * (1 + 5 / 30));
+  });
+});
+
+describe('exerciseHistory (decision 0028)', () => {
+  const d1 = local(2026, 9, 1);
+  const d2 = local(2026, 9, 3);
+  const d3 = local(2026, 9, 5);
+  const summaries = [
+    session('s3', d3, 50),
+    session('g2', d2, 40, { planId: 'p2', planName: 'Ganzkörper' }),
+    session('s1', d1, 45),
+  ];
+  const facts = [
+    fact('s1', d1, 'bench', 80, 8, 0),
+    fact('s1', d1, 'bench', 80, 6, 1),
+    fact('s1', d1, 'row', 60, 10, 2),
+    fact('g2', d2, 'bench', 70, 10, 0, 'p2'),
+    fact('s3', d3, 'bench', 85, 5, 0),
+    fact('s3', d3, 'bench', 85, 6, 1),
+  ];
+  const e1rm = (kg: number, reps: number) => kg * (1 + reps / 30);
+
+  it('lists every workout with the exercise, newest first, with its best and heaviest set', () => {
+    const history = exerciseHistory(summaries, facts, 'bench');
+    expect(history.kind).toBe('e1rm');
+    expect(history.sessions.map((s) => [s.sessionId, s.planName, s.sets.length])).toEqual([
+      ['s3', 'Oberkörper', 2],
+      ['g2', 'Ganzkörper', 1],
+      ['s1', 'Oberkörper', 2],
+    ]);
+    const [latest] = history.sessions;
+    expect(latest.best).toBeCloseTo(e1rm(85, 6));
+    expect([latest.topSet.weightKg, latest.topSet.reps]).toEqual([85, 6]);
+    expect(latest.volumeKg).toBe(85 * 5 + 85 * 6);
+  });
+
+  it('counts records against every plan', () => {
+    const history = exerciseHistory(summaries, facts, 'bench', 'p1');
+    // 85 × 6 beats 80 × 8 from s1; the 70 × 10 in the other plan was no record.
+    expect(history.sessions.map((s) => [s.sessionId, s.records])).toEqual([
+      ['s3', 1],
+      ['s1', 0],
+    ]);
+  });
+
+  it('filters by plan and keeps every plan for the filter', () => {
+    const history = exerciseHistory(summaries, facts, 'bench', 'p1');
+    expect(history.plans.map((p) => [p.planId, p.planName, p.count, p.latest.sessionId])).toEqual([
+      ['p1', 'Oberkörper', 2, 's3'],
+      ['p2', 'Ganzkörper', 1, 'g2'],
+    ]);
+    const [upper] = history.plans;
+    expect(upper.series[0]).toBeCloseTo(e1rm(80, 8));
+    expect(upper.series[1]).toBeCloseTo(e1rm(85, 6));
+  });
+
+  it('measures exercises without weight in reps', () => {
+    const pullups = [
+      fact('s1', d1, 'pullup', null, 8),
+      fact('s3', d3, 'pullup', null, 10),
+      fact('s3', d3, 'pullup', null, 7, 1),
+    ];
+    const history = exerciseHistory(summaries, pullups, 'pullup');
+    expect(history.kind).toBe('reps');
+    expect(history.sessions.map((s) => [s.best, s.topSet.reps])).toEqual([
+      [10, 10],
+      [8, 8],
+    ]);
+  });
+
+  it('is empty for an exercise never trained', () => {
+    expect(exerciseHistory(summaries, facts, 'squat')).toEqual({
+      kind: 'reps',
+      sessions: [],
+      plans: [],
+    });
   });
 });

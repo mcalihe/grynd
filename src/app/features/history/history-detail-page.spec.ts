@@ -136,6 +136,14 @@ describe('HistoryDetailPage', () => {
     expect(rows[1].querySelector('[hlmBadge]')?.getAttribute('data-variant')).toBe('success');
   });
 
+  it('opens the exercise history in the plan of the workout (decision 0028)', async () => {
+    const { el, navigate } = await setup(true);
+    el.querySelector<HTMLButtonElement>('section h2 button')?.click();
+    expect(navigate).toHaveBeenCalledWith(['/history/exercises', 'e1'], {
+      queryParams: { plan: 'p1' },
+    });
+  });
+
   it('compares with the last workout of the plan and links to the plan history', async () => {
     const { el, navigate } = await setup(true);
     const figures = el.querySelector('app-key-figures')!;
