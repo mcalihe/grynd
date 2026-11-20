@@ -117,7 +117,25 @@ import { HistoryViewState } from './history-view';
           <section class="flex flex-col gap-3 rounded-xl border bg-card p-4">
             <header class="flex flex-col gap-1">
               <div class="flex items-baseline justify-between gap-3">
-                <h2 class="text-sm font-semibold">{{ catalog.nameById(exercise.exerciseId) }}</h2>
+                @let exerciseName = catalog.nameById(exercise.exerciseId);
+                <h2 class="min-w-0 text-sm font-semibold">
+                  @if (exercise.cardio) {
+                    {{ exerciseName }}
+                  } @else {
+                    <!-- Opens the exercise history in this workout's plan (decision 0028). -->
+                    <button
+                      type="button"
+                      class="relative flex items-center gap-1 text-left after:absolute after:inset-x-0 after:-inset-y-3"
+                      [attr.aria-label]="
+                        'history.exercise.openLabel' | transloco: { name: exerciseName }
+                      "
+                      (click)="openExercise(exercise.exerciseId, d.summary.planId)"
+                    >
+                      {{ exerciseName }}
+                      <ng-icon name="lucideChevronRight" size="16" aria-hidden="true" />
+                    </button>
+                  }
+                </h2>
                 @if (exercise.timeMs > 0) {
                   <span class="shrink-0 text-xs text-muted-foreground">
                     {{ format.duration(exercise.timeMs) }}
@@ -310,6 +328,12 @@ export class HistoryDetailPage implements OnInit {
 
   protected openPlan(planId: string): void {
     void this.router.navigate(['/history/plans', planId]);
+  }
+
+  protected openExercise(exerciseId: string, planId: string | null): void {
+    void this.router.navigate(['/history/exercises', exerciseId], {
+      queryParams: planId ? { plan: planId } : {},
+    });
   }
 
   /** Back to the history tab the workout was opened from. */

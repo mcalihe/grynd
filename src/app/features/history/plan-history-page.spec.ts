@@ -30,6 +30,7 @@ describe('PlanHistoryPage', () => {
   const fact = (sessionId: string, day: number, weightKg: number): HistorySetFact => ({
     id: `${sessionId}-${weightKg}`,
     sessionId,
+    planId: 'p1',
     exerciseId: 'squat',
     startedAt: new Date(2026, 8, day, 18).toISOString(),
     completedAt: new Date(2026, 8, day, 18, 5).toISOString(),
@@ -94,6 +95,12 @@ describe('PlanHistoryPage', () => {
     expect(rows).toHaveLength(3);
     rows[0].click();
     expect(navigate).toHaveBeenCalledWith(['/history', 'c']);
+
+    // The strength row opens the exercise history in this plan (decision 0028).
+    el.querySelector('app-sparkline')?.closest('button')?.click();
+    expect(navigate).toHaveBeenCalledWith(['/history/exercises', 'squat'], {
+      queryParams: { plan: 'p1' },
+    });
   });
 
   it('returns to the history for a plan without workouts', async () => {

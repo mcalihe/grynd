@@ -81,6 +81,7 @@ describe('PlanDetailPage', () => {
     notes: Record<string, string> = {},
     images: Record<string, NoteImage[]> = {},
     steps: Record<string, number> = {},
+    trained: string[] = [],
   ) {
     const imagesFor = (id: string) => images[id] ?? [];
     TestBed.configureTestingModule({
@@ -98,7 +99,12 @@ describe('PlanDetailPage', () => {
         },
         {
           provide: HistoryService,
-          useValue: { summaries: signal(history), load: async () => undefined },
+          useValue: {
+            summaries: signal(history),
+            load: async () => undefined,
+            trainedExercises: signal(new Set(trained)),
+            loadTrainedExercises: async () => undefined,
+          },
         },
         {
           provide: ExerciseNotesService,
@@ -142,6 +148,26 @@ describe('PlanDetailPage', () => {
     el.querySelector<HTMLButtonElement>('app-plan-exercise-row button')?.click();
     fixture.detectChanges();
     expect(el.textContent).toContain('plans.restSeconds');
+  });
+
+  it('opens the exercise history in this plan once the exercise was trained (0028)', async () => {
+    const untrained = await setup();
+    untrained.fixture.nativeElement.querySelector('app-plan-exercise-row button')?.click();
+    untrained.fixture.detectChanges();
+    expect(untrained.fixture.nativeElement.textContent).not.toContain('history.exercise.open');
+    TestBed.resetTestingModule();
+
+    const { fixture, navigate } = await setup(true, [], {}, {}, {}, ['e1']);
+    const el: HTMLElement = fixture.nativeElement;
+    el.querySelector<HTMLButtonElement>('app-plan-exercise-row button')?.click();
+    fixture.detectChanges();
+    const open = [...el.querySelectorAll('button')].find((b) =>
+      b.textContent?.includes('history.exercise.open'),
+    )!;
+    open.click();
+    expect(navigate).toHaveBeenCalledWith(['/history/exercises', 'e1'], {
+      queryParams: { plan: 'p1' },
+    });
   });
 
   it('shows cardio exercises with their duration and without rest or weight step', async () => {

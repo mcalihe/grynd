@@ -130,24 +130,31 @@ const STRENGTH_PREVIEW = 5;
           </header>
           <ul class="flex flex-col">
             @for (item of visibleStrength(); track item.exerciseId) {
-              <li class="flex items-center gap-3 border-b py-2 last:border-b-0">
-                <div class="flex min-w-0 flex-1 flex-col gap-1">
-                  <span class="truncate text-sm font-semibold">
-                    {{ catalog.nameById(item.exerciseId) }}
-                  </span>
-                  <span class="text-xs text-muted-foreground">{{ item.details }}</span>
-                </div>
-                <div class="flex shrink-0 flex-col items-end gap-1">
-                  <span class="text-sm font-semibold">{{ item.value }}</span>
-                  @if (item.delta) {
-                    <span
-                      class="text-xs font-semibold"
-                      [class]="item.up ? 'text-success' : 'text-muted-foreground'"
-                    >
-                      {{ item.delta }}
+              <li class="border-b last:border-b-0">
+                <!-- Opens the exercise history over all plans (decision 0028). -->
+                <button
+                  type="button"
+                  class="flex w-full items-center gap-3 py-2 text-left"
+                  (click)="openExercise(item.exerciseId)"
+                >
+                  <span class="flex min-w-0 flex-1 flex-col gap-1">
+                    <span class="truncate text-sm font-semibold">
+                      {{ catalog.nameById(item.exerciseId) }}
                     </span>
-                  }
-                </div>
+                    <span class="text-xs text-muted-foreground">{{ item.details }}</span>
+                  </span>
+                  <span class="flex shrink-0 flex-col items-end gap-1">
+                    <span class="text-sm font-semibold">{{ item.value }}</span>
+                    @if (item.delta) {
+                      <span
+                        class="text-xs font-semibold"
+                        [class]="item.up ? 'text-success' : 'text-muted-foreground'"
+                      >
+                        {{ item.delta }}
+                      </span>
+                    }
+                  </span>
+                </button>
               </li>
             }
           </ul>
@@ -437,6 +444,10 @@ export class HistoryStatsView implements OnInit {
     if (planId) {
       void this.router.navigate(['/history/plans', planId]);
     }
+  }
+
+  protected openExercise(exerciseId: string): void {
+    void this.router.navigate(['/history/exercises', exerciseId]);
   }
 
   /** Weekday letters for a week, every 7th day of a month, month letters for a year. */

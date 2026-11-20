@@ -16,7 +16,13 @@ import { Clock, UtcTimestamp } from '../utils/time';
 import { closeStaleInterval, keepInterval } from './intervals';
 import { activeDurationMs } from './pauses';
 import { planExerciseFor } from './plan-link';
-import { CardioValues, prefillCardio, prefillSets, SetValues } from './prefill';
+import {
+  CardioValues,
+  prefillCardio,
+  prefillSets,
+  previousForOccurrence,
+  SetValues,
+} from './prefill';
 import { recordSetIds } from './records';
 
 /** Cardio columns of a strength set (decision 0025). */
@@ -172,7 +178,11 @@ export class WorkoutService {
           restSeconds: pe.restSeconds,
           targetDurationSec: cardio ? pe.targetDurationSec : null,
         });
-        const previous = await this.previousSets(pe.exerciseId);
+        // The n-th entry of an exercise in the plan prefills from the n-th one last time.
+        const occurrence = plan.exercises
+          .slice(0, position)
+          .filter((e) => e.exerciseId === pe.exerciseId).length;
+        const previous = await this.previousSets(pe.exerciseId, planId, occurrence);
         const values: EntryValues[] = cardio
           ? prefillCardio(pe.targetSets, pe.targetDurationSec, previous).map((v) => ({
               weightKg: null,
@@ -211,7 +221,7 @@ export class WorkoutService {
     if (!exercise || !isCardio(exercise)) {
       throw new Error(`${exerciseId} is no cardio activity`);
     }
-    const [values] = prefillCardio(1, null, await this.previousSets(exerciseId));
+    const [values] = prefillCardio(1, null, await this.previousSets(exerciseId, null));
     const session = await this.database.driver.transaction(async () => {
       const created = await this.sessions.insert({
         planId: null,
@@ -638,10 +648,20 @@ export class WorkoutService {
     this.state.set({ ...workout, exercises });
   }
 
-  /** Completed sets of the exercise in the most recent finished session that contains it. */
-  private previousSets(exerciseId: string): Promise<(SetValues & CardioValues)[]> {
-    return this.database.driver.query<SetValues & CardioValues>(
-      `SELECT sl.weightKg, sl.reps, sl.durationSec, sl.distanceM, sl.level
+  /**
+   * Last time's values for the `occurrence`-th entry of the exercise (decision 0028): the completed
+   * sets of the most recent finished session of the same plan with at least one completed set of
+   * it, else of any plan. Without a plan, «the same plan» is a cardio workout without one.
+   */
+  private async previousSets(
+    exerciseId: string,
+    planId: string | null,
+    occurrence = 0,
+  ): Promise<(SetValues & CardioValues)[]> {
+    const rows = await this.database.driver.query<
+      SetValues & CardioValues & { sessionExerciseId: string }
+    >(
+      `SELECT sl.sessionExerciseId, sl.weightKg, sl.reps, sl.durationSec, sl.distanceM, sl.level
          FROM set_log sl
          JOIN session_exercise se ON se.id = sl.sessionExerciseId AND se.deletedAt IS NULL
         WHERE se.exerciseId = ?
@@ -649,10 +669,13 @@ export class WorkoutService {
           AND se.sessionId = (
             SELECT ws.id FROM workout_session ws
               JOIN session_exercise se2 ON se2.sessionId = ws.id AND se2.deletedAt IS NULL
+              JOIN set_log sl2 ON sl2.sessionExerciseId = se2.id AND sl2.deletedAt IS NULL
+                              AND sl2.completedAt IS NOT NULL
              WHERE se2.exerciseId = ? AND ws.status = 'finished' AND ws.deletedAt IS NULL
-             ORDER BY ws.startedAt DESC LIMIT 1)
-        ORDER BY se.position, sl.position`,
-      [exerciseId, exerciseId],
+             ORDER BY (ws.planId IS ?) DESC, ws.startedAt DESC LIMIT 1)
+        ORDER BY sl.sessionExerciseId, sl.position`,
+      [exerciseId, exerciseId, planId],
     );
+    return previousForOccurrence(rows, occurrence);
   }
 }

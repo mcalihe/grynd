@@ -209,6 +209,14 @@ Umgesetzt in `ccr-08af1e7e-a5p2v3`, Entscheide in [0026](decisions/0026-rest-per
 
 Umgesetzt in `ccr-75552d4f-c8pzbr`, Entscheide in [0027](decisions/0027-plan-sharing-and-backup-merge.md). Export-Sheet mit Auswahl (alle oder einzelne Pläne, Trainings, Notizen, Fotos, Gewichtsschritte) als Code zum Kopieren oder als Datei; ohne Verlauf eine Vorlage, die unter Pläne → «Plan importieren» als Kopie dazukommt, ohne etwas zu überschreiben. Backup-Import mit Vorschau, Zusammenführen oder Ersetzen und «Rückgängig»; strengere Prüfung von Backups (Zeitstempel, erlaubte Werte, Bereiche, Unique-Regeln). Ohne Figma-Entwurf, Vorschau unter `/dev/components`. Offen: manueller Test von Zwischenablage, System-Menü und Dateiauswahl auf Android und iOS.
 
+## Vorbefüllung pro Plan, Übungsverlauf ✅
+
+In `ccr-e5637b49-uy3o3x`, Entscheide in [0028](decisions/0028-prefill-per-plan-and-exercise-history.md).
+
+- [x] Vorbefüllung pro Plan: Werte vom letzten Training desselben Plans, sonst vom letzten Mal in einem anderen Plan; übersprungene Übungen zählen nicht. «Letztes Mal» im Verlauf-Detail gleich. Keine Migration.
+- [x] Figma-Entwurf Übungsverlauf (Alle Pläne / ein Plan, Einstiege, ab `138:2082`), freigegeben.
+- [x] Übungsverlauf `/history/exercises/:exerciseId` mit Plan-Filter; Einstiege aus Verlauf-Detail, Kraft-Listen, Plan-Detail und Übungsmenü im Training. Offen: Übungsverlauf für Cardio.
+
 ---
 
 ## Entscheide aus M0

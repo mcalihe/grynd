@@ -1,5 +1,5 @@
 import { closeStaleInterval, keepInterval } from './intervals';
-import { prefillCardio, prefillSets } from './prefill';
+import { prefillCardio, prefillSets, previousForOccurrence } from './prefill';
 import { SetLog } from '../db/models';
 import { estimatedOneRepMax, recordSetIds } from './records';
 import { exerciseJustDone, workoutPercent } from './workout.service';
@@ -34,6 +34,28 @@ describe('prefillSets', () => {
     expect(prefillSets(1, 10, [{ weightKg: 20, reps: null }])).toEqual([
       { weightKg: 20, reps: 10 },
     ]);
+  });
+});
+
+describe('previousForOccurrence (decision 0028)', () => {
+  // UUIDv7 ids grow with creation: «a…» was copied before «b…».
+  const rows = [
+    { sessionExerciseId: 'b-backoff', weightKg: 60, reps: 12 },
+    { sessionExerciseId: 'a-heavy', weightKg: 100, reps: 5 },
+    { sessionExerciseId: 'a-heavy', weightKg: 100, reps: 4 },
+  ];
+
+  it('gives the n-th entry of an exercise the n-th one of last time', () => {
+    expect(previousForOccurrence(rows, 0).map((r) => r.weightKg)).toEqual([100, 100]);
+    expect(previousForOccurrence(rows, 1).map((r) => r.weightKg)).toEqual([60]);
+  });
+
+  it('falls back to the last one when last time had fewer entries', () => {
+    expect(previousForOccurrence(rows, 2).map((r) => r.weightKg)).toEqual([60]);
+  });
+
+  it('is empty without history', () => {
+    expect(previousForOccurrence([], 0)).toEqual([]);
   });
 });
 

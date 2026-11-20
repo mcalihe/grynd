@@ -23,6 +23,7 @@ import { ConfirmService } from '../../core/services/confirm.service';
 import { ExerciseCatalogService } from '../../core/exercises/exercise-catalog.service';
 import { ExerciseNotesService } from '../../core/exercises/exercise-notes.service';
 import { ExerciseSettingsService } from '../../core/exercises/exercise-settings.service';
+import { HistoryService } from '../../core/history/history.service';
 import { SettingsService } from '../../core/settings/settings.service';
 import { RestTimerService } from '../../core/workout/rest-timer.service';
 import { isExerciseDone, WorkoutService, workoutPercent } from '../../core/workout/workout.service';
@@ -184,6 +185,8 @@ interface ExerciseMoment {
                   (editNote)="editNote(item.entry.exerciseId)"
                   (editWeightStep)="editWeightStep(item.entry.exerciseId)"
                   (editRest)="editRest(item.entry.id)"
+                  [hasHistory]="history.trainedExercises().has(item.entry.exerciseId)"
+                  (openHistory)="openHistory(item.entry.exerciseId)"
                 />
               </section>
             }
@@ -303,6 +306,7 @@ export class WorkoutPage {
   private readonly settings = inject(SettingsService);
   protected readonly unit = computed(() => this.settings.settings().unit);
   private readonly router = inject(Router);
+  protected readonly history = inject(HistoryService);
   private readonly confirm = inject(ConfirmService);
   private readonly celebration = inject(CelebrationService);
   private readonly clock = inject(Clock);
@@ -366,6 +370,7 @@ export class WorkoutPage {
     void this.catalog.load();
     void this.notes.load();
     void this.exerciseSettings.load();
+    void this.history.loadTrainedExercises();
     const destroyRef = inject(DestroyRef);
 
     // Android back opens the end dialog instead of leaving the workout; paused, it leaves.
@@ -469,6 +474,17 @@ export class WorkoutPage {
   protected editWeightStep(exerciseId: string): void {
     this.stepExerciseId.set(exerciseId);
     this.stepOpen.set(true);
+  }
+
+  /**
+   * The exercise history, in this workout's plan (decision 0028). The workout keeps running:
+   * the timer stores its end time, and «Zurück» comes back here.
+   */
+  protected openHistory(exerciseId: string): void {
+    const planId = this.workout.workout()?.session.planId;
+    void this.router.navigate(['/history/exercises', exerciseId], {
+      queryParams: planId ? { plan: planId } : {},
+    });
   }
 
   protected editRest(entryId: string): void {

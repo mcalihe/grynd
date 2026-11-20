@@ -136,6 +136,19 @@ describe('HistoryService', () => {
     ]);
     await history.load();
     expect(history.summaries()[0].planId).toBe(planId);
+    expect(history.facts().every((f) => f.planId === planId)).toBe(true);
+  });
+
+  it('knows which strength exercises have a history (decision 0028)', async () => {
+    await train([[100, 5]], 'abort');
+    await history.loadTrainedExercises();
+    expect([...history.trainedExercises()]).toEqual([]);
+
+    await train([[80, 8]]);
+    await workout.startCardio('run');
+    await workout.finish();
+    await history.loadTrainedExercises();
+    expect([...history.trainedExercises()]).toEqual(['e0']);
   });
 
   it('counts the same records in the statistics as in the detail', async () => {

@@ -22,6 +22,13 @@ export interface ReleaseNotes {
  */
 export const RELEASE_NOTES: readonly ReleaseNotes[] = [
   {
+    version: '0.11.0',
+    items: [
+      { id: 'prefillPerPlan', icon: 'lucideWeight' },
+      { id: 'exerciseHistory', icon: 'lucideChartLine' },
+    ],
+  },
+  {
     version: '0.10.0',
     items: [
       { id: 'duplicatePlan', icon: 'lucideCopy' },
